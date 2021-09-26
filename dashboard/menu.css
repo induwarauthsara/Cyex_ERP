@@ -1,0 +1,24 @@
+button a {
+    color: white;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    height: 40vh;
+    justify-content: space-around;
+    border: 1px solid green;
+    border-radius: 30px;
+    padding: 30px;
+    margin: 20px;
+    width: 50%;
+}
+
+button {
+    display: block;
+    background: green;
+    border-radius: 0.2rem;
+    padding: 8px;
+    justify-content: space-between;
+    font-weight: bold;
+}

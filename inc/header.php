@@ -1,0 +1,118 @@
+    <link rel="shortcut icon" href="logo.JPG" type="image/x-icon">
+    <?php session_start(); ?>
+    <?php if (!isset($_SESSION['employee_name'])) {
+        header("Location: /login");
+    } ?>
+    <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
+
+    <ul id="navbar">
+        <li><a href="/"><i class="fas fa-file-invoice header_icons"></i></a></li>
+        <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li>
+        <li class="dropdown">
+            <a href="/dashboard" class="dropbtn"><i class="fas fa-cogs header_icons"></i></i></a>
+            <div class="dropdown-content">
+                <a href="/dashboard/item">Item</a>
+                <a href="/dashboard/product">Product</a>
+                <a href="/dashboard/ingredients">Ingredients</a>
+            </div>
+        </li>
+        <li><a href="/crons/updateProducts.php"><i class="fas fa-sync-alt header_icons"></i></a></li>
+        <li style="float:right" class="dropdown">
+            <a href="/profile"><?php echo $_SESSION['employee_name'] ?> </a>
+            <div class="dropdown-content">
+                <a href="/login/logout.php">Logout</a>
+            </div>
+        </li>
+
+    </ul>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #navbar {
+            list-style-type: none;
+            margin: 0px;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+            margin-bottom: 10px;
+            top: 0;
+            width: 100%;
+        }
+
+        #navbar li {
+            float: left;
+            padding: 3px;
+        }
+
+        #navbar li a,
+        .dropbtn {
+            display: inline-block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        #navbar li a:hover,
+        .dropdown:hover .dropbtn {
+            background-color: green;
+        }
+
+        #navbar li.dropdown {
+            display: inline-block;
+        }
+
+        #navbar .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        #navbar .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+        #navbar .dropdown-content a:hover {
+            background-color: lawngreen;
+        }
+
+        #navbar .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .header_icons {
+            line-height: 20px;
+            font-size: 30px;
+            margin: 0;
+        }
+/* Footer */
+        .footer {
+    border-top:1px solid black;
+  position: re;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  color: black;
+  text-align: center;
+  padding: 5px;
+}
+
+
+</style>
+
+<div class="footer">
+  <p>Developed by Induwara Uthsara | &copy; Copyright <?php echo date("Y"); ?> Srijaya Print House
+ </p>
+</div>
