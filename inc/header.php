@@ -97,21 +97,4 @@
             font-size: 30px;
             margin: 0;
         }
-
-        /* Footer */
-        .footer {
-            border-top: 1px solid black;
-            position: re;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            color: black;
-            text-align: center;
-            padding: 5px;
-        }
     </style>
-
-    <div class="footer">
-        <p>Developed by Induwara Uthsara | &copy; Copyright <?php echo date("Y"); ?> Srijaya Print House
-        </p>
-    </div>
