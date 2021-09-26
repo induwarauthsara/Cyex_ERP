@@ -1,6 +1,5 @@
 <?php require_once '../../inc/config.php'; ?>
-<?php require_once '../inc/config.php'; ?>
-
+<a href="javascript:history.back()"><button style="margin:15px;">Go Back</button></a>
 <?php
 // Get Product List to Array
 $product_list_array = array();

@@ -1,8 +1,11 @@
 <?php require_once '../inc/config.php'; ?>
 <?php require '../inc/header.php'; ?>
-<h1>
-    <center>
-        This Feature is still Under Connection..
-    </center>
-</h1>
+<center>
+    <a href="updateProducts.php">
+        <button>
+            <h1 style="padding:5px;"> Update Products</h1>
+        </button>
+    </a>
+</center>
+
 <?php end_db_con(); ?>
