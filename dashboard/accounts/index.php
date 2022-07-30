@@ -1,5 +1,6 @@
 <?php require_once '../../inc/config.php'; ?>
-<?php require '../../inc/header.php'; ?>
+<?php require '../../inc/header.php';
+include '../auth.php' ?>
 
 <!DOCTYPE html>
 <html lang="en">

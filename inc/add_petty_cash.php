@@ -1,11 +1,13 @@
-<?php require_once 'config.php'; ?>
+<?php require_once 'config.php';
+session_start(); ?>
 
 <?php print_r($_GET);
 $for = $_GET['for'];
 $amount = $_GET['amount'];
+$employee_name = $_SESSION['employee_name'];
 
 // Add data to Petty Cash Tabel
-$sql = "INSERT INTO pettycash (perrycash, amount) VALUES ('{$for}','{$amount}') ";
+$sql = "INSERT INTO pettycash (perrycash, amount, emp_name) VALUES ('{$for}','{$amount}', '{$employee_name}') ";
 insert_query($sql, "Insert Petty Cash to Tabel");
 
 // Petty Cash eka Company Profit eken adu karanawa

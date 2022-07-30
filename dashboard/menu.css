@@ -1,24 +1,19 @@
-button a {
-    color: white;
-}
-
-.menu {
+#tab_list {
+    width: 115%;
     display: flex;
-    flex-direction: column;
-    height: 40vh;
     justify-content: space-around;
-    border: 1px solid green;
-    border-radius: 30px;
-    padding: 30px;
-    margin: 20px;
-    width: 50%;
 }
 
-button {
-    display: block;
+#tab_list button {
+    text-transform: capitalize;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: aliceblue;
     background: green;
-    border-radius: 0.2rem;
-    padding: 8px;
-    justify-content: space-between;
-    font-weight: bold;
+}
+
+h1 {
+    text-align: center;
+    margin: 10px;
 }

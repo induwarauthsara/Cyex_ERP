@@ -1,4 +1,6 @@
 <?php require_once '../../inc/config.php'; ?>
+<?php require_once '../../inc/header.php';
+include '../auth.php' ?>
 
 <?php
 if (isset($_GET['id'])) {
@@ -16,7 +18,7 @@ if (isset($_GET['id'])) {
         $item_cost = $output['cost'];
         $item_supplier = $output['supplier'];
     } else {
-        echo "<p class='error'> You Entered Item can't find in Database. <button> <a href='?tab=new'> Add New Item</a></button> </p>";
+        echo "<p class='error'> You Entered Item can't find in Database. <button> <a href='new.php'> Add New Item</a></button> </p>";
     }
 }
 if (isset($_GET['item'])) {
@@ -34,7 +36,7 @@ if (isset($_GET['item'])) {
         $item_cost = $output['cost'];
         $item_supplier = $output['supplier'];
     } else {
-        echo "<p class='error'> You Entered Item can't find in Database. <button> <a href='?tab=new'> Add New Item</a></button> </p>";
+        echo "<p class='error'> You Entered Item can't find in Database. <button> <a href='new.php'> Add New Item</a></button> </p>";
     }
 }
 ?>
@@ -51,6 +53,7 @@ if (isset($_GET['item'])) {
 
 <body>
     <div class="content-wrapper">
+        <?php require_once 'menu.php'; ?>
         <h1><U>Buy Item</U></h1>
         <div class="select_item">
             <fieldset>
@@ -118,7 +121,7 @@ if (isset($_GET['item'])) {
                 </div>
             </fieldset>
         </form>
-        <p style="text-align:center">Note : you can't modify disabled input filelds. <br> If you want to Modify Item Go there : <button> <a href='?tab=modify&id=<?php echo $item_id ?>' target='_blank'> Modify this Item </a> </button>
+        <p style="text-align:center">Note : you can't modify disabled input filelds. <br> If you want to Modify Item Go there : <button> <a href='modify.php?id=<?php echo $item_id ?>' target='_blank'> Modify this Item </a> </button>
         </p>
     </div>
 </body>
@@ -145,7 +148,10 @@ if (isset($_POST['submit'])) {
 
     // Refresh Page
     $this_url = basename($_SERVER["SCRIPT_FILENAME"]);
-    header("refresh:2; url={$this_url}");
+    /*header("refresh:2; url={$this_url}");*/
+    echo "<script>
+    setTimeout(`location.href = '$this_url';`, 3000);
+    </script> ";
 }
 ?>
 
@@ -169,3 +175,5 @@ if (isset($_POST['submit'])) {
 </datalist>
 
 <?php end_db_con(); ?>
+
+<?php include '../../inc/footer.php'; ?>

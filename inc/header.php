@@ -6,9 +6,14 @@
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
     <ul id="navbar">
-        <li><a href="/"><i class="fas fa-file-invoice header_icons"></i></a></li>
+        <li class="dropdown dashboard_icon">
+            <a href="/"><i class="fas fa-file-invoice header_icons"></i></a>
+            <div class="dropdown-content">
+                <a href="/invoice">Invoice</a>
+            </div>
+        </li>
         <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li>
-        <li class="dropdown">
+        <li class="dropdown dashboard_icon">
             <a href="/dashboard" class="dropbtn"><i class="fas fa-cogs header_icons"></i></i></a>
             <div class="dropdown-content">
                 <a href="/dashboard/item">Item</a>
@@ -16,7 +21,6 @@
                 <a href="/dashboard/ingredients">Ingredients</a>
             </div>
         </li>
-        <li><a href="/crons"><i class="fas fa-sync-alt header_icons"></i></a></li>
         <li style="float:right" class="dropdown">
             <a href="/profile"><?php echo $_SESSION['employee_name'] ?> </a>
             <div class="dropdown-content">
@@ -97,4 +101,16 @@
             font-size: 30px;
             margin: 0;
         }
+
+
+        /* Hide Dashboard Icon for Employees*/
+        <?php
+        $employee_role = $_SESSION['employee_role'];
+
+        $employee = "Employee";
+        $admin = "Admin";
+        if ($employee_role !== $admin) {
+            echo "i.fas.fa-cogs.header_icons { display: none; }";
+        }
+        ?>
     </style>

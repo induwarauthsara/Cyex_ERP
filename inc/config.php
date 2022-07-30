@@ -31,7 +31,11 @@ function insert_query($query, $msg)
     if ($result) {
         echo "Recoard Added : {$msg} <br>";
     } else {
-        echo "Query Failed : Becouse, " . mysqli_error($con) . "<br>";
+        $error = "Query Failed : Becouse, " . mysqli_error($con) . "<br>";
+        echo $error;
+        if (isset($error_array)) {
+            array_push($error_array, $error);
+        }
     }
 }
 ?>

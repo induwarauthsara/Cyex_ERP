@@ -1,4 +1,5 @@
-<?php require_once '../../inc/config.php'; ?>
+<?php require_once '../../inc/config.php';
+include '../auth.php' ?>
 
 <?php
 if (isset($_GET['id'])) {
@@ -158,7 +159,10 @@ if (isset($_POST['submit'])) {
 
     // Refresh Page
     $this_url = basename($_SERVER["SCRIPT_FILENAME"]);
-    header("refresh:2; url={$this_url}");
+    /*header("refresh:2; url={$this_url}");*/
+    echo "<script>
+    setTimeout(`location.href = '$this_url';`, 3000);
+    </script> ";
 }
 ?>
 

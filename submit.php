@@ -1,4 +1,7 @@
-<?php require_once 'inc/config.php'; ?>
+<?php
+//Set Error Array
+$error_array = array();
+require_once 'inc/config.php'; ?>
 
 <?php
 //isset
@@ -102,10 +105,7 @@
                         insert_query($sql, "Add Product Cost to Stock Account");
 
                         // Profit eka accounts walata bedila yanawa
-                        $profit_sql = "SELECT profit FROM products WHERE product_name = '{$product}'";
-                        $profit_result = mysqli_query($con, $profit_sql);
-                        $profit = mysqli_fetch_assoc($profit_result);
-                        $profit = $profit['profit'] * $qty;
+                        $profit = $amount - $cost;
 
                         $profit_for_biller =  ($profit / 100) * 0.5;
                         $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
@@ -224,6 +224,21 @@
 </html>
 
 <?php
+
+if (empty($error_array)) {
+
+    // Refresh Page
+    $this_url = "/index.php";
+    /*header("refresh:2; url={$this_url}");*/
+    echo "<script>
+    setTimeout(`location.href = '$this_url';`, 100);
+    </script> ";
+} else {
+    echo "<h1>Error List</h1>";
+    echo "<pre>";
+    print_r($error_array);
+    echo "</pre>";
+}
 /*
 Check is this customer Available
 

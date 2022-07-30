@@ -1,3 +1,4 @@
+<?php include '../auth.php' ?>
 <link rel="stylesheet" href="../menu.css">
 
 <div class="menu">

@@ -1,5 +1,6 @@
 <?php require_once '../../inc/config.php'; ?>
-<?php require '../../inc/header.php'; ?>
+<?php require '../../inc/header.php';
+include '../auth.php' ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,6 +10,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../dashboard-page.css">
+
     <title>Ingredients</title>
 </head>
 
@@ -44,11 +46,12 @@
                 require_once 'modify.php';
             }
         } else {
-            require_once 'menu.php';
+            require_once 'list.php';
         }
         ?>
 
     </div>
+    <?php include '../../inc/footer.php'; ?>
 
 </body>
 

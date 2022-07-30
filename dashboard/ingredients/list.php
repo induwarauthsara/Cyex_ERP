@@ -1,4 +1,5 @@
-<?php require_once '../../inc/config.php'; ?>
+<?php require_once '../../inc/config.php';
+include '../auth.php' ?>
 
 <?php
 // Fie Variables
@@ -119,8 +120,8 @@ if ($select == "item") {
                 echo "<td>" . $row['id'] . "</td>";
                 echo "<td>" . $row['product_name'] . "</td>";
                 echo "<td>" . $row['item_name'] . "</td>";
-                echo "<td>" . $row['qty'] . "</td>";
-                echo "<td> <a href='?tab=modify&id= {$row['id']} ' target='_blanck'>Edit</a> </td>";
+                echo "<td>" . round($row['qty'], 7) . "</td>";
+                echo "<td> <a href='?tab=modify&id= {$row['id']} '>Edit</a> </td>";
                 echo "</tr>";
             }
             echo "</table>";
@@ -151,6 +152,10 @@ if ($select == "item") {
 
         tr:nth-child(even) {
             background-color: #dddddd;
+        }
+
+        tr:hover {
+            background-color: lawngreen;
         }
     </style>
 

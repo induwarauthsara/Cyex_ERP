@@ -1,4 +1,5 @@
-<?php require_once '../../inc/config.php'; ?>
+<?php require_once '../../inc/config.php';
+include '../auth.php' ?>
 
 <?php
 // Fie Variables
@@ -110,8 +111,8 @@ if (isset($_GET['order'])) {
                 echo "<td>" . $row['cost'] . "</td>";
                 echo "<td>" . $row['profit'] . "</td>";
                 echo "<td>" . $row['has_stock'] . "</td>";
-                echo "<td> <a href='?tab=modify&id= {$row['product_id']} ' target='_blanck'>Edit</a> </td>";
-                echo "<td> <a href='?tab=ingredients&id= {$row['product_id']} ' target='_blanck'>Ingredients</a> </td>";
+                echo "<td> <a href='?tab=modify&id= {$row['product_id']} '>Edit</a> </td>";
+                echo "<td> <a href='?tab=ingredients&id= {$row['product_id']} '>Ingredients</a> </td>";
                 echo "</tr>";
             }
             echo "</table>";
@@ -142,6 +143,10 @@ if (isset($_GET['order'])) {
 
         tr:nth-child(even) {
             background-color: #dddddd;
+        }
+
+        tr:hover {
+            background-color: lawngreen;
         }
     </style>
     <!-- == Colum Name list - Data List get from Database == -->

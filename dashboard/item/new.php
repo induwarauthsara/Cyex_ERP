@@ -1,4 +1,6 @@
 <?php require_once '../../inc/config.php'; ?>
+<?php require_once '../../inc/header.php';
+include '../auth.php' ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -13,8 +15,8 @@
 
 <body>
     <div class="content-wrapper">
+        <?php require_once 'menu.php'; ?>
         <h1><U>Add New Item</U></h1>
-
         <form action="" method="POST">
             <fieldset>
                 <legend>Add New Item data :</legend>
@@ -77,11 +79,16 @@ if (isset($_POST['submit'])) {
     $added_item_cost = $item_qty * $item_cost;
     $account_name = "Stock Account";
     $sql = "UPDATE `accounts` SET `amount`= amount - {$added_item_cost} WHERE account_name = '{$account_name}'";
-    insert_query($sql, "Successfully Modified <b>{$item_name}</b> Item!");
+    insert_query($sql, "Successfully Fall Item cost <b>({$added_item_cost})</b> of <b>{$item_name}</b> Item in Stock Account!");
 
     // Refresh Page
     $this_url = basename($_SERVER["SCRIPT_FILENAME"]);
-    header("refresh:2; url={$this_url}");
+    /*header("refresh:2; url={$this_url}");*/
+    echo "<script>
+    setTimeout(`location.href = '$this_url';`, 3000);
+    </script> ";
 }
 ?>
 <?php end_db_con(); ?>
+
+<?php include '../../inc/footer.php'; ?>

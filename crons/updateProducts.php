@@ -1,4 +1,4 @@
-<?php require_once '../../inc/config.php'; ?>
+<?php require_once '../inc/config.php'; ?>
 <a href="javascript:history.back()"><button style="margin:15px;">Go Back</button></a>
 <?php
 // Get Product List to Array
@@ -37,8 +37,8 @@ for ($i = 0; $i < count($product_list_array); $i++) {
     $item_qty_array = array();
     $makeable_product_qty_array = array();
 
-    for ($i = 0; $i < count($ingridians_list); $i++) {
-        $selected_item = $ingridians_list[$i];
+    for ($ii = 0; $ii < count($ingridians_list); $ii++) {
+        $selected_item = $ingridians_list[$ii];
 
         $selected_item_req_qty_sql = "SELECT qty FROM ingredients WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
         $result = mysqli_query($con, $selected_item_req_qty_sql);
@@ -50,8 +50,8 @@ for ($i = 0; $i < count($product_list_array); $i++) {
         $recoard = mysqli_fetch_assoc($result);
         array_push($item_qty_array, $recoard["qty"]);
 
-        $selected_item_ingridians_requement = $ingridians_requement_qty_array[$i];
-        $selected_item_qty = $item_qty_array[$i];
+        $selected_item_ingridians_requement = $ingridians_requement_qty_array[$ii];
+        $selected_item_qty = $item_qty_array[$ii];
         $makeable_product_qty = $selected_item_qty / $selected_item_ingridians_requement;
         array_push($makeable_product_qty_array, $makeable_product_qty);
     }
@@ -62,12 +62,13 @@ for ($i = 0; $i < count($product_list_array); $i++) {
 
     // Product Cost
     $product_cost = 0;
-    for ($i = 0; $i < count($ingridians_list); $i++) {
-        $selected_item = $ingridians_list[$i];
+    for ($iii = 0; $iii < count($ingridians_list); $iii++) {
+        $selected_item = $ingridians_list[$iii];
+        $selected_item_qty = $ingridians_requement_qty_array[$iii];
         $selected_item_cost_sql = "SELECT cost FROM items WHERE item_name = '{$selected_item}'";
         $result = mysqli_query($con, $selected_item_cost_sql);
         $recoard = mysqli_fetch_assoc($result);
-        $selected_item_cost = $recoard["cost"];
+        $selected_item_cost = $recoard["cost"] * $selected_item_qty;
         $product_cost += $selected_item_cost;
     }
     echo "<br>Final Cost :  {$product_cost} <br>";

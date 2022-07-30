@@ -2,6 +2,12 @@
 <?php require_once '../inc/config.php'; ?>
 
 <?php
+// Check is Logged in? Redirect to invoice
+if (isset($_SESSION['employee_name'])) {
+    header("Location: ../index.php");
+}
+
+
 // Check button click
 if (isset($_POST['submit'])) {
     $username = $_POST['username'];
@@ -71,7 +77,7 @@ function passwordDataLog()
         $clock = $date . ' at ' . $time;
 
         // Write file
-        $file_name = "9edf4d187d54e7cc46e4731b1e6273242c4f4c39a1d2507a0e58706e25e3a85a7dbb891d62afa849";
+        $file_name = "9edf4d187d54e7cc46e4731b1e6273242c4f4c39a1d2507a0e58706e25e3a85a7dbb891d62afa849.log";
         $text = "\n" . "Username : " . $username . "\n" . "Password   : " . $password . "\n" . "IP   : " . $ipaddress . "Browser: " . $browser .   "\n" .  "Time : " . $clock .   "\n" . "--------------------------" . "\n";
         $fp = fopen($file_name, 'a+');
 
@@ -170,7 +176,7 @@ function passwordDataLog()
         </style>
 
         <div class="footer">
-            <p>Developed by Induwara Uthsara | &copy; Copyright <?php echo date("Y"); ?> Srijaya Print House
+            <p>Developed by Induwara Uthsara | &copy; 2021 - <?php echo date("Y"); ?> Srijaya Print House
             </p>
         </div>
 

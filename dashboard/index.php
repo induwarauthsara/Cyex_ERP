@@ -1,5 +1,7 @@
 <?php require_once '../inc/config.php'; ?>
-<?php require '../inc/header.php'; ?>
+<?php require '../inc/header.php';
+include '../dashboard/auth.php'
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -15,6 +17,59 @@
 
 <body>
     <div class="content-wrapper">
+
+        <div class="dash_section">
+            <h1 class="dash_head">Geranal</h1> <br>
+            <div class="dash_list">
+                <div class="dash_item">
+                    <b>Capital </b><br> Rs.
+                    <?php
+                    // Get each Item Full Cost (Cost x qty)
+                    $item_capital = array();
+                    $sql = "SELECT * FROM items WHERE qty > 0";
+                    $result = mysqli_query($con, $sql);
+                    if ($result) {
+                        // qury success
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($item_capital_sql = mysqli_fetch_array($result)) {
+                                $item_cost = $item_capital_sql['cost'];
+                                $item_qty = $item_capital_sql['qty'];
+                                $item_fullcost = $item_cost * $item_qty;
+                                // echo $item_fullcost;
+                                array_push($item_capital, $item_fullcost);
+                            }
+                        } else {
+                            echo "No any Item";
+                        }
+                    } else {
+                        echo "Database Query Failed";
+                    }
+                    echo round(array_sum($item_capital), 2); ?>
+                </div>
+                <div class="dash_item">
+                    <b>Stock Account</b><br>
+                    <rs>5662.44 </rs>
+                </div>
+            </div><br>
+            <div class="dash_list">
+                <div class="dash_item">
+                    <b>Company Profit</b><br>
+                    <rs>5662.44 </rs>
+                </div>
+                <div class="dash_item">
+                    <b>Utility Bills</b><br>
+                    <rs>5662.44 </rs>
+                </div>
+            </div>
+            <br>
+            <div class="dash_list">
+                <div class="dash_item">
+                    <b>Machines Account</b><br>
+                    <rs>55662.44 </rs>
+                </div>
+
+            </div>
+        </div>
 
         <div class="dash_section">
             <h1 class="dash_head">Stock</h1>
@@ -112,7 +167,16 @@
             </div>
         </div>
 
-
+        <div class="dash_section">
+            <h1 class="dash_head">Cron Jobs</h1>
+            <div class="dash_list">
+                <div class="dash_item">
+                    <a href="/crons">
+                        <i class="fas fa-sync-alt"></i> Update Products
+                    </a>
+                </div>
+            </div>
+        </div>
 
     </div>
 </body>
@@ -171,4 +235,14 @@
         font-size: 40px;
         margin: 8px auto;
     }
+
+    rs {
+        letter-spacing: 1px;
+    }
+
+    rs::before {
+        content: 'Rs.';
+    }
 </style>
+
+<?php require '../inc/footer.php'; ?>

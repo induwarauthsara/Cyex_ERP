@@ -1,46 +1,61 @@
-<?php require_once '../../inc/config.php'; ?>
+<?php require_once '../../inc/config.php';
+include '../auth.php' ?>
 
 
 <?php
-$iwara_na = "Meka hadala iwara na..";
+$ingridians_id = array();
+$ingridians_list = array();
+$ingridians_count = array();
+
 if (isset($_GET['id'])) {
     global $con;
-    $product_id = $_GET['id'];
-    $sql = "SELECT * FROM products WHERE product_id = $product_id";
+    $ingredient_id = $_GET['id'];
+    $sql = "SELECT * FROM ingredients WHERE id = $ingredient_id";
     $result =   mysqli_query($con, $sql);
     if (mysqli_num_rows($result) > 0) {
         $output = mysqli_fetch_assoc($result);
         /*echo "<pre>"; print_r($output); echo "</pre>";*/
-        $product_id = $output['product_id'];
+        $ingredient_id = $output['id'];
+        $item_name = $output['item_name'];
         $product_name = $output['product_name'];
-        $product_description = $output['description'];
-        $product_qty = $output['stock_qty'];
-        $product_rate = $output['rate'];
-        $product_cost = $output['cost'];
-        $product_profit = $output['profit'];
-        $product_has_stock = $output['has_stock'];
+        $qty = $output['qty'];
+        $count = "1";
+        array_push($ingridians_id, $output["id"]);
+        array_push($ingridians_list, $output["item_name"]);
+        array_push($ingridians_count,  $output["qty"]);
     } else {
-        echo "You Entered product can't find in Database. <button> <a href='new.php'> Add New product</a></button>";
+        echo "You Entered Ingredient can't find in Database. <button> <a href='?tab=new'> Add New Ingredient</a></button>";
     }
 }
+
 if (isset($_GET['product'])) {
     global $con;
     $product_name = $_GET['product'];
-    $sql = "SELECT * FROM products WHERE product_name = '$product_name'";
+    $sql = "SELECT * FROM ingredients WHERE product_name = '$product_name'";
     $result =   mysqli_query($con, $sql);
     if (mysqli_num_rows($result) > 0) {
         $output = mysqli_fetch_assoc($result);
         /*  echo "<pre>"; print_r($output); echo "</pre>";*/
-        $product_id = $output['product_id'];
+        $ingredient_id = $output['id'];
+        $item_name = $output['item_name'];
         $product_name = $output['product_name'];
-        $product_description = $output['description'];
-        $product_qty = $output['stock_qty'];
-        $product_rate = $output['rate'];
-        $product_cost = $output['cost'];
-        $product_profit = $output['profit'];
-        $product_has_stock = $output['has_stock'];
+        $qty = $output['qty'];
+
+        // Ingredient List Count
+        $item_list_sql = "SELECT * FROM ingredients WHERE product_name='{$product_name}'";
+        $item_list_result = mysqli_query($con, $item_list_sql);
+
+        if (mysqli_num_rows($result) > 0) {
+            while ($recoard = mysqli_fetch_assoc($item_list_result)) {
+                // $ingridians_list += [$recoard["item_name"] => $recoard["qty"]];
+                array_push($ingridians_id, $recoard["id"]);
+                array_push($ingridians_list, $recoard["item_name"]);
+                array_push($ingridians_count,  $recoard["qty"]);
+            }
+        }
+        $count = count($ingridians_list);
     } else {
-        echo "You Entered product can't find in Database. <button> <a href='new.php'> Add New product</a></button>";
+        echo "You Entered Ingredient can't find in Database. <button> <a href='?tab=new'> Add New Ingredient</a></button>";
     }
 }
 ?>
@@ -57,18 +72,24 @@ if (isset($_GET['product'])) {
 
 <body>
     <div class="content-wrapper">
-        <h1><U><?php echo $iwara_na /*Modify Product*/ ?></U></h1>
+        <h1><U>
+                <center> Edit Ingredients </center>
+            </U></h1>
         <div class="select_product">
             <fieldset>
-                <legend>Search product</legend>
+                <legend>Search product Ingredient</legend>
                 <form action="" method="GET">
+
                     <div class="form_field"><label for="product">
                             Select product:</label>
                         <input name="tab" value="modify" style="display:none;">
-                        <input list="product_list" type="text" name="product" <?php if (!isset($product_id)) {
+                        <input list="product_list" type="text" name="product" <?php if (!isset($product_name)) {
                                                                                     echo "autofocus";
+                                                                                } else {
+                                                                                    echo "value='$product_name'";
                                                                                 } ?>>
                     </div>
+
                     <div class="form_field">
                         <input type="submit" value="Search product" id="submit-btn">
                     </div>
@@ -78,55 +99,28 @@ if (isset($_GET['product'])) {
         <br>
         <form action="" method="POST">
             <fieldset>
-                <legend>Modify <?php if (isset($product_name)) {
-                                    echo $product_name;
-                                }  ?> product data :</legend>
-                <div class="field"><label for="product_id">product ID :</label>
-                    <input type="text" name="product_id" disabled required value="<?php if (isset($product_id)) {
-                                                                                        echo $product_id;
-                                                                                    }  ?>">
-                </div>
-                <div class="field"><label for="product_name">Product Name :</label>
-                    <input type="text" name="product_name" required value="<?php if (isset($product_name)) {
-                                                                                echo $product_name;
-                                                                            } ?>">
-                </div>
+                <legend>Edit <u> <?php if (isset($product_name)) {
+                                        echo $product_name;
+                                    }  ?></u> Ingredient :</legend>
 
-                <div class="field"><label for="description">Description :</label>
-                    <input type="text" name="description" value="<?php if (isset($product_description)) {
-                                                                        echo $product_description;
-                                                                    }  ?>">
-                </div>
+                <?php global $count;
+                for ($i = 0; $count > $i; $i++) {
+                    $ii = $i + 1;
+                    echo "
+                    <div class='field' id='ingredient_{$i}_id'><label for='ingridian_{$i}_id'>Ing. {$ii} Id :</label>
+                    <input type='text' name='id_{$i}' value='$ingridians_id[$i]' required /> </div>
 
-                <div class="field"><label for="product_qty">QTY :</label>
-                    <input type="number" name="product_qty" required value="<?php if (isset($product_qty)) {
-                                                                                echo $product_qty;
-                                                                            }  ?>">
-                </div>
 
-                <div class="field"><label for="rate">Rate :</label>
-                    <input type="number" name="rate" min=1 step=0.01 required value="<?php if (isset($product_rate)) {
-                                                                                            echo $product_rate;
-                                                                                        }  ?>">
-                </div>
+                    <div class='field' id='item_name_{$i}'><label for='ingridian_{$i}'>Item {$ii} Name :</label>
+                    <input list='item_list' type='text' name='item_{$i}' value='$ingridians_list[$i]' required /> </div>
 
-                <div class="field"><label for="cost">Cost :</label>
-                    <input type="number" name="cost" min=0.1 step=0.01 required value="<?php if (isset($product_cost)) {
-                                                                                            echo $product_cost;
-                                                                                        }  ?>">
-                </div>
+                    <div class='field' id='item_qty_{$i}'><label for='product_qty'>Item {$ii} QTY :</label>
+                    <input type='number' id='i_item_qty_{$i}' name='qty_{$i}' min='0' value='$ingridians_count[$i]' required /> </div> 
 
-                <div class="field"><label for="profit">Profit :</label>
-                    <input type="number" name="profit" min=0.1 step=0.01 required value="<?php if (isset($product_profit)) {
-                                                                                                echo $product_profit;
-                                                                                            }  ?>">
-                </div>
-
-                <div class="field"><label for="has_stock">Has Stock :</label>
-                    <input type="text" name="has_stock" required value="<?php if (isset($product_has_stock)) {
-                                                                            echo $product_has_stock;
-                                                                        }  ?>">
-                </div>
+                   <div id='item_remove_{$i}' onClick='remove_ingd_item({$i});' style='margin-left:200px; color:red; margin-top:-5px; cursor:pointer; border: 1px solid black; width:4rem; padding:3px; background-color: lightgray;'>Remove</div>
+                   <input id='deleted_{$i}' name='deleted_{$i}' value='no' hidden />
+                    <hr id='item_hr_{$i}'/>";
+                } ?>
 
                 <div class="field submit">
                     <input type="reset" id="reset-btn" oncliclk="location.reload()">
@@ -136,6 +130,20 @@ if (isset($_GET['product'])) {
         </form>
     </div>
 </body>
+<script>
+    function remove_ingd_item(id) {
+        // Variables
+
+        remove_id_div = document.getElementById("ingredient_" + id + "_id").style = "display:none;";
+        remove_qty_div = document.getElementById("item_qty_" + id).style = "display:none;";
+        remove_button = document.getElementById("item_remove_" + id).style = "display:none;";
+        remove_hr = document.getElementById("item_hr_" + id).style = "display:none;";
+        remove_name_div = document.getElementById("item_name_" + id).style = "display:none;";
+        deleted = document.getElementById("deleted_" + id);
+        deleted.value = "yes";
+        remove_qty_div = document.getElementById("i_item_qty_" + id).value = 0;
+    }
+</script>
 
 </html>
 
@@ -143,24 +151,38 @@ if (isset($_GET['product'])) {
 <?php
 // Check Submit Button Cliecked
 if (isset($_POST['submit'])) {
-    // Set Add product values
-    global $product_id;
-    $product_name = $_POST['product_name'];
-    $product_description = $_POST['description'];
-    $product_qty = $_POST['product_qty'];
-    $product_rate = $_POST['rate'];
-    $product_cost = $_POST['cost'];
-    $product_profit = $_POST['profit'];
-    $product_has_stock = $_POST['has_stock'];
+    echo "<pre>";
+    echo $count;
+    print_r($_POST);
+    echo "</pre>";
 
-    // Add New product
-    $sql = "UPDATE `products` SET `product_id`='{$product_id}', `product_name`='{$product_name}',`description`='{$product_description}',
-    `stock_qty`='{$product_qty}',`rate`='{$product_rate}',`cost`='{$product_cost}',`profit`='{$product_profit}',`has_stock`='{$product_has_stock}' WHERE product_id = {$product_id}";
-    insert_query($sql, "Successfully Modified <b>{$product_name}</b> product!");
+    for ($i = 0; $count > $i; $i++) {
+        $isDeleted = $_POST["deleted_" . $i];
+        if ($isDeleted == "no") {
+            $this_ing_id = $_POST["id_" . $i];
+            $this_item = $_POST["item_" . $i];
+            $this_qty = $_POST["qty_" . $i];
+            // Update Ingredient
+            $sql = "UPDATE `ingredients` SET `id`='{$this_ing_id}', `item_name` ='{$this_item}',`qty`='{$this_qty}'  WHERE id = {$this_ing_id}";
+            insert_query($sql, "Successfully Modified <b>{$product_name}</b> product!<br/>");
+        } elseif ($isDeleted == "yes") {
+            $this_ing_id = $_POST["id_" . $i];
+            $this_item = $_POST["item_" . $i];
+            $sql = "DELETE FROM `ingredients` WHERE id={$this_ing_id}";
+            if (mysqli_query($con, $sql)) {
+                echo "<br/>id: {$this_ing_id}, {$this_item} deleted successfully<br/>";
+            } else {
+                echo "Error deleting record: " . mysqli_error($con);
+            }
+        }
+    }
 
     // Refresh Page
     $this_url = basename($_SERVER["SCRIPT_FILENAME"]);
-    header("refresh:2; url={$this_url}");
+    // header("refresh:2; url={$this_url}");
+    echo "<script>
+    // setTimeout(`location.href = '$this_url';`, 3000);
+    </script> ";
 }
 ?>
 
@@ -174,6 +196,24 @@ if (isset($_POST['submit'])) {
         while ($recoard = mysqli_fetch_assoc($result)) {
             $product = $recoard['product_name'];
             echo "<option value='{$product}'>";
+        }
+        echo "</ol>";
+    } else {
+        echo "<option value='Result 404'>";
+    }
+    ?>
+</datalist>
+
+<!-- == Item list - Data List get from Database == -->
+<datalist id="item_list">
+    <!-- == Items == -->
+    <?php $item_list = "SELECT item_name FROM items";
+    $result = mysqli_query($con, $item_list);
+    if ($result) {
+        echo "<ol>";
+        while ($recoard = mysqli_fetch_assoc($result)) {
+            $item = $recoard['item_name'];
+            echo "<option value='{$item}'>";
         }
         echo "</ol>";
     } else {

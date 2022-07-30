@@ -1,4 +1,5 @@
-<?php require_once '../../inc/config.php'; ?>
+<?php require_once '../../inc/config.php';
+include '../auth.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -61,12 +62,15 @@ if (isset($_POST['submit'])) {
 
     // Build New Product
     $sql = "INSERT INTO `products`(`product_id`, `product_name`, `description`,  `rate`) 
-    VALUES ('{$product_id}','{$product_name}','{$product_description}', {$product_rate}')";
+    VALUES ('{$product_id}','{$product_name}','{$product_description}', '{$product_rate}')";
     insert_query($sql, "Successfully Builded <b>{$product_name}</b> as New Product!");
 
     // Refresh Page
     $this_url = basename($_SERVER["SCRIPT_FILENAME"]);
-    header("refresh:2; url={$this_url}");
+    /*header("refresh:2; url={$this_url}");*/
+    echo "<script>
+    setTimeout(`location.href = '$this_url';`, 3000);
+    </script> ";
 }
 ?>
 <?php end_db_con(); ?>

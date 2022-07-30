@@ -1,4 +1,6 @@
-<?php require_once 'inc/config.php'; ?>
+<?php require_once '../inc/config.php';
+require_once '../inc/header.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,30 +13,45 @@
 
 <body>
     <?php
-    $sql = "SELECT * FROM sales";
+    $sql = "SELECT * FROM invoice";
     if ($result = mysqli_query($con, $sql)) {
         if (mysqli_num_rows($result) > 0) {
             echo "<table>";
             echo "<tr>";
             echo "<th>No</th>";
             echo "<th>Invoice Number</th>";
-            echo "<th>Product</th>";
-            echo "<th>QTY</th>";
-            echo "<th>Rate</th>";
-            echo "<th>Amount</th>";
-            echo "<th>Employee</th>";
-            echo "<th>TODO</th>";
+            echo "<th>Customer</th>";
+            echo "<th>Tele</th>";
+            echo "<th>Date</th>";
+            echo "<th>Biller</th>";
+            echo "<th>Worker</th>";
+            echo "<th>Discount</th>";
+            echo "<th>Advance</th>";
+            echo "<th>Balance</th>";
+            echo "<th>Full Paid ?</th>";
+            echo "<th>Print</th>";
             echo "</tr>";
             while ($row = mysqli_fetch_array($result)) {
                 echo "<tr>";
-                echo "<td>" . $row['sales_id'] . "</td>";
+                echo "<td>" . $row['id'] . "</td>";
                 echo "<td>" . $row['invoice_number'] . "</td>";
-                echo "<td>" . $row['product'] . "</td>";
-                echo "<td>" . $row['qty'] . "</td>";
-                echo "<td>" . $row['rate'] . "</td>";
-                echo "<td>" . $row['amount'] . "</td>";
-                echo "<td>" . $row['worker'] . "</td>";
-                echo "<td> " . $row['todo'] . "</td>";
+                echo "<td>" . $row['customer_name'] . "</td>";
+                echo "<td>" . $row['customer_mobile'] . "</td>";
+                echo "<td>" . $row['invoice_date'] . "</td>";
+                echo "<td>" . $row['biller'] . "</td>";
+                echo "<td>" . $row['primary_worker'] . "</td>";
+                echo "<td> " . $row['discount'] . "</td>";
+                echo "<td> " . $row['advance'] . "</td>";
+                echo "<td> " . $row['balance'] . "</td>";
+                echo "<td>";
+                $paided = $row['full_paid'];
+                if ($paided == 0) {
+                    echo 'No';
+                } elseif ($paided == 1) {
+                    echo 'Yes';
+                }
+                echo "</td>";
+                echo "<td> <a href='print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
                 echo "</tr>";
             }
             echo "</table>";

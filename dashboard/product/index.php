@@ -1,5 +1,6 @@
 <?php require_once '../../inc/config.php'; ?>
-<?php require '../../inc/header.php'; ?>
+<?php require '../../inc/header.php';
+include '../auth.php' ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,12 +45,13 @@
                 require_once 'modify.php';
             }
         } else {
-            require_once 'menu.php';
+            require_once 'list.php';
         }
         ?>
 
     </div>
 
 </body>
+<?php include '../../inc/footer.php'; ?>
 
 </html>

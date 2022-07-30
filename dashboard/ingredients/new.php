@@ -1,4 +1,8 @@
-<?php require_once '../../inc/config.php'; ?>
+<?php
+//Set Error Array
+$error_array = array();
+require_once '../../inc/config.php';
+include '../auth.php' ?>
 
 <?php $tabel_name = "ingredients"; ?>
 
@@ -45,17 +49,20 @@
                     <input type="number" name="add" value="<?php echo $add; ?>" />
                 </div>
 
-                <div class="form_field"> <input type="submit" value="Make Ingredient" id="submit-btn">
+                <div class="form_field"> <input type="submit" name="make" value="Make Ingredient" id="submit-btn">
                 </div>
             </form>
         </fieldset>
         <br />
 
+
         <form action="" method="POST">
+            <?php if (!isset($_GET['make'])) {
+                echo "<!--";
+            } ?>
             <fieldset>
                 <legend> <?php echo $product; ?> Product Ingredient :</legend>
                 <div style="display:none;">
-
 
                     <div class="field"><label for="product_name">Product Name :</label>
                         <input list="product_list" type="text" name="product_name" required value="<?php echo $product; ?>" />
@@ -69,8 +76,8 @@
                     <div class='field' id='item_name_{$i}'><label for='ingridian_{$i}'>Item {$ii} Name :</label>
                     <input list='item_list' type='text' name='item_{$i}' required /> </div>
 
-                    <div class='field' id='item_qty_{$i}'><label for='product_qty'>Item {$ii} QTY :</label>
-                    <input type='number' name='qty_{$i}' min='0.001' required /> </div> 
+                    <div class='field' id='item_qty_{$i}'><label for='product_qty'>Item {$ii} QdTY :</label>
+                    <input type='text' name='qty_{$i}' required /> </div> 
                    <button id='item_remove_{$i}' onClick='remove_ingd_item({$i});' style='margin-left:200px; color:red; margin-top:-5px;'>Remove</button>
                     <hr id='item_hr_{$i}'/>";
                 } ?>
@@ -79,7 +86,11 @@
                     <input type="submit" name="submit" id="submit-btn">
                 </div>
             </fieldset>
+            <?php if (!isset($_GET['make'])) {
+                echo "-->";
+            } ?>
         </form>
+
     </div>
 </body>
 <script>
@@ -99,9 +110,9 @@
 // Check Submit Button Cliecked
 if (isset($_POST['submit'])) {
     // Set Build Product values
-    $ingredient_id = $_POST['ingredient_id'];
+    $ingredient_id = $_GET['ingredient_id'];
     $ingredient_id--;
-    $product_name = $_POST['product_name'];
+    $product_name = $_GET['product'];
     global $add;
 
     // Build New Ingridiants
@@ -114,10 +125,30 @@ if (isset($_POST['submit'])) {
         $item_name = $_POST["item_{$i}"];
         $item_qty = $_POST["qty_{$i}"];
 
-        $sql = "INSERT INTO `{$tabel_name}` (`id`, `item_name`, `product_name`, `qty`) 
-    VALUES ('{$ingredient_id}','{$item_name}','{$product_name}','{$item_qty}')";
+        $sql = "INSERT INTO `{$tabel_name}` (`id`, `item_name`, `product_name`, `qty`) VALUES ('{$ingredient_id}','{$item_name}','{$product_name}','{$item_qty}')";
         insert_query($sql, "Successfully added {$product_name} to {$item_name} x{$item_qty} as New Ingridiants! <br> <br>");
     }
+
+
+    if (empty($error_array)) {
+        // Refresh Page
+        $this_url = basename($_SERVER["SCRIPT_FILENAME"]);
+        /*header("refresh:2; url={$this_url}");*/
+        echo "<script>
+    setTimeout(`location.href = '$this_url';`, 1);
+    </script> ";
+    } else {
+        echo "<h1>Error List</h1>";
+        echo "<pre>";
+        print_r($error_array);
+        echo "</pre>";
+    }
+    if (isset($error_array)) {
+        array_push($error_array, $error);
+    }
+
+    // Clear Post Data
+    unset($_POST);
 }
 ?>
 

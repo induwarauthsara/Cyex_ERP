@@ -1,5 +1,6 @@
 <?php require_once '../../inc/config.php'; ?>
-<?php require '../../inc/header.php'; ?>
+<?php require '../../inc/header.php';
+include '../auth.php' ?>
 
 
 <!DOCTYPE html>
@@ -17,15 +18,15 @@
 
 
     <div class="content-wrapper">
-        <h1><U><a href="index.php">Stock Items</a></U></h1>
-        <form action="" id="tab_list">
+        <!--         <form action="" id="tab_list">
             <input type="submit" name="tab" value="list">
             <input type="submit" name="tab" value="new">
             <input type="submit" name="tab" value="modify">
             <input type="submit" name="tab" value="buy">
-        </form>
-        <hr>
+        </form> -->
+        <?php include 'menu.php' ?>
         <?php
+        /*
         if (isset($_GET['tab'])) {
 
             // Set Veriable
@@ -51,8 +52,10 @@
                 require_once 'buy.php';
             }
         } else {
-            require_once 'menu.php';
-        }
+            require_once 'list.php';
+        }*/
+        header("Location:list.php");
+
         ?>
 
     </div>
