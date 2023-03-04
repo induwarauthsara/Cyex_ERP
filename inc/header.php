@@ -8,19 +8,26 @@
     <ul id="navbar">
         <li class="dropdown dashboard_icon">
             <a href="/"><i class="fas fa-file-invoice header_icons"></i></a>
-            <div class="dropdown-content">
+            <!-- <div class="dropdown-content">
                 <a href="/invoice">Invoice</a>
-            </div>
+            </div> -->
         </li>
-        <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li>
+
+        <li class="dashboard_icon"> <a href="/invoice">Invoices</a> </li>
+
+        <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
         <li class="dropdown dashboard_icon">
             <a href="/dashboard" class="dropbtn"><i class="fas fa-cogs header_icons"></i></i></a>
-            <div class="dropdown-content">
-                <a href="/dashboard/item">Item</a>
-                <a href="/dashboard/product">Product</a>
-                <a href="/dashboard/makeProduct">Make Product</a>
-            </div>
+            <!-- <div class="dropdown-content"> -->
+            <!-- <a href="/dashboard/item">Item</a> -->
+            <!-- <a href="/dashboard/product">Product</a> -->
+            <!-- <a href="/dashboard/makeProduct">Mke Product</a> -->
+            <!-- </div> -->
         </li>
+        <li class="dashboard_icon"> <a href="/dashboard/item/list.php">Item</a> </li>
+        <li class="dashboard_icon"> <a href="/dashboard/product">Product</a> </li>
+        <li class="dashboard_icon"> <a href="/dashboard/makeProduct">Make Product</a> </li>
+
         <li style="float:right" class="dropdown">
             <a href="/profile"><?php echo $_SESSION['employee_name'] ?> </a>
             <div class="dropdown-content">
