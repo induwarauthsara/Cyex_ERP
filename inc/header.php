@@ -5,6 +5,9 @@
     } ?>
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
+    <!-- favicon -->
+    <link rel="shortcut icon" href="../logo.JPG" type="image/x-icon">
+
     <ul id="navbar">
         <li class="dropdown dashboard_icon">
             <a href="/"><i class="fas fa-file-invoice header_icons"></i></a>
