@@ -98,7 +98,7 @@
                                                                             $result = mysqli_query($con, $last_no);
                                                                             $output = mysqli_fetch_assoc($result);
                                                                             $new_bill_no = $output['MAX(id)'] + 1;
-                                                                            echo "0000{$new_bill_no}"; ?>" name="bill-no" required> </div>
+                                                                            echo "{$new_bill_no}"; ?>" name="bill-no" required> </div>
                     <div class="date">Date : <input id="date" type="date" value="" name="today" required></div>
 
                     <!-- == Set Today Date == -->
