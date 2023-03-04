@@ -14,9 +14,19 @@ include '../dashboard/auth.php'
     <link rel="stylesheet" href="dashboard-page.css">
     <!-- header eke thiyena nisa  <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script> -->
 </head>
+<?php
+$sql = "SELECT sum(balance) from invoice where balance >= 0;";
+$payment_pending_total = asRS(mysqli_fetch_assoc(mysqli_query($con, $sql))['sum(balance)']);
+?>
 
 <body>
     <div class="content-wrapper">
+        <center>
+            Total of Payment Pending : <?php echo $payment_pending_total; ?>
+            <a href="/invoice/payment-pending.php"> <button>
+                    <h3> Check them >></h1>
+                </button></a>
+        </center>
 
         <div class="dash_section">
             <h1 class="dash_head">Geranal</h1> <br>
@@ -44,28 +54,28 @@ include '../dashboard/auth.php'
                     } else {
                         echo "Database Query Failed";
                     }
-                    
-                    $capital_currency=array_sum($item_capital);
+
+                    $capital_currency = array_sum($item_capital);
                     echo number_format($capital_currency, 2);  ?>
                 </div>
 
-            <div class="dash_item">
+                <div class="dash_item">
                     <b>Cash in Hand</b><br>
                     <rs>
                         <?php
                         $sql = "SELECT amount FROM accounts WHERE account_name = 'cash_in_hand'";
                         $result = mysqli_query($con, $sql);
                         if ($result) {
-                        $cash_in_hand_amount = mysqli_fetch_array($result);
-                        echo $cash_in_hand_amount['amount'];
+                            $cash_in_hand_amount = mysqli_fetch_array($result);
+                            echo $cash_in_hand_amount['amount'];
                         }
                         ?>
                     </rs>
                 </div>
             </div><br>
-                    
-                    
-          <!--      <div class="dash_item">
+
+
+            <!--      <div class="dash_item">
                     <b>Stock Account</b><br>
                     <rs>5662.44 </rs>
                 </div>
