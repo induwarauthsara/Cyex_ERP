@@ -125,18 +125,6 @@ require_once '../inc/header.php';
             width: 100%;
         }
 
-        .dataTables_wrapper {
-            margin: 15px;
-        }
-
-        .dt-buttons {
-            margin-left: 30px;
-        }
-
-        .dtsb-searchBuilder {
-            margin-top: 50px;
-        }
-
         td,
         th {
             border: 1px solid #dddddd;
@@ -152,10 +140,23 @@ require_once '../inc/header.php';
             background-color: lawngreen;
         }
 
+        /* Data Table Style */
         .dt-button,
         .dtsb-add {
             background-color: green !important;
             color: white !important;
+        }
+
+        .dataTables_wrapper {
+            margin: 15px;
+        }
+
+        .dt-buttons {
+            margin-left: 30px;
+        }
+
+        .dtsb-searchBuilder {
+            margin-top: 50px;
         }
     </style>
 
