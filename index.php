@@ -197,7 +197,7 @@
                 <button id="submit" type="submit" name="submit">Submit</button>
                 <button id="submit" type="submit" name="submit_and_print">Submit & Print</button>
                 <button id="submit" type="submit" name="submit_and_fullPayment">Submit Full Payment </button>
-                <button id="submit" type="submit" name="submit_and_print_fullPayment">Submit Full Payment &Print</button>
+                <button id="submit" type="submit" name="submit_and_print_fullPayment">Submit Full Payment <br> & Print</button>
             </div>
         </form>
 
