@@ -38,7 +38,7 @@
     </ul>
 
     <?php
-    // Function for Displaying Rupesss
+    // Function for Displaying Rupess ## 10000 -> (Rs. 10,000.00)
     function asRS($value)
     {
         if ($value < 0) return "-" . asRS(-$value);
