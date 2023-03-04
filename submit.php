@@ -22,7 +22,8 @@ require_once 'inc/config.php'; ?>
     <!-- Send Data to Invoice Tabel -->
     <?php
     // Check Submit Button Cliecked
-    if (isset($_POST['submit'])) {
+    if ((isset($_POST['submit'])) || isset($_POST['submit_and_print']) || isset($_POST['submit_and_print_fullPayment']) || isset($_POST['submit_and_fullPayment'])) {
+        // if (isset($_POST['submit'])) {
         // Set Invoice values
         $customer_name = $_POST['name'];
         $customer_mobile = $_POST['tele'];
@@ -36,8 +37,14 @@ require_once 'inc/config.php'; ?>
         $default_worker = $_POST['default_worker'];
         $bill_rows = $_POST['no'];
 
+
+        // ========== Full Payment ==========
+        if (isset($_POST['submit_and_print_fullPayment']) || isset($_POST['submit_and_fullPayment'])) {
+            $bill_advance = $bill_total;
+        }
+
         // check full paid
-        if ($bill_balance == 0.00) {
+        if ($bill_balance <= 0.00) {
             $full_paid = 1;
         } else {
             $full_paid = 0;
@@ -70,6 +77,8 @@ require_once 'inc/config.php'; ?>
                         global $bill_no;
                         global $con;
                         global $biller;
+                        global $bill_advance;
+
 
                         $product = $_POST["{$product}_{$no}"];
                         $description = $_POST["{$description}_{$no}"];
@@ -131,10 +140,14 @@ require_once 'inc/config.php'; ?>
                         $sql = "UPDATE accounts SET amount = amount + {$profit_for_company_profit_account} WHERE account_name = 'Company Profit'";
                         insert_query($sql, "send Company Profit Profit");
 
+                        // Advance Hambuna Salli Cash in Hand Ekata ekathu wenawa
+                        $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
+                        insert_query($sql, "Add Advance Money to Cash in Hand");
+
 
                         // ========== Wikunapu Product eka Stock eken adu wenawa. ==========
-                        // -------- Get Product ingredients to Array --------
-                        $sql = "SELECT item_name FROM ingredients WHERE product_name='{$product}'";
+                        // -------- Get Product makeProduct to Array --------
+                        $sql = "SELECT item_name FROM makeProduct WHERE product_name='{$product}'";
                         $result = mysqli_query($con, $sql);
                         $ingridians_list = array();
                         if (mysqli_num_rows($result) > 0) {
@@ -147,7 +160,7 @@ require_once 'inc/config.php'; ?>
                         // Select Item Qty of Product
                         for ($i = 0; $i < count($ingridians_list); $i++) {
                             $selected_item = $ingridians_list[$i];
-                            $ingridians_product_item_qty = "SELECT qty FROM ingredients WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
+                            $ingridians_product_item_qty = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
                             $result = mysqli_query($con, $ingridians_product_item_qty);
                             $product_item_qty = mysqli_fetch_array($result)['qty'] * $qty;
 
@@ -167,7 +180,7 @@ require_once 'inc/config.php'; ?>
                         for ($i = 0; $i < count($ingridians_list); $i++) {
                             $selected_item = $ingridians_list[$i];
 
-                            $selected_item_req_qty_sql = "SELECT qty FROM ingredients WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
+                            $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
                             $result = mysqli_query($con, $selected_item_req_qty_sql);
                             $recoard = mysqli_fetch_assoc($result);
                             array_push($ingridians_requement_qty_array, $recoard["qty"]);
@@ -204,6 +217,19 @@ require_once 'inc/config.php'; ?>
             echo $bill_no . "<br>";
             sales_arry('product', 'description', 'qty', 'rate', 'amount', 'worker');
             echo "<br>";
+        }
+
+        // ========== Print ==========
+        if (isset($_POST['submit_and_print_fullPayment']) || isset($_POST['submit_and_print'])) {
+            $print_path = "/invoice/print.php?id=" . $bill_no;
+            header("Location: " . $print_path);
+            die();
+
+            //         $this_url = "/index.php";
+            //         /*header("refresh:2; url={$this_url}");*/
+            //         echo "<script>
+            // setTimeout(`location.href = '$this_url';`, 100);
+            // </script> ";
         }
     }
     echo "My Name is {$customer_name} is customer...!";

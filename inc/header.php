@@ -18,7 +18,7 @@
             <div class="dropdown-content">
                 <a href="/dashboard/item">Item</a>
                 <a href="/dashboard/product">Product</a>
-                <a href="/dashboard/ingredients">Ingredients</a>
+                <a href="/dashboard/makeProduct">Make Product</a>
             </div>
         </li>
         <li style="float:right" class="dropdown">

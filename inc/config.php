@@ -1,8 +1,8 @@
 <?php
-$server = 'localhost';
-$db_user = 'root';
-$db_pwd = '';
-$db_name = 'srijaya';
+$server = 'morgana.webserverlive.com';
+$db_user = 'srijayal_system';
+$db_pwd = 'system@123456';
+$db_name = 'srijayal_system';
 // Connect DB
 $con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
 
@@ -12,7 +12,6 @@ if (mysqli_connect_errno()) {
 } else {
     //echo "Database Connection Successfull";
 }
-
 function end_db_con()
 {
     global $con;

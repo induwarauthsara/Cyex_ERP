@@ -1,0 +1,11 @@
+[26-Sep-2021 20:03:16 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
+[26-Sep-2021 20:03:17 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
+[30-Sep-2021 20:18:45 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
+[30-Sep-2021 20:18:46 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
+[09-Jan-2023 10:40:10 UTC] PHP Warning:  session_start(): open(/opt/alt/php73/var/lib/php/session/sess_b8e9271d99d553ff46006022609083e3, O_RDWR) failed: Disk quota exceeded (122) in /home/srijayal/bill.srijaya.lk/inc/header.php on line 2
+[09-Jan-2023 10:40:10 UTC] PHP Warning:  session_start(): Failed to read session data: files (path: /opt/alt/php73/var/lib/php/session) in /home/srijayal/bill.srijaya.lk/inc/header.php on line 2
+[09-Jan-2023 10:40:10 UTC] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 25
+[09-Jan-2023 10:40:10 UTC] PHP Notice:  Undefined index: employee_role in /home/srijayal/bill.srijaya.lk/inc/header.php on line 108
+[09-Jan-2023 10:40:10 UTC] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/dashboard/auth.php on line 2
+[09-Jan-2023 10:40:10 UTC] PHP Notice:  Undefined index: employee_id in /home/srijayal/bill.srijaya.lk/dashboard/auth.php on line 3
+[09-Jan-2023 10:40:10 UTC] PHP Notice:  Undefined index: employee_role in /home/srijayal/bill.srijaya.lk/dashboard/auth.php on line 4

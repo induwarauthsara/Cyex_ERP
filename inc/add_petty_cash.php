@@ -11,8 +11,8 @@ $sql = "INSERT INTO pettycash (perrycash, amount, emp_name) VALUES ('{$for}','{$
 insert_query($sql, "Insert Petty Cash to Tabel");
 
 // Petty Cash eka Company Profit eken adu karanawa
-$sql = "UPDATE accounts SET amount = amount - {$amount} WHERE account_name = 'Company Profit'";
-insert_query($sql, "Fall Petty Cash from Company Profit");
+$sql = "UPDATE accounts SET amount = amount - {$amount} WHERE account_name = 'cash_in_hand'";
+insert_query($sql, "Fall Petty Cash from Cash in Hand");
 ?>
 
 <?php end_db_con(); ?>

@@ -23,8 +23,8 @@ for ($i = 0; $i < count($product_list_array); $i++) {
     $product_rate = $recoard["rate"];
 
     // Product Qty
-    // -------- Get Product ingredients to Array --------
-    $sql = "SELECT item_name FROM ingredients WHERE product_name='{$product}'";
+    // -------- Get Product makeProduct to Array --------
+    $sql = "SELECT item_name FROM makeProduct WHERE product_name='{$product}'";
     $result = mysqli_query($con, $sql);
     $ingridians_list = array();
     if (mysqli_num_rows($result) > 0) {
@@ -40,7 +40,7 @@ for ($i = 0; $i < count($product_list_array); $i++) {
     for ($ii = 0; $ii < count($ingridians_list); $ii++) {
         $selected_item = $ingridians_list[$ii];
 
-        $selected_item_req_qty_sql = "SELECT qty FROM ingredients WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
+        $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
         $result = mysqli_query($con, $selected_item_req_qty_sql);
         $recoard = mysqli_fetch_assoc($result);
         array_push($ingridians_requement_qty_array, $recoard["qty"]);

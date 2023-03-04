@@ -123,9 +123,9 @@
                 <!--tabel-->
                 <div class="container">
                     <!--Tabel Head Start-->
-                    <div class="Product tabel-head">Product</div>
-                    <div class="Disc tabel-head">Description</div>
-                    <div class="worker tabel-head">Employee</div>
+                    <div class="Product tabel-head">Description</div>
+                    <!--<div class="Disc tabel-head">Description</div>-->
+                    <!--<div class="worker tabel-head">Employee</div>-->
                     <div class="QTY tabel-head">Qty</div>
                     <div class="Rate tabel-head">Rate</div>
                     <div class="Amount tabel-head">Amount</div>
@@ -143,9 +143,9 @@
                         <div onclick="addproduct()" class="add">Add Product</div>
                     </div>
 
-                    <div class="Disc_list tabel" id="Disc"></div>
+                    <!--<div class="Disc_list tabel" id="Disc"></div>-->
 
-                    <div class="worker_list tabel" id="worker"> </div>
+                    <!--<div class="worker_list tabel" id="worker"> </div>-->
 
                     <div class="Qty_list tabel" id="qty"> </div>
 
@@ -195,7 +195,9 @@
             <input type="text" name="no" id="no" value="">
             <div class="button">
                 <button id="submit" type="submit" name="submit">Submit</button>
-
+                <button id="submit" type="submit" name="submit_and_print">Submit & Print</button>
+                <button id="submit" type="submit" name="submit_and_fullPayment">Submit Full Payment </button>
+                <button id="submit" type="submit" name="submit_and_print_fullPayment">Submit Full Payment &Print</button>
             </div>
         </form>
 
@@ -232,20 +234,20 @@
                 // product.setAttribute("onchange", "change('product')");
                 product.setAttribute("onchange", "change('product', className, id)");
 
-                //  Create Discription in Row
-                let description = document.createElement("input");
-                description.id = "description_" + no;
-                description.className = no;
-                description.setAttribute("name", description.id);
+                // //  Create Discription in Row
+                // let description = document.createElement("input");
+                // description.id = "description_" + no;
+                // description.className = no;
+                // description.setAttribute("name", description.id);
 
-                // Create a worker in row
-                let worker = document.createElement("input");
-                worker.id = "worker_" + no;
-                worker.className = no;
-                worker.value = document.getElementById("default_worker").value;
-                worker.setAttribute("onchange", "change('worker', className, id)");
-                worker.setAttribute("name", worker.id);
-                worker.setAttribute("list", 'emoloyee_list');
+                // // Create a worker in row
+                // let worker = document.createElement("input");
+                // worker.id = "worker_" + no;
+                // worker.className = no;
+                // worker.value = document.getElementById("default_worker").value;
+                // worker.setAttribute("onchange", "change('worker', className, id)");
+                // worker.setAttribute("name", worker.id);
+                // worker.setAttribute("list", 'emoloyee_list');
 
                 // Create a Qty in row
                 let qty = document.createElement("input");
@@ -300,8 +302,8 @@
 
                 //  disc_list.innerHTML += product + "<hr>";
                 product_list.appendChild(product);
-                disc_list.appendChild(description);
-                worker_list.appendChild(worker);
+                // disc_list.appendChild(description);
+                // worker_list.appendChild(worker);
                 //      disc_list.innerHTML += "<hr>";
                 qty_list.appendChild(qty);
                 rate_list.appendChild(rate);
@@ -498,15 +500,15 @@
 
         function remove_row(number, className) {
             let product_remove = document.getElementById("product" + number);
-            let description_remove = document.getElementById("description" + number);
-            let worker_remove = document.getElementById("worker" + number);
+            // let description_remove = document.getElementById("description" + number);
+            // let worker_remove = document.getElementById("worker" + number);
             let qty_remove = document.getElementById("qty" + number);
             let rate_remove = document.getElementById("rate" + number);
             let amount_remove = document.getElementById("amount" + number);
             let x_remove = document.getElementById(number);
 
             // Remove Row
-            let remove = [product_remove, description_remove, worker_remove, qty_remove, rate_remove, amount_remove, x_remove]
+            let remove = [product_remove, /*description_remove, worker_remove,*/ qty_remove, rate_remove, amount_remove, x_remove]
             remove.forEach(element => {
                 element.remove();
             });

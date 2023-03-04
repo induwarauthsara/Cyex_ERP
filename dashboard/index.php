@@ -22,7 +22,7 @@ include '../dashboard/auth.php'
             <h1 class="dash_head">Geranal</h1> <br>
             <div class="dash_list">
                 <div class="dash_item">
-                    <b>Capital </b><br> Rs.
+                    <b>Stock </b><br> Rs.
                     <?php
                     // Get each Item Full Cost (Cost x qty)
                     $item_capital = array();
@@ -44,9 +44,28 @@ include '../dashboard/auth.php'
                     } else {
                         echo "Database Query Failed";
                     }
-                    echo round(array_sum($item_capital), 2); ?>
+                    
+                    $capital_currency=array_sum($item_capital);
+                    echo number_format($capital_currency, 2);  ?>
                 </div>
-                <div class="dash_item">
+
+            <div class="dash_item">
+                    <b>Cash in Hand</b><br>
+                    <rs>
+                        <?php
+                        $sql = "SELECT amount FROM accounts WHERE account_name = 'cash_in_hand'";
+                        $result = mysqli_query($con, $sql);
+                        if ($result) {
+                        $cash_in_hand_amount = mysqli_fetch_array($result);
+                        echo $cash_in_hand_amount['amount'];
+                        }
+                        ?>
+                    </rs>
+                </div>
+            </div><br>
+                    
+                    
+          <!--      <div class="dash_item">
                     <b>Stock Account</b><br>
                     <rs>5662.44 </rs>
                 </div>
@@ -68,7 +87,7 @@ include '../dashboard/auth.php'
                     <rs>55662.44 </rs>
                 </div>
 
-            </div>
+            </div> -->
         </div>
 
         <div class="dash_section">
@@ -85,9 +104,9 @@ include '../dashboard/auth.php'
                         Products</a>
                 </div>
                 <div class="dash_item">
-                    <a href="ingredients">
+                    <a href="makeProduct">
                         <i class="fa fa-sitemap"></i>
-                        Ingredients</a>
+                        Make Product</a>
                 </div>
             </div>
         </div>

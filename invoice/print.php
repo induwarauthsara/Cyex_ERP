@@ -18,7 +18,7 @@ if (isset($_GET['invoice'])) {
 <link rel="stylesheet" href="../style.css">
 <div class="bill">
     <div class="header">
-        <div class="logo-img"> <img src="../logo.JPG" alt="LOGO">
+        <div class="logo-img"> <a href="../index.php"> <img src="../logo.JPG" alt="LOGO"> </a>
         </div>
         <div class="topic">
             <h1>Srijaya Print House</h1>
@@ -69,8 +69,9 @@ if (isset($_GET['invoice'])) {
         </div>
     </div>
 
+    <!-- Methana Idala yata tika one nnaaaaaaaaaaa 
     <?php
-    // Sales Arrays
+    /* // Sales Arrays
     $product_array = array();
     $description_array = array();
     $worker_array = array();
@@ -119,18 +120,14 @@ if (isset($_GET['invoice'])) {
     ?>
 
 
-    <!-- Sales -->
     <div class="content">
-        <!--tabel-->
         <div class="container">
-            <!--Tabel Head Start-->
             <div class="Product tabel-head">Product</div>
             <div class="Disc tabel-head">Description</div>
             <div class="worker tabel-head">Worker</div>
             <div class="QTY tabel-head">Qty</div>
             <div class="Rate tabel-head">Rate</div>
             <div class="Amount tabel-head">Amount</div>
-            <!--Tabel Head End-->
             <div class="product_list tabel" id="Product"> <?php data_list($product_array); ?> </div>
 
             <div class="Disc_list tabel" id="Disc"> <?php data_list($description_array); ?> </div>
@@ -153,29 +150,104 @@ if (isset($_GET['invoice'])) {
             <div class="Advance_tag bill-tag">Advance </div>
             <div class="Balance_tag bill-tag">Balance</div>
             <div class="employ_details bill-tag">
-                <label for="biller"> Biller :</label> <?php echo $biller; ?>
-                <br>
-                <label for="worker"> Employee :</label> <?php echo $primary_worker; ?>
             </div>
         </div>
+        <?php */ ?>
+       methana idala uda tika oneeeeeeeeeeeeeeee  -->
+    <br>
+    <table class="table">
+        <tr>
+            <th>Product</th>
+            <!-- <th>Description</th> -->
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>Amount</th>
+        </tr>
+        <?php
+        $sql = "SELECT * FROM sales WHERE invoice_number = $id";
+        $result = mysqli_query($con, $sql);
+        if ($result) {
+            // qury success
+            if (mysqli_num_rows($result) > 0) {
+                while ($sales = mysqli_fetch_array($result)) {
+                    echo '<tr>
+                <td>' . $sales["product"] . '</td>
+                <!-- <td>' . $sales["description"] . '</td> -->
+                <td>' . $sales["qty"] . '</td>
+                <td class="price">' . $sales["rate"] . '</td>
+                <td class="price">' . $sales["amount"] . '</td>
+                </tr>';
+                }
+            }
+        }
+        ?>
+        <tr>
+            <td colspan="3" class="bill_sum" style="border: none">Total</td>
+            <td><?php echo $total; ?></td>
+        </tr>
+        <tr>
+            <td colspan="3" class="bill_sum" style="border: none">Discount</td>
+            <td><?php echo $discount; ?></td>
+        </tr>
+        <tr>
+            <td colspan="3" class="bill_sum" style="border: none">Advance</td>
+            <td><?php echo $advance; ?></td>
+        </tr>
+        <tr>
+            <td colspan="3" class="bill_sum" style="border: none">Balance</td>
+            <td><?php echo $balance; ?></td>
+        </tr>
+    </table>
 
-        <table class="table">
-            <tr>
-                <th>Product</th>
-                <th>Description</th>
-                <th>Worker</th>
-                <th>Qty</th>
-                <th>Rate</th>
-                <th>Amount</th>
-            </tr>
-        </table>
 
 
-    </div>
+</div>
 
-    <input type="text" name="no" id="no" value="">
+<input type=" text" name="no" id="no" value="">
 </div>
 
 <script>
     window.print();
 </script>
+
+<style>
+    .bill {
+        width: 100%;
+    }
+
+    .topic {
+        width: 150% !important;
+    }
+
+    .bill_sum,
+    .price {
+        text-align: right;
+
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid #b0f25a;
+        border-spacing: 0;
+    }
+
+    th {
+        text-align: center;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        /* border: 1px solid; */
+        padding: 5px;
+    }
+
+    th {
+        background-color: #5da302;
+    }
+</style>

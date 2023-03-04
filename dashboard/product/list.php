@@ -99,7 +99,7 @@ if (isset($_GET['order'])) {
             echo "<th>Profit</th>";
             echo "<th>Has Stock</th>";
             echo "<th>Edit</th>";
-            echo "<th>Ingredients</th>";
+            echo "<th>Make Product</th>";
             echo "</tr>";
             while ($row = mysqli_fetch_array($result)) {
                 echo "<tr>";
@@ -112,7 +112,7 @@ if (isset($_GET['order'])) {
                 echo "<td>" . $row['profit'] . "</td>";
                 echo "<td>" . $row['has_stock'] . "</td>";
                 echo "<td> <a href='?tab=modify&id= {$row['product_id']} '>Edit</a> </td>";
-                echo "<td> <a href='?tab=ingredients&id= {$row['product_id']} '>Ingredients</a> </td>";
+                echo "<td> <a href='../makeProduct/?tab=modify&product={$row['product_name']} '>Make Product</a> </td>";
                 echo "</tr>";
             }
             echo "</table>";
