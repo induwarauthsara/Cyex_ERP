@@ -75,10 +75,12 @@ require_once '../inc/header.php';
             echo "<th>Date</th>";
             // echo "<th>Biller</th>";
             // echo "<th>Worker</th>";
+            echo "<th>Total</th>";
             echo "<th>Discount</th>";
             echo "<th>Advance</th>";
             echo "<th>Balance</th>";
             echo "<th>Full Paid ?</th>";
+            echo "<th>Edit</th>";
             echo "<th>Print</th>";
             echo "</tr>";
             echo "</thead>";
@@ -92,6 +94,7 @@ require_once '../inc/header.php';
                 echo "<td>" . $row['invoice_date'] . "</td>";
                 // echo "<td>" . $row['biller'] . "</td>";
                 // echo "<td>" . $row['primary_worker'] . "</td>";
+                echo "<td> " . $row['total'] . "</td>";
                 echo "<td> " . $row['discount'] . "</td>";
                 echo "<td> " . $row['advance'] . "</td>";
                 echo "<td> " . $row['balance'] . "</td>";
@@ -103,6 +106,7 @@ require_once '../inc/header.php';
                     echo 'Yes';
                 }
                 echo "</td>";
+                echo "<td> <a href='edit-bill.php?id={$row['invoice_number']}'>Edit</a> </td>";
                 echo "<td> <a href='print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
                 echo "</tr>";
             }
