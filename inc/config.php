@@ -1,4 +1,8 @@
 <?php
+// $server = 'localhost';
+// $db_user = 'root';
+// $db_pwd = '';
+// $db_name = 'srijaya';
 $server = 'morgana.webserverlive.com';
 $db_user = 'srijayal_system';
 $db_pwd = 'system@123456';
