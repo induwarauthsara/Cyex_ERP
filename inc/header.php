@@ -37,6 +37,15 @@
 
     </ul>
 
+    <?php
+    // Function for Displaying Rupesss
+    function asRS($value)
+    {
+        if ($value < 0) return "-" . asRS(-$value);
+        return 'Rs. ' . number_format($value, 2);
+    }
+    ?>
+
     <style>
         body {
             font-family: sans-serif;
