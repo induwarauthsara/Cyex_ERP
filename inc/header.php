@@ -8,6 +8,12 @@
     <!-- favicon -->
     <link rel="shortcut icon" href="../logo.JPG" type="image/x-icon">
 
+    <!-- add main css file -->
+    <link rel="stylesheet" href="/style.css">
+
+    <!-- adding jquery cdn -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js "></script>
+
     <ul id="navbar">
         <li class="dropdown dashboard_icon">
             <a href="/"><i class="fas fa-file-invoice header_icons"></i></a>
@@ -16,7 +22,11 @@
             </div> -->
         </li>
 
-        <li class="dashboard_icon"> <a href="/invoice">Invoices</a> </li>
+        <li class="dropdown dashboard_icon"> <a href="/invoice">Invoices</a>
+            <div class="dropdown-content">
+                <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
+            </div>
+        </li>
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
         <li class="dropdown dashboard_icon">
