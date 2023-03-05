@@ -205,7 +205,7 @@ hr {
   border-radius: 5px;
 }
 
-.bill .container .product_list .add {
+.bill .container .add {
   padding: 8px 10px;
   border: none;
   border-radius: 10px;
@@ -215,6 +215,7 @@ hr {
   text-align: center;
   display: inline;
   width: 60%;
+  cursor: pointer;
 }
 
 .bill .container .Disc_list {

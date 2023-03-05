@@ -76,11 +76,11 @@ require_once '../inc/header.php';
             // echo "<th>Biller</th>";
             // echo "<th>Worker</th>";
             echo "<th>Total</th>";
-            echo "<th>Discount</th>";
+            echo "<th>Disco.</th>";
             echo "<th>Advance</th>";
             echo "<th>Balance</th>";
-            echo "<th>Full Paid ?</th>";
-            echo "<th>Edit</th>";
+            echo "<th>Full Paid</th>";
+            echo "<th>Add <br> Fund</th>";
             echo "<th>Print</th>";
             echo "</tr>";
             echo "</thead>";
@@ -106,7 +106,7 @@ require_once '../inc/header.php';
                     echo 'Yes';
                 }
                 echo "</td>";
-                echo "<td> <a href='edit-bill.php?id={$row['invoice_number']}'>Edit</a> </td>";
+                echo "<td> <a href='add-fund.php?id={$row['invoice_number']}'>Add</a> </td>";
                 echo "<td> <a href='print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
                 echo "</tr>";
             }
@@ -161,6 +161,18 @@ require_once '../inc/header.php';
 
         .dtsb-searchBuilder {
             margin-top: 50px;
+        }
+
+        th.sorting:nth-child(2),
+        th.sorting:nth-child(7),
+        th.sorting:nth-child(11),
+        th.sorting:nth-child(12),
+        th.sorting:nth-child(10) {
+            width: 5px !important;
+        }
+
+        th {
+            text-align: center !important;
         }
     </style>
 
