@@ -4,3 +4,14 @@
 *.png
 *.cdr
 *.log
+*/error_log
+*/.htaccess
+*/.htpasswd
+*/.htaccess
+*/.htpasswd
+*/.DS_Store
+*/.svn
+*/.git
+*/.gitignore
+*/.gitmodules
+*/.gitattributes
