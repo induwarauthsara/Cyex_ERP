@@ -10,6 +10,7 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<th>Customer</th>";
         echo "<th>Tele</th>";
         echo "<th>Date</th>";
+        echo "<th>Time</th>";
         echo "<th>Total</th>";
         echo "<th>Disco.</th>";
         echo "<th>Advance</th>";
@@ -27,6 +28,7 @@ if ($result = mysqli_query($con, $sql)) {
             echo "<td>" . $row['customer_name'] . "</td>";
             echo "<td>" . $row['customer_mobile'] . "</td>";
             echo "<td>" . $row['invoice_date'] . "</td>";
+            echo "<td>" . $row['time'] . "</td>";
             echo "<td> " . $row['total'] . "</td>";
             echo "<td> " . $row['discount'] . "</td>";
             echo "<td> " . $row['advance'] . "</td>";
