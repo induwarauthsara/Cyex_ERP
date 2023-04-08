@@ -41,6 +41,8 @@ require_once 'inc/config.php'; ?>
         // ========== Full Payment ==========
         if (isset($_POST['submit_and_print_fullPayment']) || isset($_POST['submit_and_fullPayment'])) {
             $bill_advance = $bill_total;
+            $full_paid = 1;
+            $bill_balance = 0;
         }
 
         // check full paid
