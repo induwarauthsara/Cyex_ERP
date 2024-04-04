@@ -174,7 +174,7 @@
                         <br>
                         <label for="worker">
                             Employee Name:</label>
-                        <input list="emoloyee_list" type="text" name="default_worker" id="default_worker" onchange="fill_employees()">
+                        <input list="emoloyee_list" type="text" name="default_worker" id="default_worker" onchange="fill_employees()" value="<?php echo $_SESSION['employee_name']; ?>">
                         <script>
                             function fill_employees() {
                                 var all_workers = document.getElementById("worker").childNodes;
@@ -625,3 +625,14 @@
 
 
 <?php end_db_con(); ?>
+
+<style>
+    input {
+        color: white !important;
+        background-color: #333333 !important;
+        border: 2px solid white !important;
+        padding: 3px;
+        margin: 2px;
+        font-weight: bold;
+    }
+</style>
