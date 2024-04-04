@@ -94,11 +94,6 @@
 
                 <!--  === Invoice Details === -->
                 <div class="bill-details">
-                    <div class="bill-no">Bill No. <input type="text" value="<?php $last_no = "SELECT MAX(id) FROM invoice";
-                                                                            $result = mysqli_query($con, $last_no);
-                                                                            $output = mysqli_fetch_assoc($result);
-                                                                            $new_bill_no = $output['MAX(id)'] + 1;
-                                                                            echo "{$new_bill_no}"; ?>" name="bill-no" required> </div>
                     <div class="date">Date : <input id="date" type="date" value="" name="today" required></div>
 
                     <!-- == Set Today Date == -->

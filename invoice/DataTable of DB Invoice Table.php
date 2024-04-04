@@ -5,11 +5,10 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<table id='DataTable'>";
         echo "<thead>";
         echo "<tr>";
-        echo "<th>No</th>";
-        echo "<th>Invoice Number</th>";
-        echo "<th>Customer</th>";
-        echo "<th>Tele</th>";
         echo "<th>Date</th>";
+        echo "<th>Invoice No</th>";
+        echo "<th>Customer Name</th>";
+        echo "<th>Tele</th>";
         echo "<th>Time</th>";
         echo "<th>Total</th>";
         echo "<th>Disco.</th>";
@@ -23,11 +22,10 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<tbody>";
         while ($row = mysqli_fetch_array($result)) {
             echo "<tr>";
-            echo "<td>" . $row['id'] . "</td>";
+            echo "<td>" . $row['invoice_date'] . "</td>";
             echo "<td>" . $row['invoice_number'] . "</td>";
             echo "<td>" . $row['customer_name'] . "</td>";
             echo "<td>" . $row['customer_mobile'] . "</td>";
-            echo "<td>" . $row['invoice_date'] . "</td>";
             echo "<td>" . $row['time'] . "</td>";
             echo "<td> " . $row['total'] . "</td>";
             echo "<td> " . $row['discount'] . "</td>";

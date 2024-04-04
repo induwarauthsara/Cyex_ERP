@@ -17,7 +17,7 @@ require_once '../inc/header.php';
     </center>
 
     <?php
-    $sql = "SELECT * FROM invoice ORDER BY id DESC;";
+    $sql = "SELECT * FROM invoice ORDER BY invoice_number DESC;";
     include 'DataTable of DB Invoice Table.php'; ?>
 
 </body>

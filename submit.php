@@ -27,7 +27,7 @@ require_once 'inc/config.php'; ?>
         // Set Invoice values
         $customer_name = $_POST['name'];
         $customer_mobile = $_POST['tele'];
-        $bill_no = $_POST['bill-no'];
+        // $bill_no = $_POST['bill-no'];
         $date = $_POST['today'];
         $bill_total = $_POST['total'];
         $bill_discount = $_POST['discount'];
@@ -66,8 +66,8 @@ require_once 'inc/config.php'; ?>
 
 
         // Send Invoice Data to Database
-        $sql = "INSERT INTO invoice (invoice_number, customer_name, invoice_date, customer_mobile, biller, primary_worker, total, discount, advance, balance, full_paid)
-        VALUES ('{$bill_no}', '{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$default_worker}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
+        $sql = "INSERT INTO invoice (customer_name, invoice_date, customer_mobile, biller, primary_worker, total, discount, advance, balance, full_paid)
+        VALUES ('{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$default_worker}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
         insert_query($sql, "Send Invoice Data to Database");
 
 
@@ -78,11 +78,12 @@ require_once 'inc/config.php'; ?>
                     function sales_arry($product, $description, $qty, $rate, $amount, $worker)
                     {
                         global $no;
-                        global $bill_no;
                         global $con;
                         global $biller;
                         global $bill_advance;
 
+                        // Retrieve the auto-generated InvoiceID
+                        $bill_no = mysqli_insert_id($con);
 
                         $product = $_POST["{$product}_{$no}"];
                         $description = $_POST["{$description}_{$no}"];
