@@ -71,7 +71,7 @@
             margin: 0px;
             padding: 0;
             overflow: hidden;
-            background-color: #333;
+            background-color: #121212;
             margin-bottom: 10px;
             top: 0;
             width: 100%;
