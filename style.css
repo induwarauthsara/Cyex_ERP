@@ -1,401 +1,405 @@
 * {
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  color: black;
+    color: white;
+    background-color: #333333;
 }
 
 body .add_pettycash {
-  background: #0e5e0e;
-  color: blanchedalmond;
-  padding: 10px;
-  border-radius: 5px;
-  right: 50px;
-  position: fixed;
-  top: 100px;
+    background: #0e5e0e;
+    color: blanchedalmond;
+    padding: 10px;
+    border-radius: 5px;
+    right: 50px;
+    position: fixed;
+    top: 100px;
 }
 
 hr {
-  color: red;
-  margin: 5px;
+    color: red;
+    margin: 5px;
 }
 
 .bill {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  margin: auto;
-  width: 80%;
-  padding: 10px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    margin: auto;
+    width: 80%;
+    padding: 10px;
 }
 
 .bill .header {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  padding: 10px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    padding: 10px;
 }
 
 .bill .header .logo-img {
-  width: 200px;
+    width: 200px;
 }
 
 .bill .header .topic {
-  text-align: center;
-  width: 100%;
-  line-height: 2.5rem;
+    text-align: center;
+    width: 100%;
+    line-height: 2.5rem;
 }
 
 .bill .details {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  padding: 2px 10px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    padding: 2px 10px;
 }
 
 .bill .details .customer-details {
-  -webkit-box-flex: 2;
-  -ms-flex: 2;
-  flex: 2;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
+    -webkit-box-flex: 2;
+    -ms-flex: 2;
+    flex: 2;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
 }
 
 .bill .details .customer-details input {
-  margin: 2px;
-  border: none;
-  padding: 5px;
+    margin: 2px;
+    border: none;
+    padding: 5px;
 }
 
 .bill .details .bill-details {
-  -webkit-box-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
-  text-align: right;
+    -webkit-box-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
+    text-align: right;
 }
 
 .bill .container {
-  display: -ms-grid;
-  display: grid;
-  -ms-grid-columns: 6fr 1fr 1fr 1.8fr;
-  grid-template-columns: 4fr 2fr 2fr 2.8fr;
-  -ms-grid-rows: (auto) [4];
-  grid-template-rows: repeat(4, auto);
-  grid-auto-flow: row;
-  grid-template-areas: "Product QTY Rate Amount" "product_list Qty_list Rate_list amount_list" "employ_details Total_tag Total_tag Total" "employ_details Discount_tag Discount_tag Discount" "employ_details Advance_tag Advance_tag Advance" "employ_details Balance_tag Balance_tag Balance";
-  margin: 10px;
-  line-height: 1.5rem;
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 6fr 1fr 1fr 1.8fr;
+    grid-template-columns: 4fr 2fr 2fr 2.8fr;
+    -ms-grid-rows: (auto) [4];
+    grid-template-rows: repeat(4, auto);
+    grid-auto-flow: row;
+    grid-template-areas: "Product QTY Rate Amount" "product_list Qty_list Rate_list amount_list" "employ_details Total_tag Total_tag Total" "employ_details Discount_tag Discount_tag Discount" "employ_details Advance_tag Advance_tag Advance" "employ_details Balance_tag Balance_tag Balance";
+    margin: 10px;
+    line-height: 1.5rem;
+    color: white;
+    /* background: #121212; */
 }
 
 .bill .container input {
-  border: none;
+    border: none;
 }
 
 .bill .container hr {
-  color: #a71212;
-  display: block;
-  width: 95%;
+    color: #a71212;
+    display: block;
+    width: 95%;
 }
 
 .bill .details .customer-details input {
-  width: 380px;
+    width: 380px;
 }
 
 .bill .container .tabel-head {
-  color: black;
-  text-align: center;
-  border: 1px solid black;
-  justify-items: center;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  font-weight: bold;
-  line-height: 2rem;
+    color: white;
+    text-align: center;
+    border: 1px solid white;
+    justify-items: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    font-weight: bold;
+    line-height: 2rem;
 }
 
 .bill .container .tabel {
-  border: 1px solid black;
-  padding: 5px;
+    border: 1px solid white;
+    padding: 5px;
 }
 
 .bill .container .tabel input {
-  width: 90%;
-  display: block;
-  height: 1.5rem;
-  margin: 2px;
-  padding: 3px;
-  border: 1px solid #747373;
+    width: 90%;
+    display: block;
+    height: 1.5rem;
+    margin: 2px;
+    padding: 3px;
+    border: 1px solid #747373;
 }
 
 .bill .container .bill-tag {
-  text-align: right;
-  margin: 5px;
+    text-align: right;
+    margin: 5px;
 }
 
 .bill .container .Product {
-  -ms-grid-row: 1;
-  -ms-grid-column: 1;
-  grid-area: Product;
+    -ms-grid-row: 1;
+    -ms-grid-column: 1;
+    grid-area: Product;
 }
 
 .bill .container .Disc {
-  -ms-grid-row: 1;
-  -ms-grid-column: 2;
-  grid-area: Disc;
+    -ms-grid-row: 1;
+    -ms-grid-column: 2;
+    grid-area: Disc;
 }
 
 .bill .container .worker {
-  -ms-grid-row: 1;
-  -ms-grid-column: 3;
-  grid-area: worker;
+    -ms-grid-row: 1;
+    -ms-grid-column: 3;
+    grid-area: worker;
 }
 
 .bill .container .QTY {
-  -ms-grid-row: 1;
-  -ms-grid-column: 4;
-  grid-area: QTY;
+    -ms-grid-row: 1;
+    -ms-grid-column: 4;
+    grid-area: QTY;
 }
 
 .bill .container .Rate {
-  -ms-grid-row: 1;
-  -ms-grid-column: 5;
-  grid-area: Rate;
+    -ms-grid-row: 1;
+    -ms-grid-column: 5;
+    grid-area: Rate;
 }
 
 .bill .container .Amount {
-  -ms-grid-row: 1;
-  -ms-grid-column: 6;
-  grid-area: Amount;
+    -ms-grid-row: 1;
+    -ms-grid-column: 6;
+    grid-area: Amount;
 }
 
 .bill .container .product_list {
-  -ms-grid-row: 2;
-  -ms-grid-column: 1;
-  grid-area: product_list;
-  padding: 8px;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
+    -ms-grid-row: 2;
+    -ms-grid-column: 1;
+    grid-area: product_list;
+    padding: 8px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
 }
 
 .bill .container .product_list #addproduct {
-  height: 2rem;
-  border: 1px solid black;
-  width: 95%;
-  border-radius: 5px;
+    height: 2rem;
+    border: 1px solid black;
+    width: 95%;
+    border-radius: 5px;
 }
 
 .bill .container .add {
-  padding: 8px 10px;
-  border: none;
-  border-radius: 10px;
-  color: yellow;
-  background: green;
-  margin: 5px;
-  text-align: center;
-  display: inline;
-  width: 60%;
-  cursor: pointer;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 10px;
+    color: yellow;
+    background: green;
+    margin: 5px;
+    text-align: center;
+    display: inline;
+    width: 60%;
+    cursor: pointer;
 }
 
 .bill .container .Disc_list {
-  -ms-grid-row: 2;
-  -ms-grid-column: 2;
-  grid-area: Disc_list;
+    -ms-grid-row: 2;
+    -ms-grid-column: 2;
+    grid-area: Disc_list;
 }
 
 .bill .container .worker_list {
-  -ms-grid-row: 2;
-  -ms-grid-column: 3;
-  grid-area: worker_list;
+    -ms-grid-row: 2;
+    -ms-grid-column: 3;
+    grid-area: worker_list;
 }
 
 .bill .container .Qty_list {
-  -ms-grid-row: 2;
-  -ms-grid-column: 4;
-  grid-area: Qty_list;
+    -ms-grid-row: 2;
+    -ms-grid-column: 4;
+    grid-area: Qty_list;
 }
 
 .bill .container .Rate_list {
-  -ms-grid-row: 2;
-  -ms-grid-column: 5;
-  grid-area: Rate_list;
+    -ms-grid-row: 2;
+    -ms-grid-column: 5;
+    grid-area: Rate_list;
 }
 
 .bill .container .amount_list {
-  width: 100%;
-  -ms-grid-row: 2;
-  -ms-grid-column: 6;
-  grid-area: amount_list;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
+    width: 100%;
+    -ms-grid-row: 2;
+    -ms-grid-column: 6;
+    grid-area: amount_list;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
 }
 
 .bill .container #amount_list {
-  width: 100%;
+    width: 100%;
 }
 
 .bill .container #remove_button_list {
-  width: 15px;
+    width: 15px;
 }
 
 .bill .container #remove_button_list button {
-  display: block;
-  font-size: 9px;
-  background: none;
-  color: red;
-  border: none;
-  height: 1.5rem;
-  margin: 2px;
+    display: block;
+    font-size: 9px;
+    background: none;
+    color: red;
+    border: none;
+    height: 1.5rem;
+    margin: 2px;
 }
 
 .bill .container .Discount {
-  -ms-grid-row: 4;
-  -ms-grid-column: 6;
-  grid-area: Discount;
+    -ms-grid-row: 4;
+    -ms-grid-column: 6;
+    grid-area: Discount;
 }
 
 .bill .container .Total {
-  -ms-grid-row: 3;
-  -ms-grid-column: 6;
-  grid-area: Total;
+    -ms-grid-row: 3;
+    -ms-grid-column: 6;
+    grid-area: Total;
 }
 
 .bill .container .Advance {
-  -ms-grid-row: 5;
-  -ms-grid-column: 6;
-  grid-area: Advance;
+    -ms-grid-row: 5;
+    -ms-grid-column: 6;
+    grid-area: Advance;
 }
 
 .bill .container .Balance {
-  -ms-grid-row: 6;
-  -ms-grid-column: 6;
-  grid-area: Balance;
+    -ms-grid-row: 6;
+    -ms-grid-column: 6;
+    grid-area: Balance;
 }
 
 .bill .container .Total_tag {
-  -ms-grid-row: 3;
-  -ms-grid-column: 4;
-  -ms-grid-column-span: 2;
-  grid-area: Total_tag;
+    -ms-grid-row: 3;
+    -ms-grid-column: 4;
+    -ms-grid-column-span: 2;
+    grid-area: Total_tag;
 }
 
 .bill .container .Discount_tag {
-  -ms-grid-row: 4;
-  -ms-grid-column: 4;
-  -ms-grid-column-span: 2;
-  grid-area: Discount_tag;
+    -ms-grid-row: 4;
+    -ms-grid-column: 4;
+    -ms-grid-column-span: 2;
+    grid-area: Discount_tag;
 }
 
 .bill .container .Advance_tag {
-  -ms-grid-row: 5;
-  -ms-grid-column: 4;
-  -ms-grid-column-span: 2;
-  grid-area: Advance_tag;
+    -ms-grid-row: 5;
+    -ms-grid-column: 4;
+    -ms-grid-column-span: 2;
+    grid-area: Advance_tag;
 }
 
 .bill .container .Balance_tag {
-  -ms-grid-row: 6;
-  -ms-grid-column: 4;
-  -ms-grid-column-span: 2;
-  grid-area: Balance_tag;
+    -ms-grid-row: 6;
+    -ms-grid-column: 4;
+    -ms-grid-column-span: 2;
+    grid-area: Balance_tag;
 }
 
 .bill .container .employ_details {
-  -ms-grid-row: 3;
-  -ms-grid-row-span: 4;
-  -ms-grid-column: 1;
-  -ms-grid-column-span: 3;
-  grid-area: employ_details;
-  text-align: left;
+    -ms-grid-row: 3;
+    -ms-grid-row-span: 4;
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 3;
+    grid-area: employ_details;
+    text-align: left;
 }
 
 .bill .container .employ_details input {
-  padding: 3px;
-  height: 2rem;
+    padding: 3px;
+    height: 2rem;
 }
 
 .bill .button {
-  /* width: 50%; */
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  margin: auto;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
+    /* width: 50%; */
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    margin: auto;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
 }
 
 .bill .button button,
 .bill .button .add {
-  padding: 15px;
-  color: white;
-  margin: 20px;
-  border-radius: 8px;
-  border: none;
-  font-size: 15px;
-  font-weight: bold;
+    padding: 15px;
+    color: white;
+    margin: 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: bold;
 }
 
 .bill .button #print {
-  background: red;
+    background: red;
 }
 
 .bill .button #submit {
-  background: #0e5e0e;
-  cursor: pointer;
+    background: #0e5e0e;
+    cursor: pointer;
 }
 
 .bill .button #submit:nth-child(3) {
-  background: red;
+    background: red;
 }
 
 #no {
-  display: none;
+    display: none;
 }
+
 
 /* Data Table Style */
 
 .dt-button,
 .dtsb-add {
-  background-color: green !important;
-  color: white !important;
+    background-color: green !important;
+    color: white !important;
 }
 
 .dataTables_wrapper {
-  margin: 15px;
+    margin: 15px;
 }
 
 .dt-buttons {
-  margin-left: 30px;
+    margin-left: 30px;
 }
 
 .dtsb-searchBuilder {
-  margin-top: 50px;
+    margin-top: 50px;
 }
 
 th.sorting:nth-child(2),
@@ -403,32 +407,33 @@ th.sorting:nth-child(7),
 th.sorting:nth-child(11),
 th.sorting:nth-child(12),
 th.sorting:nth-child(10) {
-  width: 5px !important;
+    width: 5px !important;
 }
 
 th {
-  text-align: center !important;
+    text-align: center !important;
 }
 
 table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
 }
 
 td,
 th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
 }
 
 tr:nth-child(even) {
-  background-color: #dddddd;
+    background-color: #dddddd;
 }
 
 tr:hover {
-  background-color: lawngreen;
+    background-color: lawngreen;
 }
+
 
 /*# sourceMappingURL=style.css.map */
