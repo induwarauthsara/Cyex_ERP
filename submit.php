@@ -58,7 +58,7 @@ require_once 'inc/config.php'; ?>
         $result = mysqli_query($con, $sql);
         $rowcount = mysqli_num_rows($result);
 
-        $selected_customer = mysqli_fetch_array($selected_customer);
+        $selected_customer = mysqli_fetch_array($result);
         if ($selected_customer['COUNT(customer_name)'] == 0) {
             $sql = "INSERT INTO customers (customer_name, customer_mobile) VALUES ('$customer_name', $customer_mobile)";
             insert_query($sql, "Add New Customer");
