@@ -70,6 +70,8 @@ require_once 'inc/config.php'; ?>
         VALUES ('{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$default_worker}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
         insert_query($sql, "Send Invoice Data to Database");
 
+        // Retrieve the auto-generated InvoiceID
+        $bill_no = mysqli_insert_id($con);
 
         for ($no = 0; $no <= $bill_rows; $no++) {
             if (isset($_POST["product_{$no}"])) { // Check row is removed
@@ -81,9 +83,7 @@ require_once 'inc/config.php'; ?>
                         global $con;
                         global $biller;
                         global $bill_advance;
-
-                        // Retrieve the auto-generated InvoiceID
-                        $bill_no = mysqli_insert_id($con);
+                        global $bill_no;
 
                         $product = $_POST["{$product}_{$no}"];
                         $description = $_POST["{$description}_{$no}"];
