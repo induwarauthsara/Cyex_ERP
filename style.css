@@ -6,8 +6,7 @@
 }
 
 body {
-    color: white;
-    background-color: #333333;
+    color: black;
 }
 
 body .add_pettycash {
@@ -99,8 +98,6 @@ hr {
     grid-template-areas: "Product QTY Rate Amount" "product_list Qty_list Rate_list amount_list" "employ_details Total_tag Total_tag Total" "employ_details Discount_tag Discount_tag Discount" "employ_details Advance_tag Advance_tag Advance" "employ_details Balance_tag Balance_tag Balance";
     margin: 10px;
     line-height: 1.5rem;
-    color: white;
-    /* background: #121212; */
 }
 
 .bill .container input {
@@ -118,9 +115,9 @@ hr {
 }
 
 .bill .container .tabel-head {
-    color: white;
+    color: black;
     text-align: center;
-    border: 1px solid white;
+    border: 1px solid black;
     justify-items: center;
     -webkit-box-align: center;
     -ms-flex-align: center;
@@ -130,7 +127,7 @@ hr {
 }
 
 .bill .container .tabel {
-    border: 1px solid white;
+    border: 1px solid black;
     padding: 5px;
 }
 

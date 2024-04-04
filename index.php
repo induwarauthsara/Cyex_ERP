@@ -625,14 +625,3 @@
 
 
 <?php end_db_con(); ?>
-
-<style>
-    input {
-        color: white !important;
-        background-color: #333333 !important;
-        border: 2px solid white !important;
-        padding: 3px;
-        margin: 2px;
-        font-weight: bold;
-    }
-</style>
