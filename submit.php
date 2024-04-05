@@ -52,6 +52,11 @@ require_once 'inc/config.php'; ?>
             $full_paid = 0;
         }
 
+        // Check Discount
+        if ($bill_discount != 0) {
+            $bill_advance = $bill_total - $bill_discount;
+        }
+
         // Check Customer is in Database?
         $has_customer_name_in_db = "";
         $sql = "SELECT COUNT(customer_name) FROM customers WHERE customer_name = '$customer_name';";
