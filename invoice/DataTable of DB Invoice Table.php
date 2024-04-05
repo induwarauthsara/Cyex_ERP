@@ -53,3 +53,15 @@ if ($result = mysqli_query($con, $sql)) {
 } else {
     echo "ERROR: Could not able to execute $sql. " . mysqli_error($con);
 }
+?>
+
+<style>
+    /* Data Table Style */
+    th.sorting:nth-child(2),
+    th.sorting:nth-child(7),
+    th.sorting:nth-child(11),
+    th.sorting:nth-child(12),
+    th.sorting:nth-child(10) {
+        width: 5px !important;
+    }
+</style>
