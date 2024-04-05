@@ -14,9 +14,7 @@ body .add_pettycash {
     color: blanchedalmond;
     padding: 10px;
     border-radius: 5px;
-    right: 50px;
-    position: fixed;
-    top: 100px;
+    height: fit-content;
 }
 
 hr {
@@ -32,7 +30,6 @@ hr {
     -webkit-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    margin: auto;
     width: 80%;
     padding: 10px;
 }
@@ -379,6 +376,60 @@ hr {
 }
 
 
+/* TO-DOLIST */
+
+.todo {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+body .add_todo {
+    background: #7aebff;
+    color: black;
+    margin: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1.3rem;
+    width: 100%;
+    cursor: pointer;
+}
+
+.todoList {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 80vh;
+    max-width: 100%;
+    width: 100%;
+}
+
+.todoCard {
+    padding: 20px;
+    margin: 10px;
+    border-radius: 5px;
+    background: #f0f0f0;
+}
+
+.todoComplete {
+    color: white;
+    background-color: green;
+    font-weight: bold;
+    margin: 10px;
+    padding: 5px;
+    cursor: pointer;
+    border: 3px solid green;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+}
+
+.todo .billNo {
+    text-align: right;
+}
+
+
 /* Data Table Style */
 
 .dt-button,
@@ -397,14 +448,6 @@ hr {
 
 .dtsb-searchBuilder {
     margin-top: 50px;
-}
-
-th.sorting:nth-child(2),
-th.sorting:nth-child(7),
-th.sorting:nth-child(11),
-th.sorting:nth-child(12),
-th.sorting:nth-child(10) {
-    width: 5px !important;
 }
 
 th {

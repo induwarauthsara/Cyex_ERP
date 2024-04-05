@@ -11,38 +11,16 @@
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="logo.JPG" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 
 <body><br>
-    <button class="add_pettycash" onclick="add_pettycash()"> Add Pettycash </button>
-    <script>
-        function add_pettycash() {
-            var petty_cash_for = prompt("Petty Cash For what?");
-            if (petty_cash_for !== "") {
-                var petty_cash_amount = Number(prompt("Rs. "));
-                if (petty_cash_amount !== "" && !isNaN(petty_cash_amount)) {
-                    // Send Petty Cash Data to Database
-                    $.ajax({
-                        url: "inc/add_petty_cash.php",
-                        method: "GET",
-                        data: {
-                            for: petty_cash_for,
-                            amount: petty_cash_amount
-                        },
-                        datatype: "text",
-                        cache: false,
-                        success: function(html) {
-                            alert("succesfully added Rs. " + petty_cash_amount + " For " + petty_cash_for);
-                            //alert(html);
-                        },
-                    });
-                }
-            }
-        }
-    </script>
-    <div class="bill">
-        <div class="header">
-            <div class="logo-img"> <img src="logo.JPG" alt="LOGO">
+
+    <div class="main">
+        <div class="bill">
+            <div class="header"> <a href="index.php">
+                    <div class="logo-img"> <img src="logo.JPG" alt="LOGO">
+                </a>
             </div>
             <div class="topic">
                 <h1>Srijaya Print House</h1>
@@ -50,6 +28,8 @@
                     <br>071 4730996
                 </h2>
             </div>
+            <button class="add_pettycash" onclick="add_pettycash()"> Add Pettycash </button>
+
         </div>
         <hr>
 
@@ -182,8 +162,11 @@
                             }
                         </script>
                     </div>
+                    <div>
+                        <label for="add_to_todo"> Add to TODO List </label>
+                        <input type="checkbox" name="add_to_todo" id="add_to_todo" value="1" style="width: 50px; height:30px;">
+                    </div>
                 </div>
-
 
             </div>
 
@@ -197,9 +180,88 @@
         </form>
 
     </div>
+    <div class="todo">
+        <button class="add_todo" onclick="add_todo()"> Add Todo Work </button>
+        <div class="todoList">
+            <?php
+            for ($i = 0; $i < 10; $i++) {
+                echo "<div class='todoCard'>
+                <div class='billNo'>2899</div>
+                <h3 class='todoTitle'>Title</h3>
+                <div class='todoTime'>05.30 PM</div>
+                <div class='todoComplete'>Completed</div>
+                </div>";
+            } ?>
+        </div>
+    </div>
+    </div>
 
+    <!-- Add Petty Cash -->
+    <script>
+        // function add_pettycash() {
+        //     var petty_cash_for = prompt("Petty Cash For what?");
+        //     if (petty_cash_for !== "") {
+        //         var petty_cash_amount = Number(prompt("Rs. "));
+        //         if (petty_cash_amount !== "" && !isNaN(petty_cash_amount)) {
+        //             // Send Petty Cash Data to Database
+        //             $.ajax({
+        //                 url: "inc/add_petty_cash.php",
+        //                 method: "GET",
+        //                 data: {
+        //                     for: petty_cash_for,
+        //                     amount: petty_cash_amount
+        //                 },
+        //                 datatype: "text",
+        //                 cache: false,
+        //                 success: function(html) {
+        //                     alert("succesfully added Rs. " + petty_cash_amount + " For " + petty_cash_for);
+        //                     //alert(html);
+        //                 },
+        //             });
+        //         }
+        //     }
+        // }
 
-
+        document.querySelector('.add_pettycash').addEventListener('click', function() {
+            Swal.fire({
+                title: 'Add Petty Cash',
+                html: '<label for="petty_cash_for" class="swal2-label">Petty Cash For:</label>' +
+                    '<input id="petty_cash_for" class="swal2-input" placeholder="Enter purpose">' +
+                    '<label for="petty_cash_amount" class="swal2-label">Amount (Rs.):</label>' +
+                    '<input id="petty_cash_amount" class="swal2-input" placeholder="Enter amount">',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const petty_cash_for = Swal.getPopup().querySelector('#petty_cash_for').value;
+                    const petty_cash_amount = Swal.getPopup().querySelector('#petty_cash_amount').value;
+                    if (petty_cash_for && petty_cash_amount && !isNaN(petty_cash_amount)) {
+                        return fetch("inc/add_petty_cash.php?for=" + encodeURIComponent(petty_cash_for) + "&amount=" + petty_cash_amount, {
+                                method: 'GET',
+                            })
+                            .then(response => response.text())
+                            .then(html => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: "Successfully added Rs. " + petty_cash_amount + " for " + petty_cash_for,
+                                    showConfirmButton: false,
+                                    timer: 2000 // Close alert after 2 seconds
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Something went wrong!',
+                                });
+                            });
+                    } else {
+                        Swal.showValidationMessage(`Please enter both petty cash for and amount (numeric value).`);
+                    }
+                }
+            });
+        });
+    </script>
 
     <script>
         var no = 0;
@@ -620,3 +682,10 @@
 
 
 <?php end_db_con(); ?>
+
+<style>
+    .main {
+        display: flex;
+        justify-content: space-around;
+    }
+</style>
