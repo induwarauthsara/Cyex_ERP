@@ -37,6 +37,7 @@
             <!-- <a href="/dashboard/makeProduct">Mke Product</a> -->
             <!-- </div> -->
         </li>
+        <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li>
         <li class="dashboard_icon"> <a href="/dashboard/item/list.php">Item</a> </li>
         <li class="dashboard_icon"> <a href="/dashboard/product">Product</a> </li>
         <li class="dashboard_icon"> <a href="/dashboard/makeProduct">Make Product</a> </li>
