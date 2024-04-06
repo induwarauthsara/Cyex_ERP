@@ -29,6 +29,7 @@ include 'inc/DataTable_cdn.php';
             echo "<th>Perrycash for</th>";
             echo "<th>Amount</th>";
             echo "<th>Date</th>";
+            echo "<th>Time</th>";
             echo "<th>Employee Name</th>";
             echo "</tr>";
             echo "</thead>";
@@ -39,6 +40,7 @@ include 'inc/DataTable_cdn.php';
                 echo "<td>" . $row['perrycash'] . "</td>";
                 echo "<td>" . $row['amount'] . "</td>";
                 echo "<td>" . $row['date'] . "</td>";
+                echo "<td>" . $row['time'] . "</td>";
                 echo "<td>" . $row['emp_name'] . "</td>";
                 echo "</tr>";
             }
