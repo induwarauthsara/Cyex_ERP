@@ -297,6 +297,32 @@
             });
         });
 
+        // Function to Submit TODO as Completed
+        function complete_todo(todoID) {
+            // const todoID = this.getAttribute('data-todo-id');
+            fetch("inc/update_todo_status.php?todoId=" + todoID) // Replace with your server-side script to update todo status
+                .then(response => response.text())
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data,
+                        showConfirmButton: false,
+                        timer: 2000 // Close alert after 2 seconds
+                    });
+                    // Refresh todo section after completing todo item
+                    refreshTodoSection();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                    });
+                });
+        }
+
         // Function to refresh todo section
         function refreshTodoSection() {
             fetch("inc/refresh_todo_section.php") // Replace with your server-side script to fetch updated todo list
@@ -730,4 +756,3 @@
 
 
 <?php end_db_con(); ?>
-
