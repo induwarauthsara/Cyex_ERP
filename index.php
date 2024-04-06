@@ -18,7 +18,7 @@
 
     <div class="main">
         <div class="bill">
-            <div class="header"> <a href="index.php">
+            <div class="header"> <a href="/index.php">
                     <div class="logo-img"> <img src="logo.JPG" alt="LOGO">
                 </a>
             </div>
@@ -163,8 +163,10 @@
                         </script>
                     </div>
                     <div>
-                        <label for="add_to_todo"> Add to TODO List </label>
                         <input type="checkbox" name="add_to_todo" id="add_to_todo" value="1" style="width: 50px; height:30px;">
+                        <label for="add_to_todo"> Add to TODO List </label><br>
+                        <label for="todoName"> TODO Name : </label> <input type="text" name="todoName" id="todoName" disabled required style="border: 1px solid black; padding:5px; margin: 2px;"><br>
+                        <label for="todoTime"> Submission Date & Time : </label> <input type="datetime-local" name="todoTime" disabled required id="todoTime" style="border: 1px solid black; padding:5px;  margin: 2px;">
                     </div>
                 </div>
 
@@ -184,44 +186,15 @@
         <button class="add_todo" onclick="add_todo()"> Add Todo Work </button>
         <div class="todoList">
             <?php
-            for ($i = 0; $i < 10; $i++) {
-                echo "<div class='todoCard'>
-                <div class='billNo'>2899</div>
-                <h3 class='todoTitle'>Title</h3>
-                <div class='todoTime'>05.30 PM</div>
-                <div class='todoComplete'>Completed</div>
-                </div>";
-            } ?>
+            // Get all todo list from database
+            include 'inc/refresh_todo_section.php';
+            ?>
         </div>
     </div>
     </div>
 
     <!-- Add Petty Cash -->
     <script>
-        // function add_pettycash() {
-        //     var petty_cash_for = prompt("Petty Cash For what?");
-        //     if (petty_cash_for !== "") {
-        //         var petty_cash_amount = Number(prompt("Rs. "));
-        //         if (petty_cash_amount !== "" && !isNaN(petty_cash_amount)) {
-        //             // Send Petty Cash Data to Database
-        //             $.ajax({
-        //                 url: "inc/add_petty_cash.php",
-        //                 method: "GET",
-        //                 data: {
-        //                     for: petty_cash_for,
-        //                     amount: petty_cash_amount
-        //                 },
-        //                 datatype: "text",
-        //                 cache: false,
-        //                 success: function(html) {
-        //                     alert("succesfully added Rs. " + petty_cash_amount + " For " + petty_cash_for);
-        //                     //alert(html);
-        //                 },
-        //             });
-        //         }
-        //     }
-        // }
-
         document.querySelector('.add_pettycash').addEventListener('click', function() {
             Swal.fire({
                 title: 'Add Petty Cash',
@@ -261,6 +234,81 @@
                 }
             });
         });
+
+        // Add Todo
+        // Active TODO Input Fields accourding to Checkbox
+        // Selecting checkbox and input fields
+        const checkbox = document.getElementById('add_to_todo');
+        const todoNameInput = document.getElementById('todoName');
+        const todoTimeInput = document.getElementById('todoTime');
+
+        // Adding event listener to checkbox
+        checkbox.addEventListener('change', function() {
+            // If checkbox is checked, enable input fields; otherwise, disable them
+            if (this.checked) {
+                todoNameInput.disabled = false;
+                todoTimeInput.disabled = false;
+            } else {
+                todoNameInput.disabled = true;
+                todoTimeInput.disabled = true;
+            }
+        });
+
+        // Add Todo POP UP BOX
+        document.querySelector('.add_todo').addEventListener('click', function() {
+            Swal.fire({
+                title: 'Add TODO Work',
+                html: '<label for="todoName" class="swal2-label">Work Name:</label>' +
+                    '<input id="todoName" class="swal2-input" placeholder="Enter Work Name">' +
+                    '<label for="todoTime" class="swal2-label">Submission Date & Time</label>' +
+                    '<input id="todoTime" class="swal2-input" type="datetime-local" placeholder="Enter amount">',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const todoName = Swal.getPopup().querySelector('#todoName').value;
+                    const todoTime = Swal.getPopup().querySelector('#todoTime').value;
+                    if (todoName && todoTime) {
+                        return fetch("inc/add_todo_item.php?todoName=" + encodeURIComponent(todoName) + "&todoTime=" + todoTime, {
+                                method: 'GET',
+                            })
+                            .then(response => response.text())
+                            .then(html => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: "Successfully added TODO : " + todoName + ". It must done at " + todoTime,
+                                    showConfirmButton: false,
+                                    timer: 2000 // Close alert after 2 seconds
+                                });
+                                // Refresh todo section after adding new todo item
+                                refreshTodoSection();
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Something went wrong!',
+                                });
+                            });
+                    } else {
+                        Swal.showValidationMessage(`Please enter both work name and submission time.`);
+                    }
+                }
+            });
+        });
+
+        // Function to refresh todo section
+        function refreshTodoSection() {
+            fetch("inc/refresh_todo_section.php") // Replace with your server-side script to fetch updated todo list
+                .then(response => response.text())
+                .then(data => {
+                    document.querySelector('.todoList').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle error if necessary
+                });
+        }
     </script>
 
     <script>
@@ -683,9 +731,3 @@
 
 <?php end_db_con(); ?>
 
-<style>
-    .main {
-        display: flex;
-        justify-content: space-around;
-    }
-</style>
