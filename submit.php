@@ -78,6 +78,14 @@ require_once 'inc/config.php'; ?>
         // Retrieve the auto-generated InvoiceID
         $bill_no = mysqli_insert_id($con);
 
+        // Check todo
+        if (isset($_POST['add_to_todo'])) {
+            $todoName = $_POST['todoName'];
+            $todoTime = $_POST['todoTime'];
+            $sql = "INSERT INTO `todo`(`invoice_number`, `title`, `submision_time`) VALUES ('$bill_no','$todoName','$todoTime')";
+            insert_query($sql, "Add Todo Item Data to Database");
+        }
+
         for ($no = 0; $no <= $bill_rows; $no++) {
             if (isset($_POST["product_{$no}"])) { // Check row is removed
                 if (!function_exists('sales_arry')) { // voice function re-call in for loop
@@ -275,35 +283,7 @@ if (empty($error_array)) {
     print_r($error_array);
     echo "</pre>";
 }
-/*
-Check is this customer Available
 
-Tabels
---------------
-Customer
-    Id
-    name
-    Phone Number
-
-Supply
-    Id
-    supler name
-    product name
-
-Products
-    ID
-
-
-    available?
-
-Stock
-
-Invoice
-
-Emplooyyes
-
-
-*/
 
 
 ?>
