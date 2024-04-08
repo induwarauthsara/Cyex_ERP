@@ -1,5 +1,5 @@
 <?php require_once '../inc/config.php';
-require '../inc/header.php';
+// require '../inc/header.php';
 include '../inc/DataTable_cdn.php';
 ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
