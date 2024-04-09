@@ -1,4 +1,5 @@
     <link rel="shortcut icon" href="logo.JPG" type="image/x-icon">
+    <title>Lochana's Wallet</title>
 
 
     <?php require_once '../inc/config.php';
@@ -124,6 +125,7 @@
         h1 {
             text-align: center;
             margin: 50px;
+            font-size: 2rem;
         }
 
         .add_expenses {
