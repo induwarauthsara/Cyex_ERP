@@ -123,6 +123,7 @@
     <style>
         h1 {
             text-align: center;
+            margin: 50px;
         }
 
         .add_expenses {
