@@ -125,7 +125,7 @@
         h1 {
             text-align: center;
             margin: 50px;
-            font-size: 2rem;
+            font-size: 3rem;
         }
 
         .add_expenses {
