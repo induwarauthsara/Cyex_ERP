@@ -718,7 +718,7 @@
 <!-- == emoloyee name list - Data List get from Database == -->
 <datalist id="emoloyee_list">
     <!-- == Employee == -->
-    <?php $emoloyees_list = "SELECT emp_name FROM employees";
+    <?php $emoloyees_list = "SELECT emp_name FROM employees WHERE `status` = '1'";
     $result = mysqli_query($con, $emoloyees_list);
     if ($result) {
         echo "<ol>";

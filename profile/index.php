@@ -30,7 +30,7 @@ $employee_role = $_SESSION['employee_role']; ?>
         <br><br>
         <div>
             <div>
-                <?php $sql = "SELECT * FROM employees WHERE emp_name = '$employee_name' AND employ_id = '$employee_id'";
+                <?php $sql = "SELECT * FROM employees WHERE emp_name = '$employee_name' AND employ_id = '$employee_id' AND `status` = '1'";
                 $result = mysqli_query($con, $sql);
                 if ($result) {
                     // qury success

@@ -31,7 +31,7 @@ if (isset($_POST['submit'])) {
         $username = mysqli_real_escape_string($con, $username);
         $password = mysqli_real_escape_string($con, $password);
 
-        $sql = "SELECT * FROM employees WHERE emp_name = '$username' AND password = '$password'";
+        $sql = "SELECT * FROM employees WHERE emp_name = '$username' AND password = '$password' AND `status` = '1'";
         $result = mysqli_query($con, $sql);
 
         if ($result) {
