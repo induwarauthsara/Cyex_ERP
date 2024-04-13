@@ -27,6 +27,11 @@
                 <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
             </div>
         </li>
+        <li class="dropdown dashboard_icon"> <a href="/comboProduct">Combo Products</a>
+            <div class="dropdown-content">
+                <a href="/comboProduct/AddNew.php">Add New Combo Product</a>
+            </div>
+        </li>
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
         <li class="dropdown dashboard_icon">
