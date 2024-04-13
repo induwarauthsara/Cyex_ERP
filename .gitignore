@@ -1,7 +1,5 @@
 *.zip
 /similar projects/*
-*.jpg
-*.png
 *.cdr
 *.log
 */error_log

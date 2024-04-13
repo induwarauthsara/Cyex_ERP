@@ -41,7 +41,7 @@ $sales_result = mysqli_query($con, $sale_sql);
 <body><br>
     <div class="bill">
         <div class="header">
-            <div class="logo-img"> <img src="../logo.JPG" alt="LOGO">
+            <div class="logo-img"> <img src="../logo.png" alt="LOGO">
             </div>
             <div class="topic">
                 <h1>Srijaya Print House</h1>

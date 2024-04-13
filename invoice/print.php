@@ -18,7 +18,7 @@ if (isset($_GET['invoice'])) {
 <link rel="stylesheet" href="../style.css">
 <div class="bill">
     <div class="header">
-        <div class="logo-img"> <a href="../index.php"> <img src="../logo.JPG" alt="LOGO"> </a>
+        <div class="logo-img"> <a href="../index.php"> <img src="../logo.png" alt="LOGO"> </a>
         </div>
         <div class="topic">
             <h1>Srijaya Print House</h1>

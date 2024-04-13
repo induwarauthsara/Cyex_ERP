@@ -1,4 +1,4 @@
-    <link rel="shortcut icon" href="logo.JPG" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
     <?php session_start(); ?>
     <?php if (!isset($_SESSION['employee_name'])) {
         header("Location: /login");
@@ -6,7 +6,7 @@
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
     <!-- favicon -->
-    <link rel="shortcut icon" href="../logo.JPG" type="image/x-icon">
+    <link rel="shortcut icon" href="../logo.png" type="image/x-icon">
 
     <!-- add main css file -->
     <link rel="stylesheet" href="/style.css">

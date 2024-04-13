@@ -1,4 +1,4 @@
-    <link rel="shortcut icon" href="logo.JPG" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
     <title>Lochana's Wallet</title>
 
 
@@ -11,7 +11,7 @@
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
     <!-- favicon -->
-    <link rel="shortcut icon" href="../logo.JPG" type="image/x-icon">
+    <link rel="shortcut icon" href="../logo.png" type="image/x-icon">
 
     <!-- add main css file -->
     <link rel="stylesheet" href="/style.css">

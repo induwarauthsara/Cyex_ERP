@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Srijaya Bill</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="logo.JPG" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
@@ -19,7 +19,7 @@
     <div class="main">
         <div class="bill">
             <div class="header"> <a href="/index.php">
-                    <div class="logo-img"> <img src="logo.JPG" alt="LOGO">
+                    <div class="logo-img"> <img src="logo.png" alt="LOGO">
                 </a>
             </div>
             <div class="topic">
