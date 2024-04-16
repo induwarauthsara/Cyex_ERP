@@ -26,6 +26,13 @@ if (isset($_GET['itemName']) && isset($_GET['itemPrice']) && isset($_GET['itemQt
     // Insert the new raw item into the database
     $sql = "INSERT INTO items (item_name, cost, qty) VALUES ('$itemName', $itemPrice, $itemQty)";
     insert_query($sql, "Insert Raw Item");
+
+    // fall cash in hand account when item buy
+    $buy_cost = $itemQty * $itemPrice;
+    $account_name = "cash_in_hand";
+    $sql = "UPDATE `accounts` SET `amount`= amount - {$buy_cost} WHERE account_name = '{$account_name}'";
+    insert_query($sql, "Insert Raw Item");
+
 } else {
     // Return an error message if required parameters are missing
     echo "Missing required parameters.";

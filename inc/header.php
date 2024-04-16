@@ -30,12 +30,15 @@
         <li class="dropdown dashboard_icon"> <a href="/comboProduct">Combo Products</a>
             <div class="dropdown-content">
                 <a href="/comboProduct/AddNewComboProduct.php">Add New Combo Product</a>
-                <!-- <a href="/comboProduct/RawItemList.php">Raw Item List</a> -->
+                <a href="/comboProduct/RawItemList.php">Raw Item List</a>
                 <!-- <a href="/comboProduct/productsList.php">Products List</a> -->
-                <a href="/dashboard/item/list.php">Raw Item List</a>
+                <!-- <a href="/dashboard/item/list.php">Raw Item List</a> -->
                 <a href="/dashboard/product">Products List</a>
             </div>
         </li>
+
+        <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li>
+
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
         <li class="dropdown dashboard_icon">
@@ -46,7 +49,6 @@
             <!-- <a href="/dashboard/makeProduct">Mke Product</a> -->
             <!-- </div> -->
         </li>
-        <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li>
         <!-- <li class="dashboard_icon"> <a href="/dashboard/item/list.php">Item</a> </li> -->
         <!-- <li class="dashboard_icon"> <a href="/dashboard/product">Product</a> </li> -->
         <!-- <li class="dashboard_icon"> <a href="/dashboard/makeProduct">Make Product</a> </li> -->
