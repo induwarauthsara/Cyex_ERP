@@ -29,7 +29,7 @@
         </li>
         <li class="dropdown dashboard_icon"> <a href="/comboProduct">Combo Products</a>
             <div class="dropdown-content">
-                <a href="/comboProduct/AddNew.php">Add New Combo Product</a>
+                <a href="/comboProduct/AddNewComboProduct.php">Add New Combo Product</a>
             </div>
         </li>
 
