@@ -30,6 +30,9 @@
         <li class="dropdown dashboard_icon"> <a href="/comboProduct">Combo Products</a>
             <div class="dropdown-content">
                 <a href="/comboProduct/AddNewComboProduct.php">Add New Combo Product</a>
+                <a href="/comboProduct/RawItemList.php">Raw Item List</a>
+                <!-- <a href="/comboProduct/AddNewComboProduct.php">&nbsp &nbsp &nbsp Purchase Raw Items </a> -->
+                <a href="/comboProduct/productsList.php">Products List</a>
             </div>
         </li>
 
@@ -43,9 +46,9 @@
             <!-- </div> -->
         </li>
         <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li>
-        <li class="dashboard_icon"> <a href="/dashboard/item/list.php">Item</a> </li>
-        <li class="dashboard_icon"> <a href="/dashboard/product">Product</a> </li>
-        <li class="dashboard_icon"> <a href="/dashboard/makeProduct">Make Product</a> </li>
+        <!-- <li class="dashboard_icon"> <a href="/dashboard/item/list.php">Item</a> </li> -->
+        <!-- <li class="dashboard_icon"> <a href="/dashboard/product">Product</a> </li> -->
+        <!-- <li class="dashboard_icon"> <a href="/dashboard/makeProduct">Make Product</a> </li> -->
 
         <li style="float:right" class="dropdown">
             <a href="/profile"><?php echo $_SESSION['employee_name'] ?> </a>

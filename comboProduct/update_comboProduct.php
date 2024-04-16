@@ -199,7 +199,7 @@ require_once '../inc/header.php'; ?>
                                 var displayStyle = showCostProfit ? "" : "none";
                                 var newRow = "<tr><td>" + rawItem + "</td><td>" + qty + "</td><td style='display: " + displayStyle + "'>" + cost.toFixed(2) + "</td><td>";
                                 newRow += "<button class='deleteRawItem'>Remove</button> &nbsp; ";
-                                newRow += "<a target='_blank' href='editRawitem.php?id=" + itemId + "'>Edit </a></td></tr>";
+                                // newRow += "<a target='_blank' href='editRawitem.php?id=" + itemId + "'>Edit </a></td></tr>";
                                 spinner.remove();
                                 document.getElementById("rawItemsBody").innerHTML += newRow;
 
@@ -489,7 +489,7 @@ require_once '../inc/header.php'; ?>
         rawItemsData.forEach(function(item) {
             var newRow = "<tr><td>" + item.item_name + "</td><td>" + item.qty + "</td><td style='display: " + displayStyle + "'>" + item.cost + "</td><td>";
             newRow += "<button class='deleteRawItem'>Remove</button> &nbsp; ";
-            newRow += "<a target='_blank' href='editRawitem.php?id=" + item.id + "'>Edit </a></td></tr>";
+            // newRow += "<a target='_blank' href='editRawitem.php?id=" + item.id + "'>Edit </a></td></tr>";
             rawItemsBody.innerHTML += newRow;
         });
 
