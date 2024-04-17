@@ -16,7 +16,7 @@ if ($result) {
     $product_name = $record['product_name'];
     $product_rate = $record['rate'];
     // $show_in_landing_page = $record['show_in_landing_page'];
-    $show_in_landing_page = '1';
+    $show_in_landing_page = $record['show_in_landing_page'] == 1 ? true : false;
 } else {
     echo "Error fetching combo product details";
 }
@@ -78,6 +78,9 @@ require_once '../inc/header.php'; ?>
                 </div> -->
                 <div class="form-group">
                     Show in Landing Page : <input type="checkbox" name="showInLandingPage" id="showInLandingPage">
+                </div>
+                <div class="form-group">
+                    Delete this Combo Product : <input type="checkbox" name="deleteProduct" id="deleteProduct">
                 </div>
                 <div class="form-group">
                     Show Cost and Profit : <input type="checkbox" id="showCostProfit">
@@ -479,7 +482,6 @@ require_once '../inc/header.php'; ?>
         document.getElementById("productRate").value = "<?php echo $product_rate; ?>";
         document.getElementById("showInLandingPage").checked = <?php echo $show_in_landing_page ? "true" : "false"; ?>;
 
-
         // var newRow = "<tr><td>" + rawItem + "</td><td>" + qty + "</td><td style='display: " + displayStyle + "'>" + cost.toFixed(2) + "</td><td>";
 
         // Load raw items data to table
@@ -522,6 +524,9 @@ require_once '../inc/header.php'; ?>
 
         // Get the show in landing page value
         var showInLandingPage = document.getElementById("showInLandingPage").checked ? 1 : 0;
+
+        // Get Delete Product value
+        var deleteProduct = document.getElementById("deleteProduct").checked ? 1 : 0;
 
         var finalCost = document.getElementById("finalCost").textContent;
         var profit = document.getElementById("profit").textContent;
@@ -572,6 +577,7 @@ require_once '../inc/header.php'; ?>
             productRate: productRate,
             // image: image,
             showInLandingPage: showInLandingPage,
+            deleteProduct: deleteProduct,
             finalCost: finalCost,
             profit: profit,
             rawData: rawData

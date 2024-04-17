@@ -13,6 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $productName = $data['productName'];
     $productRate = $data['productRate'];
     $showInLandingPage = $data['showInLandingPage'];
+    $deleteProduct = $data['deleteProduct'];
     $finalCost = $data['finalCost'];
     $profit = $data['profit'];
     $rawData = $data['rawData'];
@@ -27,12 +28,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $deleteQuery = "DELETE FROM makeProduct WHERE product_name = '$productName'";
         echo $deleteQuery;
         $deleteQueryDB = mysqli_query($con, $deleteQuery);
+
+        // =============== Delete Product from products table ===============
+        if ($deleteProduct) {
+            $deleteProductQuery = "DELETE FROM products WHERE product_id = '$productId'";
+            echo $deleteProductQuery;
+            $deleteProductQueryDB = mysqli_query($con, $deleteProductQuery);
+            exit();
+        }
     } else {
         echo "Error: " . $productUpdateQuery . "<br>" . mysqli_error($con);
     }
 
     // Insert product data into the database
-    if ($productUpdateQueryDb && $deleteQueryDB) {
+    if ($productUpdateQueryDb && $deleteQueryDB && !$deleteProduct) {
         // Insert raw item data into the database
         foreach ($rawData as $rawItem) {
             $itemName = $rawItem['itemName'];

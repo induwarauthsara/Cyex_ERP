@@ -31,9 +31,9 @@
             <div class="dropdown-content">
                 <a href="/comboProduct/AddNewComboProduct.php">Add New Combo Product</a>
                 <a href="/comboProduct/RawItemList.php">Raw Item List</a>
-                <!-- <a href="/comboProduct/productsList.php">Products List</a> -->
+                <a href="/comboProduct/productsList.php">Products List</a>
                 <!-- <a href="/dashboard/item/list.php">Raw Item List</a> -->
-                <a href="/dashboard/product">Products List</a>
+                <!-- <a href="/dashboard/product">Products List</a> -->
             </div>
         </li>
 
