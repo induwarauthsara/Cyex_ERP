@@ -16,3 +16,7 @@ $buy_cost = $item_qty * $item_cost;
 $account_name = "cash_in_hand";
 $sql = "UPDATE `accounts` SET `amount`= amount - {$buy_cost} WHERE account_name = '{$account_name}'";
 insert_query($sql, "");
+
+// Add Transaction Log -> type, description, amount
+$transaction_type = 'Raw Item Purchase';
+transaction_log($transaction_type, $item_name, $buy_cost);
