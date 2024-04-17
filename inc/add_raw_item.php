@@ -33,6 +33,10 @@ if (isset($_GET['itemName']) && isset($_GET['itemPrice']) && isset($_GET['itemQt
     $sql = "UPDATE `accounts` SET `amount`= amount - {$buy_cost} WHERE account_name = '{$account_name}'";
     insert_query($sql, "Insert Raw Item");
 
+    // Add Transaction Log -> type, description, amount
+    $transaction_type = 'Raw Item Purchase';
+    $description = 'itemName';
+    transaction_log($transaction_type, $description, $buy_cost);
 } else {
     // Return an error message if required parameters are missing
     echo "Missing required parameters.";

@@ -41,4 +41,23 @@ function insert_query($query, $msg)
         }
     }
 }
+
+// Function for Add Transaction Log
+function transaction_log($transaction_type, $description, $amount)
+{
+    // Start Session if not started
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        //echo "Session Active";
+    } else {
+        session_start();
+    }
+
+    if (isset($_SESSION['employee_id'])) {
+        $employee_id = $_SESSION['employee_id'];
+        $sql = "INSERT INTO transaction_log (transaction_type, description, amount, employ_id) VALUES ('$transaction_type', '$description', '$amount', '$employee_id');";
+    } else {
+        $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('$transaction_type', '$description', '$amount');";
+    }
+    insert_query($sql, "Transaction Log");
+}
 ?>
