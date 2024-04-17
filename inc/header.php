@@ -56,6 +56,7 @@
         <li style="float:right" class="dropdown">
             <a href="/profile"><?php echo $_SESSION['employee_name'] ?> </a>
             <div class="dropdown-content">
+                <a href="/profile/attendance">Attendance</a>
                 <a href="/login/logout.php">Logout</a>
             </div>
         </li>
