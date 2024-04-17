@@ -1,94 +1,42 @@
 <?php require_once '../inc/config.php'; ?>
 <a href="javascript:history.back()"><button style="margin:15px;">Go Back</button></a>
 <?php
-// Get Product List to Array
-$product_list_array = array();
-$select_product_list_sql = "SELECT product_name FROM products;";
 
-if ($result = mysqli_query($con, $select_product_list_sql)) {
-    while ($row = mysqli_fetch_array($result)) {
-        array_push($product_list_array, $row["product_name"]);
-    }
-    mysqli_free_result($result);
+// Item Cost walata anuwa Product Cost eka update Wenawa
+// Product Rate eka update wenawa
+// Product Stock Qty eka update wenawa
+// Product Profit eka update wenawa
+// Min Qty eka update wenawa
+
+// Update the product cost and profit in the database
+$sql1 = "UPDATE products p
+         INNER JOIN (
+             SELECT mp.product_name, SUM(mp.qty * i.cost) AS total_cost, p.rate
+             FROM makeProduct mp
+             INNER JOIN items i ON mp.item_name = i.item_name
+             INNER JOIN products p ON mp.product_name = p.product_name
+             GROUP BY mp.product_name
+         ) AS temp ON p.product_name = temp.product_name
+         SET p.cost = temp.total_cost, p.profit = temp.rate - temp.total_cost";
+
+// Update stock quantity in the products table
+$sql2 = "UPDATE products p
+         INNER JOIN (
+             SELECT mp.product_name, MIN(i.qty) AS min_qty
+             FROM makeProduct mp
+             INNER JOIN items i ON mp.item_name = i.item_name
+             GROUP BY mp.product_name
+         ) AS temp ON p.product_name = temp.product_name
+         SET p.stock_qty = temp.min_qty, p.has_stock = CASE WHEN temp.min_qty > 0 THEN 1 ELSE 0 END";
+
+// Execute the SQL queries
+$result1 = $con->query($sql1);
+$result2 = $con->query($sql2);
+
+// Check for errors
+if ($result1 && $result2) {
+    echo "Records updated successfully.";
+} else {
+    echo "Error: " . $con->error;
 }
-
-
-for ($i = 0; $i < count($product_list_array); $i++) {
-
-    $product = $product_list_array[$i];
-
-    $sql = "SELECT rate FROM products WHERE product_name = '{$product}';";
-    $result = mysqli_query($con, $sql);
-    $recoard = mysqli_fetch_assoc($result);
-    $product_rate = $recoard["rate"];
-
-    // Product Qty
-    // -------- Get Product makeProduct to Array --------
-    $sql = "SELECT item_name FROM makeProduct WHERE product_name='{$product}'";
-    $result = mysqli_query($con, $sql);
-    $ingridians_list = array();
-    if (mysqli_num_rows($result) > 0) {
-        while ($recoard = mysqli_fetch_assoc($result)) {
-            array_push($ingridians_list, $recoard["item_name"]);
-        }
-    }
-    // -------- Get QTY of ingridians_list to Array --------
-    $ingridians_requement_qty_array = array();
-    $item_qty_array = array();
-    $makeable_product_qty_array = array();
-
-    for ($ii = 0; $ii < count($ingridians_list); $ii++) {
-        $selected_item = $ingridians_list[$ii];
-
-        $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
-        $result = mysqli_query($con, $selected_item_req_qty_sql);
-        $recoard = mysqli_fetch_assoc($result);
-        array_push($ingridians_requement_qty_array, $recoard["qty"]);
-
-        $selected_item_qty_sql = "SELECT qty FROM items WHERE item_name = '{$selected_item}';";
-        $result = mysqli_query($con, $selected_item_qty_sql);
-        $recoard = mysqli_fetch_assoc($result);
-        array_push($item_qty_array, $recoard["qty"]);
-
-        $selected_item_ingridians_requement = $ingridians_requement_qty_array[$ii];
-        $selected_item_qty = $item_qty_array[$ii];
-        $makeable_product_qty = $selected_item_qty / $selected_item_ingridians_requement;
-        array_push($makeable_product_qty_array, $makeable_product_qty);
-    }
-    // -------- Select Min QTY of ingridians_qty --------
-    $min_ingridians_qty = min($makeable_product_qty_array);
-    // -------- Set Product QTY = $min_ingridians_qty --------
-    $product_qty = $min_ingridians_qty;
-
-    // Product Cost
-    $product_cost = 0;
-    for ($iii = 0; $iii < count($ingridians_list); $iii++) {
-        $selected_item = $ingridians_list[$iii];
-        $selected_item_qty = $ingridians_requement_qty_array[$iii];
-        $selected_item_cost_sql = "SELECT cost FROM items WHERE item_name = '{$selected_item}'";
-        $result = mysqli_query($con, $selected_item_cost_sql);
-        $recoard = mysqli_fetch_assoc($result);
-        $selected_item_cost = $recoard["cost"] * $selected_item_qty;
-        $product_cost += $selected_item_cost;
-    }
-    echo "<br>Final Cost :  {$product_cost} <br>";
-
-
-    // Product Profit
-    $product_profit = $product_rate - $product_cost;
-
-    // Has Product in Stock ?
-    if ($product_qty > 0) {
-        $product_has_stock = 1;
-    } else {
-        $product_has_stock = 0;
-    }
-
-    // Update Product Data
-    $sql = "UPDATE `products` SET 
-stock_qty='{$product_qty}', cost='{$product_cost}', profit='{$product_profit}', has_stock='{$product_has_stock}' 
-WHERE product_name='{$product}'";
-    insert_query($sql, "Successfully Update <b> {$product}</b> Product!");
-}
-
 ?>

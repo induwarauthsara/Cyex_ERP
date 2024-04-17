@@ -102,7 +102,13 @@ if ($result) {
 
     // Update the stock_qty column in the products table with the minimum available quantity
     foreach ($min_available_qty as $product_name => $min_qty) {
-        $sql = "UPDATE products SET stock_qty = $min_qty WHERE product_name = '$product_name'";
+        // Check Has Stock ?
+        if ($min_qty > 0) {
+            $has_stock = 1;
+        }else{
+            $has_stock = 0;
+        }
+        $sql = "UPDATE products SET stock_qty = $min_qty, has_stock = $has_stock WHERE product_name = '$product_name'";
 
         // Execute the SQL update query
         if ($con->query($sql) === TRUE) {
