@@ -1,4 +1,5 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <title>Combo Product</title>
 
     <?php
     require_once '../inc/config.php';
@@ -71,7 +72,7 @@
     }
     echo "</tbody></table>";
 
-?>
+    ?>
 
     <script>
         // ======================  Show and Hide Cost / Profit  ======================

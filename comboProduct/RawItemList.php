@@ -27,6 +27,7 @@ include '../inc/DataTable_cdn.php';
                 <th>Available Qty</th>
                 <th>Edit</th>
                 <th>Buy</th>
+                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -45,6 +46,7 @@ include '../inc/DataTable_cdn.php';
                         echo "<td>$itemQty</td>";
                         echo "<td><button onclick='showEditRawItemModal(`$itemName`, `$itemCost`, `$itemQty`,`$itemId`)' value='" . $row['id'] . "'>Edit</button></td>";
                         echo "<td><button onclick='buyRawItem(`$itemId`, `$itemName`)' value='" . $row['id'] . "'>Buy</button></td>";
+                        echo "<td><button class='btn-danger' onclick='deleteRawItem(`$itemId`, `$itemName`)' value='" . $row['id'] . "'>Delete</button></td>";
                         echo "</tr>";
                     }
                 } else {
@@ -195,6 +197,10 @@ include '../inc/DataTable_cdn.php';
 
     p {
         font-weight: bold;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
     }
 </style>
 
@@ -363,6 +369,50 @@ include '../inc/DataTable_cdn.php';
                     timer: 2000, // Close alert after 2 seconds
                     // timerProgressBar: true
                 });
+            }
+        });
+    }
+
+    // ===================================== Delete Raw Item =====================================
+    function deleteRawItem(itemId, itemName) {
+        Swal.fire({
+            title: 'Delete ' + itemName,
+            text: "Are you sure you want to delete this raw item?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Send the delete request to the server
+                fetch(`delete_raw_item-submit.php?itemId=${itemId}&itemName=${itemName}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to delete raw item');
+                        }
+                        return response.text();
+                        console.log(response);
+                    })
+                    .then(responseText => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            // text: 'Raw Item deleted successfully!',
+                            text: responseText,
+                            timer: 2000, // Close alert after 2 seconds
+                            // timerProgressBar: true
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            // text: 'Failed to delete raw item!',
+                            text: error,
+                        });
+                    });
             }
         });
     }
