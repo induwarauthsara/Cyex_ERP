@@ -10,4 +10,10 @@ if ($con->query($sql) === TRUE) {
 } else {
     echo "Error: " . $sql . "<br>" . $con->error;
 }
+$sql = "UPDATE accounts SET amount = amount - $amount WHERE account_name = 'cash_in_hand'";
+if ($con->query($sql) === TRUE) {
+    echo "Account updated successfully";
+} else {
+    echo "Error: " . $sql . "<br>" . $con->error;
+}
 $con->close();
