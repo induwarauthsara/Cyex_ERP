@@ -17,7 +17,7 @@ if ($con->query($sql) === TRUE) {
     // Add Transaction Log
     $transaction_type = 'Wallet';
     $description = 'Lochana Wallet';
-    transaction_log($transaction_type, $description, $amount);
+    transaction_log($transaction_type, $description, -$amount);
 } else {
     echo "Error: " . $sql . "<br>" . $con->error;
 }

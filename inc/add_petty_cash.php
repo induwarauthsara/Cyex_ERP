@@ -16,7 +16,7 @@ insert_query($sql, "Fall Petty Cash from Cash in Hand");
 
 // Add Transaction Log
 $transaction_type = 'Petty Cash';
-transaction_log($transaction_type, $for, $amount);
+transaction_log($transaction_type, $for, -$amount);
 ?>
 
 <?php end_db_con(); ?>

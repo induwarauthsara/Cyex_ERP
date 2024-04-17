@@ -19,4 +19,4 @@ insert_query($sql, "");
 
 // Add Transaction Log -> type, description, amount
 $transaction_type = 'Raw Item Purchase';
-transaction_log($transaction_type, $item_name, $buy_cost);
+transaction_log($transaction_type, $item_name, -$buy_cost);

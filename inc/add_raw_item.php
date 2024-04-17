@@ -36,7 +36,7 @@ if (isset($_GET['itemName']) && isset($_GET['itemPrice']) && isset($_GET['itemQt
     // Add Transaction Log -> type, description, amount
     $transaction_type = 'Raw Item Purchase';
     $description = "$itemName";
-    transaction_log($transaction_type, $description, $buy_cost);
+    transaction_log($transaction_type, $description, -$buy_cost);
 } else {
     // Return an error message if required parameters are missing
     echo "Missing required parameters.";
