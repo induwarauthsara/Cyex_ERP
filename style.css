@@ -485,3 +485,15 @@ tr:hover {
     display: none;
   }
 }
+
+button {
+  padding: 5px 10px;
+  font-size: 1rem;
+  background-color: green;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: auto;
+  display: flex;
+}

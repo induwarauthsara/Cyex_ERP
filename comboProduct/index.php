@@ -213,7 +213,6 @@
 
     <style>
         button {
-            padding: 3px;
             margin: 2px;
             align-items: center;
         }
@@ -221,5 +220,9 @@
         .swal2-html-container input {
             padding: 5px;
             margin: 3px;
+        }
+
+        a {
+            text-decoration: none;
         }
     </style>
