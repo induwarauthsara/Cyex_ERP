@@ -157,7 +157,7 @@ include '../../inc/DataTable_cdn.php'
 <table id="DataTable" class="display">
     <thead>
         <tr>
-            <th>Employee ID</th>
+            <th>Employee Name</th>
             <th>Action</th>
             <th>Date</th>
             <th>Time</th>
