@@ -25,6 +25,7 @@ include '../inc/DataTable_cdn.php';
                 <th>Raw Item Name</th>
                 <th> Cost</th>
                 <th>Available Qty</th>
+                <th> Cost x Available Qty</th>
                 <th>Edit</th>
                 <th>Buy</th>
                 <th>Delete</th>
@@ -40,10 +41,12 @@ include '../inc/DataTable_cdn.php';
                         $itemCost = $row['cost'];
                         $itemQty = $row['qty'];
                         $itemId = $row['id'];
+                        $costXQty = asRS($itemCost * $itemQty);
                         echo "<tr>";
                         echo "<td>$itemName</td>";
                         echo "<td>$itemCost</td>";
                         echo "<td>$itemQty</td>";
+                        echo "<td>$costXQty</td>";
                         echo "<td><button onclick='showEditRawItemModal(`$itemName`, `$itemCost`, `$itemQty`,`$itemId`)' value='" . $row['id'] . "'>Edit</button></td>";
                         echo "<td><button onclick='buyRawItem(`$itemId`, `$itemName`)' value='" . $row['id'] . "'>Buy</button></td>";
                         echo "<td><button class='btn-danger' onclick='deleteRawItem(`$itemId`, `$itemName`)' value='" . $row['id'] . "'>Delete</button></td>";
