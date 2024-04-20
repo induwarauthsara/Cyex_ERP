@@ -52,6 +52,53 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         echo "Error: " . $productQuery . "<br>" . mysqli_error($con);
     }
 
+    // echo "==================================================<pre>";
+
+    // Update stock quantity in the products table
+    // Initialize array to store the minimum available quantity for each product
+    $min_available_qty = array();
+
+    // Query to find the minimum available quantity for each product
+    $sql = "SELECT mp.product_name, MIN(i.qty) AS min_qty
+        FROM makeProduct mp
+        INNER JOIN items i ON mp.item_name = i.item_name
+        WHERE mp.product_name = '$productName'
+        GROUP BY mp.product_name";
+
+    $result = $con->query($sql);
+
+    // Check if query was successful
+    if ($result) {
+        // Fetch each row and store the minimum available quantity in array
+        while ($row = $result->fetch_assoc()) {
+            $product_name = $row['product_name'];
+            $min_qty = $row['min_qty'];
+            $min_available_qty[$product_name] = $min_qty;
+        }
+
+        // Update the stock_qty column in the products table with the minimum available quantity
+        foreach ($min_available_qty as $product_name => $min_qty) {
+            // Check Has Stock ?
+            if ($min_qty > 0
+            ) {
+                $has_stock = 1;
+            } else {
+                $has_stock = 0;
+            }
+            $sql = "UPDATE products SET stock_qty = $min_qty, has_stock = $has_stock WHERE product_name = '$product_name'";
+
+            // Execute the SQL update query
+            if ($con->query($sql) === TRUE) {
+                // echo "Record updated successfully for product: $product_name <br>";
+                // echo "Stock quantity updated successfully for product: $product_name <br>";
+            } else {
+                echo "Error updating record for product: $product_name <br>";
+            }
+        }
+    } else {
+        echo "Error: " . $con->error;
+    }
+
     // Close the database connection
     mysqli_close($con);
 } else {
