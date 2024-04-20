@@ -497,3 +497,7 @@ button {
   margin: auto;
   display: flex;
 }
+
+a {
+  text-decoration: none;
+}
