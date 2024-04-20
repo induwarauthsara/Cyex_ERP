@@ -429,102 +429,103 @@ require_once '../inc/header.php'; ?>
 <script>
     // ====================== Submit All Data to Database for Create New Combo Product ======================
     // Get product name, rate, image, showInLandingPage, total cost, and profit
-    var productName = document.getElementById("productName").value;
-    var productRate = document.getElementById("productRate").value;
-    // var image = document.getElementById("image").value;
-    var showInLandingPage = document.getElementById("showInLandingPage").checked;
-    var finalCost = document.getElementById("finalCost").textContent;
-    var profit = document.getElementById("profit").textContent;
+    document.getElementById("submitData").addEventListener("click", function() {
 
-    // Validate inputs
-    if (!productName || !productRate) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Please fill in all fields!',
-        });
-        return;
-    }
-    if (isNaN(productRate) || isNaN(profit) || isNaN(finalCost) || parseFloat(productRate) <= 0 || parseFloat(productRate) >= 100000000000) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Please enter a valid numbers!',
-        });
-        return;
-    }
+        var productName = document.getElementById("productName").value;
+        var productRate = document.getElementById("productRate").value;
+        // var image = document.getElementById("image").value;
+        var showInLandingPage = document.getElementById("showInLandingPage").checked;
+        var finalCost = document.getElementById("finalCost").textContent;
+        var profit = document.getElementById("profit").textContent;
 
-
-
-    // Get all table rows
-    var rows = document.querySelectorAll("#rawItemsBody tr");
-
-    // Create an array to store raw item data
-    var rawData = [];
-
-    // Iterate over each table row
-    rows.forEach(function(row) {
-        // Get item name, quantity, and price from the row
-        var itemName = row.cells[0].innerText;
-        var itemQty = row.cells[1].innerText;
-        var itemPrice = row.cells[2].innerText;
-
-        // Push the data to the array
-        rawData.push({
-            itemName: itemName,
-            itemQty: itemQty,
-            itemPrice: itemPrice
-        });
-    });
-
-    // Convert the data to JSON format
-    var jsonData = JSON.stringify({
-        productName: productName,
-        productRate: productRate,
-        // image: image,
-        showInLandingPage: showInLandingPage,
-        finalCost: finalCost,
-        profit: profit,
-        rawData: rawData
-    });
-
-    console.log(jsonData);
-
-    // Send the data to the server using AJAX
-    fetch("AddNewComboProduct-submit.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: jsonData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to submit data');
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Something went wrong!',
-                });
-            }
-            return response.text();
-        })
-        .then(responseText => {
-            console.log(responseText); // Handle the response from the server
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Data submitted successfully.',
-                showConfirmButton: false,
-                timer: 2000 // Close alert after 2 seconds
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
+        // Validate inputs
+        if (!productName || !productRate) {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: 'Error:' + error,
+                text: 'Please fill in all fields!',
+            });
+            return;
+        }
+        if (isNaN(productRate) || isNaN(profit) || isNaN(finalCost) || parseFloat(productRate) <= 0 || parseFloat(productRate) >= 100000000000) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Please enter a valid numbers!',
+            });
+            return;
+        }
+
+        // Get all table rows
+        var rows = document.querySelectorAll("#rawItemsBody tr");
+
+        // Create an array to store raw item data
+        var rawData = [];
+
+        // Iterate over each table row
+        rows.forEach(function(row) {
+            // Get item name, quantity, and price from the row
+            var itemName = row.cells[0].innerText;
+            var itemQty = row.cells[1].innerText;
+            var itemPrice = row.cells[2].innerText;
+
+            // Push the data to the array
+            rawData.push({
+                itemName: itemName,
+                itemQty: itemQty,
+                itemPrice: itemPrice
             });
         });
+
+        // Convert the data to JSON format
+        var jsonData = JSON.stringify({
+            productName: productName,
+            productRate: productRate,
+            // image: image,
+            showInLandingPage: showInLandingPage,
+            finalCost: finalCost,
+            profit: profit,
+            rawData: rawData
+        });
+
+        console.log(jsonData);
+
+        // Send the data to the server using AJAX
+        fetch("AddNewComboProduct-submit.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: jsonData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to submit data');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                    });
+                }
+                return response.text();
+            })
+            .then(responseText => {
+                console.log(responseText); // Handle the response from the server
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Data submitted successfully.',
+                    showConfirmButton: false,
+                    timer: 2000 // Close alert after 2 seconds
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Error:' + error,
+                });
+            });
+    });
 </script>
