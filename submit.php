@@ -88,7 +88,6 @@ require_once 'inc/config.php'; ?>
 
         // Total Bill Product Cost
         $total_bill_cost = 0;
-        $total_bill_profit = 0;
 
         for ($no = 0; $no <= $bill_rows; $no++) {
             if (isset($_POST["product_{$no}"])) { // Check row is removed
@@ -102,7 +101,6 @@ require_once 'inc/config.php'; ?>
                         global $bill_advance;
                         global $bill_no;
                         global $total_bill_cost;
-                        global $total_bill_profit;
 
                         $product = $_POST["{$product}_{$no}"];
                         $description = $_POST["{$description}_{$no}"];
@@ -110,7 +108,6 @@ require_once 'inc/config.php'; ?>
                         $rate = $_POST["{$rate}_{$no}"];
                         $amount = $_POST["{$amount}_{$no}"];
                         $worker = $_POST["{$worker}_{$no}"];
-                        $todo = "Unchecked";
 
                         echo $product . "<br>";
                         echo $qty . "<br>";
@@ -129,7 +126,6 @@ require_once 'inc/config.php'; ?>
 
                         // Total Bill Product Cost and Profit
                         $total_bill_cost += $cost;
-                        $total_bill_profit += $amount - $cost;
 
                         // Send Sales Data to DB
                         $sql = "INSERT INTO sales (invoice_number, product, `description`, qty, rate, amount, worker, cost, profit)
@@ -241,6 +237,9 @@ require_once 'inc/config.php'; ?>
             sales_arry('product', 'description', 'qty', 'rate', 'amount', 'worker');
             echo "<br>";
         }
+
+        // Prfit
+        $total_bill_profit = $bill_advance - $total_bill_cost;
 
         // Update Invoice Total Profit And Cost
         $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";

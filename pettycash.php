@@ -35,13 +35,17 @@ include 'inc/DataTable_cdn.php';
             echo "</thead>";
             echo "<tbody>";
             while ($row = mysqli_fetch_array($result)) {
+                $emp_name = $row['emp_name'];
+                if ($emp_name == '') {
+                    $emp_name = 'Srijaya Print House';
+                }
                 echo "<tr>";
                 echo "<td>" . $row['id'] . "</td>";
                 echo "<td>" . $row['perrycash'] . "</td>";
                 echo "<td>" . $row['amount'] . "</td>";
                 echo "<td>" . $row['date'] . "</td>";
                 echo "<td>" . $row['time'] . "</td>";
-                echo "<td>" . $row['emp_name'] . "</td>";
+                echo "<td>" . $emp_name . "</td>";
                 echo "</tr>";
             }
             echo "</tbody>";
