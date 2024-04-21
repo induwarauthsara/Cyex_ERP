@@ -38,11 +38,11 @@
         </li>
 
         <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li>
-        <li class="dashboard_icon"> <a href="/transactionLog">Transaction Log</a> </li>
+        <li class="dashboard_icon adminOnly"> <a href="/transactionLog">Transaction Log</a> </li>
 
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
-        <li class="dropdown dashboard_icon">
+        <li class="dropdown dashboard_icon adminOnly">
             <a href="/dashboard" class="dropbtn"><i class="fas fa-cogs header_icons"></i></i></a>
             <!-- <div class="dropdown-content"> -->
             <!-- <a href="/dashboard/item">Item</a> -->
@@ -154,6 +154,7 @@
         $admin = "Admin";
         if ($employee_role !== $admin) {
             echo "i.fas.fa-cogs.header_icons { display: none; }";
+            echo ".adminOnly { display: none; }";
         }
         ?>
     </style>
