@@ -1,4 +1,11 @@
-<?php require_once '../inc/config.php'; ?>
+<?php
+// Only Admin can access this page
+session_start();
+$employee_role = $_SESSION['employee_role'];
+if ($employee_role !== $admin) {
+    header("Location: /index.php");
+}
+require_once '../inc/config.php'; ?>
 <?php require '../inc/header.php';
 include '../dashboard/auth.php'
 ?>

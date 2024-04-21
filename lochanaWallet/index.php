@@ -1,4 +1,5 @@
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="/style.css">
     <title>Lochana's Wallet</title>
 
 
@@ -10,17 +11,24 @@
 
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
-    <!-- favicon -->
-    <link rel="shortcut icon" href="../logo.png" type="image/x-icon">
-
-    <!-- add main css file -->
-    <link rel="stylesheet" href="/style.css">
 
     <!-- adding jquery cdn -->
-    <script src="https://code.jquery.com/jquery-3.5.1.js "></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.js "></script> -->
+
 
     <!-- // Wallet Balance -->
     <?php
+    // I want to Average of last 90 days Expenses
+    $sql = "SELECT AVG(amount) AS avg_expenses 
+            FROM lochana_wallet 
+            WHERE date >= DATE(NOW()) - INTERVAL 90 DAY;";
+    $result = mysqli_query($con, $sql);
+    while ($row = mysqli_fetch_assoc($result)) {
+        $avg_expenses = $row['avg_expenses'];
+    }
+    echo $avg_expenses;
+
+
     $sql = "SELECT SUM(amount) AS balance FROM lochana_wallet;";
     $result = $con->query($sql);
     if ($result->num_rows > 0) {
