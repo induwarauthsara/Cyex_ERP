@@ -15,7 +15,7 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<th>Advance</th>";
         echo "<th>Balance</th>";
         echo "<th>Total Cost</th>";
-        echo "<th>Total Profit</th>"
+        echo "<th>Total Profit</th>";
         echo "<th>Full Paid</th>";
         echo "<th>Add <br> Fund</th>";
         echo "<th>Print</th>";
