@@ -43,7 +43,6 @@ include '../inc/DataTable_cdn.php';
                         $itemId = $row['id'];
                         $costXQty = $itemCost * $itemQty;
                         $costXQty = number_format($costXQty, 2);
-                        echo "Cost X Qty : " . $constXQty;
                         echo "<tr>";
                         echo "<td>$itemName</td>";
                         echo "<td>$itemCost</td>";
