@@ -387,6 +387,7 @@
                 qty.type = "number";
                 qty.value = 1;
                 qty.setAttribute("onchange", "change('qty', className, id)");
+                qty.setAttribute("step", "any")
                 qty.setAttribute("name", qty.id);
 
                 // Create a Rate in row
