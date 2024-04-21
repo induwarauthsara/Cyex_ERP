@@ -14,6 +14,8 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<th>Disco.</th>";
         echo "<th>Advance</th>";
         echo "<th>Balance</th>";
+        echo "<th>Total Cost</th>";
+        echo "<th>Total Profit</th>"
         echo "<th>Full Paid</th>";
         echo "<th>Add <br> Fund</th>";
         echo "<th>Print</th>";
@@ -31,6 +33,8 @@ if ($result = mysqli_query($con, $sql)) {
             echo "<td> " . $row['discount'] . "</td>";
             echo "<td> " . $row['advance'] . "</td>";
             echo "<td> " . $row['balance'] . "</td>";
+            echo "<td> " . $row['cost'] . "</td>";
+            echo "<td> " . $row['profit'] . "</td>";
             echo "<td>";
             $paided = $row['full_paid'];
             if ($paided == 0) {

@@ -36,7 +36,7 @@ $payment_pending_total = asRS(mysqli_fetch_assoc(mysqli_query($con, $sql))['sum(
                     <?php
                     // Get each Item Full Cost (Cost x qty)
                     $item_capital = array();
-                    $sql = "SELECT * FROM items WHERE qty > 0";
+                    $sql = "SELECT * FROM items";
                     $result = mysqli_query($con, $sql);
                     if ($result) {
                         // qury success

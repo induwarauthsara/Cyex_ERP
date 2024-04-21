@@ -71,8 +71,8 @@ require_once 'inc/config.php'; ?>
 
 
         // Send Invoice Data to Database
-        $sql = "INSERT INTO invoice (customer_name, invoice_date, customer_mobile, biller, primary_worker, total, discount, advance, balance, full_paid)
-        VALUES ('{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$default_worker}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
+        $sql = "INSERT INTO invoice (customer_name, invoice_date, customer_mobile, biller, total, discount, advance, balance, full_paid)
+        VALUES ('{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
         insert_query($sql, "Send Invoice Data to Database");
 
         // Retrieve the auto-generated InvoiceID
@@ -86,6 +86,10 @@ require_once 'inc/config.php'; ?>
             insert_query($sql, "Add Todo Item Data to Database");
         }
 
+        // Total Bill Product Cost
+        $total_bill_cost = 0;
+        $total_bill_profit = 0;
+
         for ($no = 0; $no <= $bill_rows; $no++) {
             if (isset($_POST["product_{$no}"])) { // Check row is removed
                 if (!function_exists('sales_arry')) { // voice function re-call in for loop
@@ -97,6 +101,8 @@ require_once 'inc/config.php'; ?>
                         global $biller;
                         global $bill_advance;
                         global $bill_no;
+                        global $total_bill_cost;
+                        global $total_bill_profit;
 
                         $product = $_POST["{$product}_{$no}"];
                         $description = $_POST["{$description}_{$no}"];
@@ -112,10 +118,22 @@ require_once 'inc/config.php'; ?>
                         echo $amount . "<br>";
                         echo $worker . "<br>";
                         echo "<br>";
+                        // Product Cost eka Stock Account eken Adu wenawa (Kalin Thibbe + wenna.)
+                        $cost_sql = "SELECT cost, profit FROM products WHERE product_name = '{$product}'";
+                        $cost_result = mysqli_query($con, $cost_sql);
+                        $cost = mysqli_fetch_assoc($cost_result);
+                        $cost = $cost['cost'] * $qty;
+                        $profit = $cost['profit'] * $qty;
+                        $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
+                        insert_query($sql, "Add Product Cost to Stock Account");
+
+                        // Total Bill Product Cost and Profit
+                        $total_bill_cost += $cost;
+                        $total_bill_profit += $amount - $cost;
 
                         // Send Sales Data to DB
-                        $sql = "INSERT INTO sales (invoice_number, product, `description`, qty, rate, amount, worker, todo)
-                        VALUES ('{$bill_no}', '{$product}', '{$description}', '{$qty}', '{$rate}', '{$amount}', '{$worker}', '{$todo}')";
+                        $sql = "INSERT INTO sales (invoice_number, product, `description`, qty, rate, amount, worker, cost, profit)
+                        VALUES ('{$bill_no}', '{$product}', '{$description}', '{$qty}', '{$rate}', '{$amount}', '{$worker}', '{$cost}', '{$profit}')";
                         insert_query($sql, "Send Invoice data to DB");
 
                         /*  //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
@@ -123,40 +141,27 @@ require_once 'inc/config.php'; ?>
                         insert_query($sql, "Fall Sell Product Qty from Stock");
                         */
 
-                        // Product Cost eka Stock Account ekata add wenawa
-                        $cost_sql = "SELECT cost FROM products WHERE product_name = '{$product}'";
-                        $cost_result = mysqli_query($con, $cost_sql);
-                        $cost = mysqli_fetch_assoc($cost_result);
-                        $cost = $cost['cost'] * $qty;
-                        $sql = "UPDATE accounts SET amount = amount + {$cost} WHERE account_name = 'Stock Account'";
-                        insert_query($sql, "Add Product Cost to Stock Account");
-
-                        // Profit eka accounts walata bedila yanawa
-                        $profit = $amount - $cost;
-
-                        $profit_for_biller =  ($profit / 100) * 0.5;
-                        $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
-                        insert_query($sql, "send biller Profit");
-
-                        $profit_for_worker = ($profit / 100) * 36;
-                        $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$worker}'";
+                        // Send Profit to Accounts
+                        $profit_for_worker = ($profit / 100) * 15;
+                        $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$biller}'";
                         insert_query($sql, "send worker Profit");
 
-                        $profit_for_utility_bills_account = ($profit / 100) * 20;
-                        $sql = "UPDATE accounts SET amount = amount + {$profit_for_utility_bills_account} WHERE account_name = 'Utility Bills'";
-                        insert_query($sql, "send Utility Bills Profit");
+                        // $profit_for_utility_bills_account = ($profit / 100) * 20;
+                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_utility_bills_account} WHERE account_name = 'Utility Bills'";
+                        // insert_query($sql, "send Utility Bills Profit");
+                        // 
+                        // $profit_for_machines_account = ($profit / 100) * 20;
+                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_machines_account} WHERE account_name = 'Machines Account'";
+                        // insert_query($sql, "send Machines Account Profit");
+                        // 
+                        // $profit_for_stock_account = ($profit / 100) * 8.5;
+                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_stock_account} WHERE account_name = 'Stock Account'";
+                        // insert_query($sql, "send Stock Account Profit");
+                        // 
+                        // $profit_for_company_profit_account = ($profit / 100) * 15;
+                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_company_profit_account} WHERE account_name = 'Company Profit'";
+                        // insert_query($sql, "send Company Profit Profit");
 
-                        $profit_for_machines_account = ($profit / 100) * 20;
-                        $sql = "UPDATE accounts SET amount = amount + {$profit_for_machines_account} WHERE account_name = 'Machines Account'";
-                        insert_query($sql, "send Machines Account Profit");
-
-                        $profit_for_stock_account = ($profit / 100) * 8.5;
-                        $sql = "UPDATE accounts SET amount = amount + {$profit_for_stock_account} WHERE account_name = 'Stock Account'";
-                        insert_query($sql, "send Stock Account Profit");
-
-                        $profit_for_company_profit_account = ($profit / 100) * 15;
-                        $sql = "UPDATE accounts SET amount = amount + {$profit_for_company_profit_account} WHERE account_name = 'Company Profit'";
-                        insert_query($sql, "send Company Profit Profit");
 
                         // Advance Hambuna Salli Cash in Hand Ekata ekathu wenawa
                         $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
@@ -236,6 +241,11 @@ require_once 'inc/config.php'; ?>
             sales_arry('product', 'description', 'qty', 'rate', 'amount', 'worker');
             echo "<br>";
         }
+
+        // Update Invoice Total Profit And Cost
+        $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";
+        insert_query($sql, "Update Invoice Total Profit And Cost");
+
 
         // ========== Print ==========
         if (isset($_POST['submit_and_print_fullPayment']) || isset($_POST['submit_and_print'])) {
