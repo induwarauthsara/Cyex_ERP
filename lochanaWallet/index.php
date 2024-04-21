@@ -13,7 +13,13 @@
 
 
     <!-- adding jquery cdn -->
-    <!-- <script src="https://code.jquery.com/jquery-3.5.1.js "></script> -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js "></script>
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="../logo.png" type="image/x-icon">
+
+    <!-- add main css file -->
+    <link rel="stylesheet" href="/style.css">
 
 
     <!-- // Wallet Balance -->
