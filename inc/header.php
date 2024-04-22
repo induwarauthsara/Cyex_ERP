@@ -1,6 +1,11 @@
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
-    <?php session_start(); ?>
-    <?php if (!isset($_SESSION['employee_name'])) {
+    <?php
+    // Check session_start
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['employee_name'])) {
         header("Location: /login");
     } ?>
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>

@@ -1,13 +1,12 @@
-<?php require_once '../inc/config.php';
+<?php
 // Only Admin can access this page
 session_start();
 $employee_role = $_SESSION['employee_role'];
-if ($employee_role !== $admin) {
+if ($employee_role !== "Admin") {
     header("Location: /index.php");
 }
-require_once '../inc/header.php';
-include '../inc/DataTable_cdn.php';
-
+require '../inc/header.php';
+require_once '../inc/config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
