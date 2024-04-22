@@ -248,7 +248,7 @@ require_once 'inc/config.php'; ?>
         // Add Transaction Log -> type, description, amount
         $transaction_type = 'Invoice - Cash In';
         $transaction_description = "$bill_no - $customer_name";
-        transaction_log($transaction_type, $transaction_description, $total_bill_cost);
+        transaction_log($transaction_type, $transaction_description, $bill_advance);
 
         // ========== Print ==========
         if (isset($_POST['submit_and_print_fullPayment']) || isset($_POST['submit_and_print'])) {
