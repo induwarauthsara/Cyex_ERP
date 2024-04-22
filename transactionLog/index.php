@@ -6,6 +6,7 @@ if ($employee_role !== "Admin") {
     header("Location: /index.php");
 }
 require '../inc/header.php';
+include '../inc/DataTable_cdn.php';
 require_once '../inc/config.php';
 ?>
 <!DOCTYPE html>
