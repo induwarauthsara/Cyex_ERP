@@ -25,14 +25,16 @@
     <!-- // Wallet Balance -->
     <?php
     // I want to Average of last 90 days Expenses
-    $sql = "SELECT AVG(amount) AS avg_expenses 
+    $sql = "SELECT SUM(amount) AS sum_expenses 
             FROM lochana_wallet 
-            WHERE date >= DATE(NOW()) - INTERVAL 90 DAY;";
+            WHERE date >= DATE(NOW()) - INTERVAL 90 DAY
+                AND amount < 0;";
     $result = mysqli_query($con, $sql);
     while ($row = mysqli_fetch_assoc($result)) {
-        $avg_expenses = $row['avg_expenses'];
+        $sum_expenses = $row['sum_expenses'];
+        $avg_expenses = $sum_expenses / 90;
+        $avg_expenses = number_format($avg_expenses, 2, '.', ',');
     }
-    echo $avg_expenses;
 
 
     $sql = "SELECT SUM(amount) AS balance FROM lochana_wallet;";
@@ -42,6 +44,7 @@
             $balance = $row["balance"];
             $formatted_amount = number_format($balance, 2, '.', ',');
             echo "<h1> Wallet Balance: " . $formatted_amount . "</h1><br>";
+            echo "<h2> Average Expenses: " . $avg_expenses . "</h2><br>";
         }
     } else {
         echo "0 results";
@@ -138,8 +141,12 @@
     <style>
         h1 {
             text-align: center;
-            margin: 50px;
+            margin-top: 50px;
             font-size: 3rem;
+        }
+
+        h2 {
+            text-align: center;
         }
 
         .add_expenses {
