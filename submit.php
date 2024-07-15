@@ -27,8 +27,8 @@ require_once 'inc/config.php'; ?>
         // Set Invoice values
         // if customer name and mobile empty, assign default values as Cash and 0
         if (empty($_POST['name']) && empty($_POST['tele'])) {
-            $_POST['name'] = "Cash";
-            $_POST['tele'] = 0;
+            $customer_name = "Cash";
+            $customer_mobile = 0;
         }
         else{
             $customer_name = $_POST['name'];
