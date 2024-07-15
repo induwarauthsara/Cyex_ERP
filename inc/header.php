@@ -44,6 +44,7 @@
 
         <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li>
         <li class="dashboard_icon adminOnly"> <a href="/transactionLog">Transaction Log</a> </li>
+        <li class="dashboard_icon"> <a href="/printerCount.php">Printer Counter</a> </li>
 
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
