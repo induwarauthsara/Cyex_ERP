@@ -40,7 +40,7 @@
                 <div class="customer-details">
                     <div class="customer-name">
                         <label for="name">Customer Name : </label>
-                        <input list="customer_list" type="text" name="name" id="name" onchange="customer_add()" required autofocus> <br>
+                        <input list="customer_list" type="text" name="name" id="name" onchange="customer_add()" autofocus> <br>
 
                         <!-- == Set Customer Phone Number == -->
                         <script>
