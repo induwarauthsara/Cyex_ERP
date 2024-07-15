@@ -68,13 +68,13 @@
 
                     <div class="customer-tele">
                         <label for="tele">Customer telephone : </label>
-                        <input type="text" name="tele" id="tele" required autofocus> <br>
+                        <input type="text" name="tele" id="tele" autofocus> <br>
                     </div>
                 </div>
 
                 <!--  === Invoice Details === -->
                 <div class="bill-details">
-                    <div class="date">Date : <input id="date" type="date" value="" name="today" required></div>
+                    <div class="date">Date : <input id="date" type="date" value="" name="today"></div>
 
                     <!-- == Set Today Date == -->
                     <script>

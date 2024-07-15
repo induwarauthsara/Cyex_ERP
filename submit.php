@@ -25,8 +25,15 @@ require_once 'inc/config.php'; ?>
     if ((isset($_POST['submit'])) || isset($_POST['submit_and_print']) || isset($_POST['submit_and_print_fullPayment']) || isset($_POST['submit_and_fullPayment'])) {
         // if (isset($_POST['submit'])) {
         // Set Invoice values
-        $customer_name = $_POST['name'];
-        $customer_mobile = $_POST['tele'];
+        // if customer name and mobile empty, assign default values as Cash and 0
+        if (empty($_POST['name']) && empty($_POST['tele'])) {
+            $_POST['name'] = "Cash";
+            $_POST['tele'] = 0;
+        }
+        else{
+            $customer_name = $_POST['name'];
+            $customer_mobile = $_POST['tele'];
+        }
         // $bill_no = $_POST['bill-no'];
         $date = $_POST['today'];
         $bill_total = $_POST['total'];
