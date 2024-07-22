@@ -73,14 +73,14 @@ require_once 'inc/config.php'; ?>
         $selected_customer = mysqli_fetch_array($result);
         if ($selected_customer['COUNT(customer_name)'] == 0) {
             $sql = "INSERT INTO customers (customer_name, customer_mobile) VALUES ('$customer_name', $customer_mobile)";
-            insert_query($sql, "Add New Customer");
+            insert_query($sql, "Add New Customer : $customer_name");
         }
 
 
         // Send Invoice Data to Database
         $sql = "INSERT INTO invoice (customer_name, invoice_date, customer_mobile, biller, total, discount, advance, balance, full_paid)
         VALUES ('{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
-        insert_query($sql, "Send Invoice Data to Database");
+        insert_query($sql, "Add New Invoice : $customer_name");
 
         // Retrieve the auto-generated InvoiceID
         $bill_no = mysqli_insert_id($con);
@@ -90,7 +90,7 @@ require_once 'inc/config.php'; ?>
             $todoName = $_POST['todoName'];
             $todoTime = $_POST['todoTime'];
             $sql = "INSERT INTO `todo`(`invoice_number`, `title`, `submision_time`) VALUES ('$bill_no','$todoName','$todoTime')";
-            insert_query($sql, "Add Todo Item Data to Database");
+            insert_query($sql, "Add Todo Item : $todoName");
         }
 
         // Total Bill Product Cost
@@ -137,7 +137,7 @@ require_once 'inc/config.php'; ?>
                         // Send Sales Data to DB
                         $sql = "INSERT INTO sales (invoice_number, product, `description`, qty, rate, amount, worker, cost, profit)
                         VALUES ('{$bill_no}', '{$product}', '{$description}', '{$qty}', '{$rate}', '{$amount}', '{$worker}', '{$cost}', '{$profit}')";
-                        insert_query($sql, "Send Invoice data to DB");
+                        insert_query($sql, "Add New Sale : $product");
 
                         /*  //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
                         $sql = "UPDATE products SET stock_qty = stock_qty - {$qty} WHERE product_name = '{$product}'";
