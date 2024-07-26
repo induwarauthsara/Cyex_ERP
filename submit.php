@@ -29,8 +29,7 @@ require_once 'inc/config.php'; ?>
         if (empty($_POST['name']) && empty($_POST['tele'])) {
             $customer_name = "Cash";
             $customer_mobile = 0;
-        }
-        else{
+        } else {
             $customer_name = $_POST['name'];
             $customer_mobile = $_POST['tele'];
         }
@@ -100,7 +99,7 @@ require_once 'inc/config.php'; ?>
             if (isset($_POST["product_{$no}"])) { // Check row is removed
                 if (!function_exists('sales_arry')) { // voice function re-call in for loop
 
-                    function sales_arry($product, $description, $qty, $rate, $amount, $worker)
+                    function sales_arry($product, $qty, $rate, $amount, $worker)
                     {
                         global $no;
                         global $con;
@@ -108,132 +107,149 @@ require_once 'inc/config.php'; ?>
                         global $bill_advance;
                         global $bill_no;
                         global $total_bill_cost;
+                        global $default_worker;
 
                         $product = $_POST["{$product}_{$no}"];
-                        $description = $_POST["{$description}_{$no}"];
+                        // $description = $_POST["{$description}_{$no}"];
                         $qty = $_POST["{$qty}_{$no}"];
                         $rate = $_POST["{$rate}_{$no}"];
                         $amount = $_POST["{$amount}_{$no}"];
-                        $worker = $_POST["{$worker}_{$no}"];
 
                         echo $product . "<br>";
                         echo $qty . "<br>";
                         echo $rate . "<br>";
                         echo $amount . "<br>";
-                        echo $worker . "<br>";
+                        echo $default_worker . "<br>";
                         echo "<br>";
-                        // Product Cost eka Stock Account eken Adu wenawa (Kalin Thibbe + wenna.)
-                        $cost_sql = "SELECT cost, profit FROM products WHERE product_name = '{$product}'";
-                        $cost_result = mysqli_query($con, $cost_sql);
-                        $cost = mysqli_fetch_assoc($cost_result);
-                        $cost = $cost['cost'] * $qty;
-                        $profit = $cost['profit'] * $qty;
-                        $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
-                        insert_query($sql, "Add Product Cost to Stock Account");
 
-                        // Total Bill Product Cost and Profit
-                        $total_bill_cost += $cost;
-
-                        // Send Sales Data to DB
-                        $sql = "INSERT INTO sales (invoice_number, product, `description`, qty, rate, amount, worker, cost, profit)
-                        VALUES ('{$bill_no}', '{$product}', '{$description}', '{$qty}', '{$rate}', '{$amount}', '{$worker}', '{$cost}', '{$profit}')";
-                        insert_query($sql, "Add New Sale : $product");
-
-                        /*  //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
-                        $sql = "UPDATE products SET stock_qty = stock_qty - {$qty} WHERE product_name = '{$product}'";
-                        insert_query($sql, "Fall Sell Product Qty from Stock");
-                        */
-
-                        // Send Profit to Accounts
-                        $profit_for_worker = ($profit / 100) * 15;
-                        $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$biller}'";
-                        insert_query($sql, "send worker Profit");
-
-                        // $profit_for_utility_bills_account = ($profit / 100) * 20;
-                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_utility_bills_account} WHERE account_name = 'Utility Bills'";
-                        // insert_query($sql, "send Utility Bills Profit");
-                        // 
-                        // $profit_for_machines_account = ($profit / 100) * 20;
-                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_machines_account} WHERE account_name = 'Machines Account'";
-                        // insert_query($sql, "send Machines Account Profit");
-                        // 
-                        // $profit_for_stock_account = ($profit / 100) * 8.5;
-                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_stock_account} WHERE account_name = 'Stock Account'";
-                        // insert_query($sql, "send Stock Account Profit");
-                        // 
-                        // $profit_for_company_profit_account = ($profit / 100) * 15;
-                        // $sql = "UPDATE accounts SET amount = amount + {$profit_for_company_profit_account} WHERE account_name = 'Company Profit'";
-                        // insert_query($sql, "send Company Profit Profit");
-
-
-                        // Advance Hambuna Salli Cash in Hand Ekata ekathu wenawa
-                        $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
-                        insert_query($sql, "Add Advance Money to Cash in Hand");
-
-
-                        // ========== Wikunapu Product eka Stock eken adu wenawa. ==========
-                        // -------- Get Product makeProduct to Array --------
-                        $sql = "SELECT item_name FROM makeProduct WHERE product_name='{$product}'";
+                        // Check is this One-Time-Product
+                        // Check Product is in Database?
+                        $sql = "SELECT COUNT(product_name) FROM products WHERE product_name = '$product';";
                         $result = mysqli_query($con, $sql);
-                        $ingridians_list = array();
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($recoard = mysqli_fetch_assoc($result)) {
-                                array_push($ingridians_list, $recoard["item_name"]);
-                            }
-                        }
-
-                        // --------  Fall Product Items from Item List -------
-                        // Select Item Qty of Product
-                        for ($i = 0; $i < count($ingridians_list); $i++) {
-                            $selected_item = $ingridians_list[$i];
-                            $ingridians_product_item_qty = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
-                            $result = mysqli_query($con, $ingridians_product_item_qty);
-                            $product_item_qty = mysqli_fetch_array($result)['qty'] * $qty;
-
-                            // Fall Item qty
-                            $fall_item = "UPDATE `items` SET qty= qty - {$product_item_qty} WHERE item_name = '{$selected_item}'";
-                            insert_query($fall_item, "fall item from stock");
-                        }
-
-
-                        /// ========== Stock eke Product wala QTY eka hadanawa ==========
-
-                        // -------- Get QTY of ingridians_list to Array --------
-                        $ingridians_requement_qty_array = array();
-                        $item_qty_array = array();
-                        $makeable_product_qty_array = array();
-
-                        for ($i = 0; $i < count($ingridians_list); $i++) {
-                            $selected_item = $ingridians_list[$i];
-
-                            $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
-                            $result = mysqli_query($con, $selected_item_req_qty_sql);
-                            $recoard = mysqli_fetch_assoc($result);
-                            array_push($ingridians_requement_qty_array, $recoard["qty"]);
-
-                            $selected_item_qty_sql = "SELECT qty FROM items WHERE item_name = '{$selected_item}';";
-                            $result = mysqli_query($con, $selected_item_qty_sql);
-                            $recoard = mysqli_fetch_assoc($result);
-                            array_push($item_qty_array, $recoard["qty"]);
-
-                            $selected_item_ingridians_requement = $ingridians_requement_qty_array[$i];
-                            $selected_item_qty = $item_qty_array[$i];
-                            $makeable_product_qty = $selected_item_qty / $selected_item_ingridians_requement;
-                            array_push($makeable_product_qty_array, $makeable_product_qty);
-                        }
-                        // -------- Select Min QTY of ingridians_qty --------
-                        $min_ingridians_qty = min($makeable_product_qty_array);
-                        // -------- Set Product QTY = $min_ingridians_qty --------
-                        $sql = "UPDATE products SET stock_qty = {$min_ingridians_qty} WHERE product_name = '{$product}'";
-                        insert_query($sql, "Update Product available Qty");
-
-                        /// ========== update Has_Stock state ==========
-                        if ($min_ingridians_qty > 0) {
-                            $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
-                            insert_query($sql, "Update Product Has_Stock State");
+                        $selected_product = mysqli_fetch_array($result);
+                        if ($selected_product['COUNT(product_name)'] == 0) { // Check is this One-Time-Product
+                            // This is One-Time-Product
+                            $sql = "INSERT INTO `oneTimeProducts`(`invoice_number`, `product_name`, `qty`, `rate`, `amount`) VALUES 
+                            ('$bill_no','$product','$qty','$rate','$amount')";
+                            insert_query($sql, "Sale One-Time-Product : $product");
                         } else {
-                            $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
-                            insert_query($sql, "Update Product Has_Stock State");
+                            // This is Regular (Database Saved) Product (Not One-Time-Product) 
+
+                            // Product Cost eka Stock Account eken Adu wenawa (Kalin Thibbe + wenna.)
+                            $cost_sql = "SELECT cost, profit FROM products WHERE product_name = '{$product}'";
+                            $cost_result = mysqli_query($con, $cost_sql);
+                            $cost = mysqli_fetch_assoc($cost_result);
+                            $cost = $cost['cost'] * $qty;
+                            $profit = $cost['profit'] * $qty;
+                            $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
+                            insert_query($sql, "Add Product Cost to Stock Account");
+
+                            // Total Bill Product Cost and Profit
+                            $total_bill_cost += $cost;
+
+                            // Send Sales Data to DB
+                            $sql = "INSERT INTO sales (invoice_number, product, qty, rate, amount, worker, cost, profit)
+                                    VALUES ('{$bill_no}', '{$product}', '{$qty}', '{$rate}', '{$amount}', '{$default_worker}', '{$cost}', '{$profit}')";
+                            insert_query($sql, "Add New Sale : $product");
+
+                            /*  //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
+                            $sql = "UPDATE products SET stock_qty = stock_qty - {$qty} WHERE product_name = '{$product}'";
+                            insert_query($sql, "Fall Sell Product Qty from Stock");
+                             */
+                            
+
+                            // ==================== Profit Distribution ====================
+                            // Send Profit to Accounts
+                            $profit_for_worker = ($profit / 100) * 05;
+                            $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$default_worker}'";
+                            insert_query($sql, "send worker Profit : {$default_worker} Rs. {$profit_for_worker}");
+
+                            $profit_for_biller = ($profit / 100) * 5;
+                            $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
+                            insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}");
+
+                            // $profit_for_utility_bills_account = ($profit / 100) * 20;
+                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_utility_bills_account} WHERE account_name = 'Utility Bills'";
+                            // insert_query($sql, "send Utility Bills Profit");
+                            // 
+                            // $profit_for_machines_account = ($profit / 100) * 20;
+                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_machines_account} WHERE account_name = 'Machines Account'";
+                            // insert_query($sql, "send Machines Account Profit");
+                            // 
+                            // $profit_for_stock_account = ($profit / 100) * 8.5;
+                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_stock_account} WHERE account_name = 'Stock Account'";
+                            // insert_query($sql, "send Stock Account Profit");
+                            // 
+                            // $profit_for_company_profit_account = ($profit / 100) * 15;
+                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_company_profit_account} WHERE account_name = 'Company Profit'";
+                            // insert_query($sql, "send Company Profit Profit");
+
+
+
+                            // ========== Wikunapu Product eka Stock eken adu wenawa. ==========
+                            // -------- Get Product makeProduct to Array --------
+                            $sql = "SELECT item_name FROM makeProduct WHERE product_name='{$product}'";
+                            $result = mysqli_query($con, $sql);
+                            $ingridians_list = array();
+                            if (mysqli_num_rows($result) > 0) {
+                                while ($recoard = mysqli_fetch_assoc($result)) {
+                                    array_push($ingridians_list, $recoard["item_name"]);
+                                }
+                            }
+
+                            // --------  Fall Product Items from Item List -------
+                            // Select Item Qty of Product
+                            for ($i = 0; $i < count($ingridians_list); $i++) {
+                                $selected_item = $ingridians_list[$i];
+                                $ingridians_product_item_qty = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
+                                $result = mysqli_query($con, $ingridians_product_item_qty);
+                                $product_item_qty = mysqli_fetch_array($result)['qty'] * $qty;
+
+                                // Fall Item qty
+                                $fall_item = "UPDATE `items` SET qty= qty - {$product_item_qty} WHERE item_name = '{$selected_item}'";
+                                insert_query($fall_item, "fall item from stock");
+                            }
+
+
+                            /// ========== Stock eke Product wala QTY eka hadanawa ==========
+
+                            // -------- Get QTY of ingridians_list to Array --------
+                            $ingridians_requement_qty_array = array();
+                            $item_qty_array = array();
+                            $makeable_product_qty_array = array();
+
+                            for ($i = 0; $i < count($ingridians_list); $i++) {
+                                $selected_item = $ingridians_list[$i];
+
+                                $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
+                                $result = mysqli_query($con, $selected_item_req_qty_sql);
+                                $recoard = mysqli_fetch_assoc($result);
+                                array_push($ingridians_requement_qty_array, $recoard["qty"]);
+
+                                $selected_item_qty_sql = "SELECT qty FROM items WHERE item_name = '{$selected_item}';";
+                                $result = mysqli_query($con, $selected_item_qty_sql);
+                                $recoard = mysqli_fetch_assoc($result);
+                                array_push($item_qty_array, $recoard["qty"]);
+
+                                $selected_item_ingridians_requement = $ingridians_requement_qty_array[$i];
+                                $selected_item_qty = $item_qty_array[$i];
+                                $makeable_product_qty = $selected_item_qty / $selected_item_ingridians_requement;
+                                array_push($makeable_product_qty_array, $makeable_product_qty);
+                            }
+                            // -------- Select Min QTY of ingridians_qty --------
+                            $min_ingridians_qty = min($makeable_product_qty_array);
+                            // -------- Set Product QTY = $min_ingridians_qty --------
+                            $sql = "UPDATE products SET stock_qty = {$min_ingridians_qty} WHERE product_name = '{$product}'";
+                            insert_query($sql, "Update Product available Qty");
+
+                            /// ========== update Has_Stock state ==========
+                            if ($min_ingridians_qty > 0) {
+                                $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
+                                insert_query($sql, "Update Product Has_Stock State");
+                            } else {
+                                $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
+                                insert_query($sql, "Update Product Has_Stock State");
+                            }
                         }
                     }
                 }
@@ -241,7 +257,7 @@ require_once 'inc/config.php'; ?>
                 continue;
             }
             echo $bill_no . "<br>";
-            sales_arry('product', 'description', 'qty', 'rate', 'amount', 'worker');
+            sales_arry('product', 'qty', 'rate', 'amount', 'worker');
             echo "<br>";
         }
 
@@ -251,6 +267,10 @@ require_once 'inc/config.php'; ?>
         // Update Invoice Total Profit And Cost
         $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";
         insert_query($sql, "Update Invoice Total Profit And Cost");
+
+        // Advance Hambuna Salli Cash in Hand Ekata ekathu wenawa
+        $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
+        insert_query($sql, "Add Advance Money to Cash in Hand : {$bill_advance}");
 
         // Add Transaction Log -> type, description, amount
         $transaction_type = 'Invoice - Cash In';
