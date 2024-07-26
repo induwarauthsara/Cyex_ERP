@@ -115,7 +115,7 @@
                         <div id="list"></div>
                         <hr>
                         <input list="products" type="text" id="addproduct">
-                        <div onclick="addproduct()" class="add">Add Product</div>
+                        <div onclick="addproduct()" class="add">Add </div>
                     </div>
 
                     <!--<div class="Disc_list tabel" id="Disc"></div>-->
@@ -341,7 +341,7 @@
         var no = 0;
 
 
-        function addproduct() {
+        function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, oneTimeProduct) {
             const product_list = document.getElementById('list');
             const disc_list = document.getElementById('Disc');
             const worker_list = document.getElementById('worker');
@@ -350,14 +350,36 @@
             const amount_list = document.getElementById('amount_list');
             const remove_button_list = document.getElementById('remove_button_list');
 
-
-
+            product_name = oneTimeProductName ?? document.getElementById('addproduct').value;
 
             function add_row(no) {
 
+                if (!oneTimeProduct) {
+                    // Check this product available in #products datalist
+                    var dataList = document.getElementById('products');
+                    var options = dataList.getElementsByTagName('option');
+                    var productList = [];
+
+                    for (var i = 0; i < options.length; i++) {
+                        productList.push(options[i].value);
+                    }
+
+                    var available = productList.includes(product_name);
+
+                    if (!available) {
+                        // alert(product_name + " is not available."); // enable if Dev mode
+                        // Modal box for Onetime Add Product
+                        addonetimeproductModal(product_name);
+                        // Stop programme
+                        return
+                    }
+                }
+
+                // console.log(productList); // Output the product list array for debugging - for`  `   ` Dev mode
+
                 //  let product = document.getElementById('addproduct').value;
                 var product = document.createElement("input");
-                product.value = document.getElementById('addproduct').value;
+                product.value = product_name;
                 product.id = "product_" + no;
                 product.className = no, 'ooo';
                 product.setAttribute("list", "products");
@@ -385,7 +407,7 @@
                 qty.id = "qty_" + no;
                 qty.className = no;
                 qty.type = "number";
-                qty.value = 1;
+                qty.value = oneTimeProductQty ?? 1;
                 qty.setAttribute("onchange", "change('qty', className, id)");
                 qty.setAttribute("step", "any")
                 qty.setAttribute("name", qty.id);
@@ -394,20 +416,21 @@
                 let rate = document.createElement("input");
                 rate.id = "rate_" + no;
                 // Set Rate Value
-                $.ajax({
-                    url: "inc/get_product_rate.php",
-                    method: "POST",
-                    data: {
-                        product: product.value
-                    },
-                    datatype: "text",
-                    cache: false,
-                    success: function(html) {
-                        $rate_db = rate.value = Number(html).toFixed(2);
-                        amount.value = Number(qty.value * rate.value).toFixed(2);
-                        add_total(no + 1);
-                    },
-                });
+                oneTimeProductRate ? rate.value = oneTimeProductRate :
+                    $.ajax({
+                        url: "inc/get_product_rate.php",
+                        method: "POST",
+                        data: {
+                            product: product.value
+                        },
+                        datatype: "text",
+                        cache: false,
+                        success: function(html) {
+                            $rate_db = rate.value = Number(html).toFixed(2);
+                            amount.value = Number(qty.value * rate.value).toFixed(2);
+                            add_total(no + 1);
+                        },
+                    });
                 //
                 rate.className = no;
                 // rate = rate.value.toFixed(2);
@@ -696,6 +719,35 @@
             change_endline();
         }
 
+        // =========================== One Time Product ===========================
+        function addonetimeproductModal(productName) {
+            // Add Modal Box for get details of one time product. Input fields: Product Name, Rate, Qty
+            // check ProductName assigned
+
+            Swal.fire({
+                title: 'Add One Time Product',
+                html: `<label for='oneTimeProductName' class='swal2-label'Product Name:</label>` +
+                    `<input id="oneTimeProductName" class="swal2-input" value="${productName}" placeholder="Enter Product Name">` +
+                    '<label for="oneTimeProductRate" class="swal2-label">Rate (Rs.):</label>' +
+                    '<input id="oneTimeProductRate" class="swal2-input" placeholder="Enter Rate">' +
+                    '<label for="oneTimeProductQty" class="swal2-label">Quantity:</label>' +
+                    '<input id="oneTimeProductQty" class="swal2-input" placeholder="Enter Quantity">',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const oneTimeProductName = Swal.getPopup().querySelector('#oneTimeProductName').value;
+                    const oneTimeProductRate = Swal.getPopup().querySelector('#oneTimeProductRate').value;
+                    const oneTimeProductQty = Swal.getPopup().querySelector('#oneTimeProductQty').value;
+                    if (oneTimeProductName && oneTimeProductRate && oneTimeProductQty && !isNaN(oneTimeProductRate) && !isNaN(oneTimeProductQty)) {
+                        // Add one time product to the bill
+                        addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, true);
+                    } else {
+                        Swal.showValidationMessage(`Please enter all fields correctly.`);
+                    }
+                }
+            });
+        }
+
+
         add_total(no);
     </script>
 </body>
@@ -737,7 +789,6 @@
 
 <!-- == Product List - Data List get from Database == -->
 <datalist id="products">
-    <!-- == Employee == -->
     <?php $product_list = "SELECT product_name FROM products";
     $result = mysqli_query($con, $product_list);
     if ($result) {
