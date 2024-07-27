@@ -164,15 +164,16 @@ if (isset($_GET['invoice'])) {
             <th>Amount</th>
         </tr>
         <?php
-        $sql = "SELECT * FROM sales WHERE invoice_number = $id";
+        $sql = "SELECT product, qty, rate, amount FROM sales WHERE invoice_number = $id
+                UNION ALL
+                SELECT product, qty, rate, amount  FROM oneTimeProducts_sales WHERE invoice_number = $id;";
         $result = mysqli_query($con, $sql);
         if ($result) {
-            // qury success
+            // query success
             if (mysqli_num_rows($result) > 0) {
                 while ($sales = mysqli_fetch_array($result)) {
                     echo '<tr>
                 <td>' . $sales["product"] . '</td>
-                <!-- <td>' . $sales["description"] . '</td> -->
                 <td>' . $sales["qty"] . '</td>
                 <td class="price">' . $sales["rate"] . '</td>
                 <td class="price">' . $sales["amount"] . '</td>
