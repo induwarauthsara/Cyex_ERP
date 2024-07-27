@@ -46,6 +46,7 @@
         <li class="dashboard_icon adminOnly"> <a href="/transactionLog">Transaction Log</a> </li>
         <li class="dashboard_icon"> <a href="/printerCount">Printer Counter</a> </li>
 
+        <li class="dashboard_icon adminOnly"> <a href="/AdminPanel/"> <i class="fas fa-cogs header_icons"> </i> Admin Panel </a> </li>
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
         <li class="dropdown dashboard_icon adminOnly">
