@@ -129,7 +129,7 @@ require_once 'inc/config.php'; ?>
                         $selected_product = mysqli_fetch_array($result);
                         if ($selected_product['COUNT(product_name)'] == 0) { // Check is this One-Time-Product
                             // This is One-Time-Product
-                            $sql = "INSERT INTO `oneTimeProducts`(`invoice_number`, `product_name`, `qty`, `rate`, `amount`) VALUES 
+                            $sql = "INSERT INTO `oneTimeProducts_sales`(`invoice_number`, `product`, `qty`, `rate`, `amount`) VALUES 
                             ('$bill_no','$product','$qty','$rate','$amount')";
                             insert_query($sql, "Sale One-Time-Product : $product");
                         } else {
