@@ -18,4 +18,4 @@ error_log
 dashboard/makeProduct/error_log
 dashboard/product/error_log
 crons/error_log
-/dashboard/*
+dashboard/*
