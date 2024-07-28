@@ -5,19 +5,11 @@ $itemName = $_GET['itemName'];
 
 // Delete from makeProduct table
 $sql = "DELETE FROM makeProduct WHERE item_name = '$itemName'";
-if (mysqli_query($con, $sql)) {
-    echo "Record deleted successfully";
-} else {
-    echo "Error deleting record: " . mysqli_error($con);
-}
+insert_query($sql, "Delete Raw Items from makeProduct Table (Item Name: $itemName)", "Delete Raw Item");
 
 // Delete From Item Table
 $sql = "DELETE FROM items WHERE id = '$itemId'";
-if (mysqli_query($con, $sql)) {
-    echo "Record deleted successfully";
-} else {
-    echo "Error deleting record: " . mysqli_error($con);
-}
+insert_query($sql, "Delete Item from items Table (Item Name: $itemName)", "Delete Raw Item");
 
 // echo "==================================================<pre>";
 

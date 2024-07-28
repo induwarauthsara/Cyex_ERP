@@ -72,14 +72,14 @@ require_once 'inc/config.php'; ?>
         $selected_customer = mysqli_fetch_array($result);
         if ($selected_customer['COUNT(customer_name)'] == 0) {
             $sql = "INSERT INTO customers (customer_name, customer_mobile) VALUES ('$customer_name', $customer_mobile)";
-            insert_query($sql, "Add New Customer : $customer_name");
+            insert_query($sql, "$customer_name", "Add New Customer");
         }
 
 
         // Send Invoice Data to Database
         $sql = "INSERT INTO invoice (customer_name, invoice_date, customer_mobile, biller, total, discount, advance, balance, full_paid)
         VALUES ('{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
-        insert_query($sql, "Add New Invoice : $customer_name");
+        insert_query($sql, "Add New Invoice for : $customer_name", "Add New Invoice");
 
         // Retrieve the auto-generated InvoiceID
         $bill_no = mysqli_insert_id($con);
@@ -89,7 +89,7 @@ require_once 'inc/config.php'; ?>
             $todoName = $_POST['todoName'];
             $todoTime = $_POST['todoTime'];
             $sql = "INSERT INTO `todo`(`invoice_number`, `title`, `submision_time`) VALUES ('$bill_no','$todoName','$todoTime')";
-            insert_query($sql, "Add Todo Item : $todoName");
+            insert_query($sql, "$todoName", "Add Todo Item");
         }
 
         // Total Bill Product Cost
@@ -131,7 +131,7 @@ require_once 'inc/config.php'; ?>
                             // This is One-Time-Product
                             $sql = "INSERT INTO `oneTimeProducts_sales`(`invoice_number`, `product`, `qty`, `rate`, `amount`) VALUES 
                             ('$bill_no','$product','$qty','$rate','$amount')";
-                            insert_query($sql, "Sale One-Time-Product : $product");
+                            insert_query($sql, "$product", "Sale One-Time-Product");
                         } else {
                             // This is Regular (Database Saved) Product (Not One-Time-Product) 
 
@@ -142,7 +142,7 @@ require_once 'inc/config.php'; ?>
                             $cost = $cost['cost'] * $qty;
                             $profit = $cost['profit'] * $qty;
                             $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
-                            insert_query($sql, "Add Product Cost to Stock Account");
+                            insert_query($sql, "Rs. $cost", "Add Product Cost to Stock Account");
 
                             // Total Bill Product Cost and Profit
                             $total_bill_cost += $cost;
@@ -150,7 +150,7 @@ require_once 'inc/config.php'; ?>
                             // Send Sales Data to DB
                             $sql = "INSERT INTO sales (invoice_number, product, qty, rate, amount, worker, cost, profit)
                                     VALUES ('{$bill_no}', '{$product}', '{$qty}', '{$rate}', '{$amount}', '{$default_worker}', '{$cost}', '{$profit}')";
-                            insert_query($sql, "Add New Sale : $product");
+                            insert_query($sql, "Add New Sale : $product", "Add New Sale");
 
                             /*  //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
                             $sql = "UPDATE products SET stock_qty = stock_qty - {$qty} WHERE product_name = '{$product}'";
@@ -162,11 +162,11 @@ require_once 'inc/config.php'; ?>
                             // Send Profit to Accounts
                             $profit_for_worker = ($profit / 100) * 05;
                             $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$default_worker}'";
-                            insert_query($sql, "send worker Profit : {$default_worker} Rs. {$profit_for_worker}");
+                            insert_query($sql, "send worker Profit : {$default_worker} Rs. {$profit_for_worker}", "Add Worker Profit");
 
                             $profit_for_biller = ($profit / 100) * 5;
                             $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
-                            insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}");
+                            insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit");
 
                             // $profit_for_utility_bills_account = ($profit / 100) * 20;
                             // $sql = "UPDATE accounts SET amount = amount + {$profit_for_utility_bills_account} WHERE account_name = 'Utility Bills'";
@@ -207,7 +207,7 @@ require_once 'inc/config.php'; ?>
 
                                 // Fall Item qty
                                 $fall_item = "UPDATE `items` SET qty= qty - {$product_item_qty} WHERE item_name = '{$selected_item}'";
-                                insert_query($fall_item, "fall item from stock");
+                                insert_query($fall_item, "$selected_item, Qty : $qty items", "fall item from stock");
                             }
 
 
@@ -240,15 +240,15 @@ require_once 'inc/config.php'; ?>
                             $min_ingridians_qty = min($makeable_product_qty_array);
                             // -------- Set Product QTY = $min_ingridians_qty --------
                             $sql = "UPDATE products SET stock_qty = {$min_ingridians_qty} WHERE product_name = '{$product}'";
-                            insert_query($sql, "Update Product available Qty");
+                            insert_query($sql, "$product Available Qty : $min_ingridians_qty", "Update Product available Qty");
 
                             /// ========== update Has_Stock state ==========
                             if ($min_ingridians_qty > 0) {
                                 $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
-                                insert_query($sql, "Update Product Has_Stock State");
+                                insert_query($sql, "$product is In Stock", "Update Product Has_Stock State");
                             } else {
-                                $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
-                                insert_query($sql, "Update Product Has_Stock State");
+                                $sql = "UPDATE products SET has_stock = 0 WHERE product_name = '{$product}'";
+                                insert_query($sql,"$product is Out of Stock", "Update Product Has_Stock State");
                             }
                         }
                     }
@@ -266,11 +266,11 @@ require_once 'inc/config.php'; ?>
 
         // Update Invoice Total Profit And Cost
         $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";
-        insert_query($sql, "Update Invoice Total Profit And Cost");
+        insert_query($sql, "Invoice Number : $invoice_number, Total Bill Cost : $total_bill_cost, Total Bill Profit : $total_bill_profit" "Update Invoice Total Profit And Cost");
 
         // Advance Hambuna Salli Cash in Hand Ekata ekathu wenawa
         $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
-        insert_query($sql, "Add Advance Money to Cash in Hand : {$bill_advance}");
+        insert_query($sql, "Invoice Number : $invoice_number, Rs. {$bill_advance}", "Add Advance Money to Cash in Hand");
 
         // Add Transaction Log -> type, description, amount
         $transaction_type = 'Invoice - Cash In';

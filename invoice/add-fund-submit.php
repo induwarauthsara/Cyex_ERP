@@ -39,11 +39,11 @@ if (isset($_GET['amount']) && isset($_GET['bill'])) {
     // Add Fund to Invoice
     $sql = "UPDATE `invoice` SET `advance` = $new_advance_amount, `balance` = $new_balance_amount, `full_paid` = $full_paid WHERE `invoice`.`invoice_number` = $invoice_number;";
     // echo $sql . "<br>";
-    insert_query($sql, "Insert Petty Cash to Tabel");
+    insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice");
 
     // Add Fund to "cash in hand'
     $sql = "UPDATE accounts SET amount = amount + {$amount} WHERE account_name = 'cash_in_hand'";
-    insert_query($sql, "Add Fund to 'Cash in Hand' Account");
+    insert_query($sql,"Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to 'Cash in Hand' Account");
 
     end_db_con();
 }

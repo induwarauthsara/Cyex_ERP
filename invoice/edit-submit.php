@@ -1,4 +1,9 @@
 <?php
+//  !+!+!+!+!++!+!+!+!++!+!+!+!+!++!+!+!++!+!+ IMPORTANT   : 
+// ====================================================================================================================================
+// if you wish to Continue this file, Make Sure to add 3 Parameters for insert_query function (insert_query($query, $msg, $action))
+// ====================================================================================================================================
+
 echo "<pre>";
 print_r($_POST);
 echo "</pre>";
@@ -102,7 +107,7 @@ require_once '../inc/config.php'; ?>
                         // Send Sales Data to DB
                         $sql = "INSERT INTO sales (invoice_number, product, qty, rate, amount, todo)
                         VALUES ('{$bill_no}', '{$product}', '{$qty}', '{$rate}', '{$amount}', '{$todo}')";
-                        insert_query($sql, "Send Invoice data to DB");
+                        insert_query($sql, "InvoiceNumber : $bill_no, Product : $product, Qty : $qty, Rate : $rate, Amount : $amount", "Product Sales");
 
                         /*  //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
                         $sql = "UPDATE products SET stock_qty = stock_qty - {$qty} WHERE product_name = '{$product}'";
@@ -115,7 +120,7 @@ require_once '../inc/config.php'; ?>
                         $cost = mysqli_fetch_assoc($cost_result);
                         $cost = $cost['cost'] * $qty;
                         $sql = "UPDATE accounts SET amount = amount + {$cost} WHERE account_name = 'Stock Account'";
-                        insert_query($sql, "Add Product Cost to Stock Account");
+                        insert_query($sql, "Add Product Cost to Stock Account : (Product : $product, Cost : $cost)", "Product Sales");
 
                         // Profit eka accounts walata bedila yanawa
                         $profit = $amount - $cost;

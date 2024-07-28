@@ -11,7 +11,8 @@ $product_name = $_GET['productName'];
 
 // Delete from makeProduct table
 $sql = "DELETE FROM makeProduct WHERE product_name = '$product_name'";
-if (mysqli_query($con, $sql)) {
+insert_query($sql, "Delete from makeProduct table where product_name = $product_name", "Delete product");
+if ($result) {
     // echo "Record deleted successfully";
     $deleted = true;
 } else {
@@ -21,6 +22,7 @@ if (mysqli_query($con, $sql)) {
 // Delete From products Table
 if ($deleted) {
     $sql = "DELETE FROM products WHERE product_id = '$product_id'";
+    insert_query($sql, "Delete product : $product_name", "Delete product");
     if (mysqli_query($con, $sql)) {
         echo "Record deleted successfully";
     } else {

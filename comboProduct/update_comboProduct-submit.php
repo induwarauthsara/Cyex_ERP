@@ -21,19 +21,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Update product data in the database
     $productUpdateQuery = "UPDATE products SET product_name = '$productName', rate = '$productRate', show_in_landing_page = '$showInLandingPage', cost = '$finalCost', profit = '$profit' WHERE product_id = '$productId'";
     echo $productUpdateQuery;
-    $productUpdateQueryDb = mysqli_query($con, $productUpdateQuery);
+    insert_query($productUpdateQuery, "Update Product Data (ID: $productId, Name: $productName, Rate: $productRate, Landing Page: $showInLandingPage, Cost: $finalCost, Profit: $profit)", "Update Product Data");
+    $productUpdateQueryDb = $result;
 
     // Delete item data from the database where product name is $productName
     if ($productUpdateQueryDb) {
         $deleteQuery = "DELETE FROM makeProduct WHERE product_name = '$productName'";
         echo $deleteQuery;
-        $deleteQueryDB = mysqli_query($con, $deleteQuery);
+        insert_query($deleteQuery, "Delete Raw Items from makeProduct Table (Product Name: $productName)", "Delete Raw Items");
+        $deleteQueryDB = $result;
 
         // =============== Delete Product from products table ===============
         if ($deleteProduct) {
             $deleteProductQuery = "DELETE FROM products WHERE product_id = '$productId'";
             echo $deleteProductQuery;
-            $deleteProductQueryDB = mysqli_query($con, $deleteProductQuery);
+            insert_query($deleteProductQuery, "Delete Product from products Table (Product Name: $productName)", "Delete Product");
+            $deleteProductQueryDB = $result;
             exit();
         }
     } else {
@@ -49,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $rawItemQuery = "INSERT INTO makeProduct (item_name, qty, product_name) VALUES ('$itemName', '$itemQty', '$productName')";
             echo $rawItemQuery;
-            mysqli_query($con, $rawItemQuery);
+            insert_query($rawItemQuery, "Insert Raw Items into makeProduct Table (Product Name: $productName, Item Name: $itemName, Qty: $itemQty)", "Insert Raw Items");
         }
 
         // Send a success response

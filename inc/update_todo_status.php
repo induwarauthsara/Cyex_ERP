@@ -7,7 +7,7 @@ if (isset($_GET['todoId'])) {
 
     // Update the status of the todo item in the database
     $sql = "UPDATE `todo` SET `status` = 0 WHERE `todo_id` = '$todoId'";
-    $result = mysqli_query($con, $sql);
+    insert_query($sql, "Todo ID: $todoId", "Update Todo Item Status");
 
     if ($result) {
         // Return a success message if the update was successful

@@ -33,8 +33,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Insert product data into product table
     $productQuery = "INSERT INTO products (product_name, rate, cost, profit, show_in_landing_page) 
                      VALUES ('$productName', '$productRate', '$finalCost', '$profit','$showInLandingPage')";
-    echo $productQuery;
-    if (mysqli_query($con, $productQuery)) {
+    // echo $productQuery;
+    insert_query($productQuery, "Add New Combo Product : $productName", "Add Combo Product");
+
+    if ($result) {
         // Get the last inserted product ID
         $productId = mysqli_insert_id($con);
 
@@ -44,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $itemQty = $rawItem['itemQty'];
 
             $rawItemQuery = "INSERT INTO makeProduct (item_name, qty, product_name) VALUES ('$itemName', '$itemQty', '$productName')";
-            mysqli_query($con, $rawItemQuery);
+            insert_query($rawItemQuery, "Add Combo Product items : '$itemName' to  '$productName' Product", "Add Combo Product Items");
         }
 
         echo "Data submitted successfully.";
