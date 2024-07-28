@@ -266,7 +266,7 @@ require_once 'inc/config.php'; ?>
 
         // Update Invoice Total Profit And Cost
         $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";
-        insert_query($sql, "Invoice Number : $invoice_number, Total Bill Cost : $total_bill_cost, Total Bill Profit : $total_bill_profit" "Update Invoice Total Profit And Cost");
+        insert_query($sql, "Invoice Number : $invoice_number, Total Bill Cost : $total_bill_cost, Total Bill Profit : $total_bill_profit", "Update Invoice Total Profit And Cost");
 
         // Advance Hambuna Salli Cash in Hand Ekata ekathu wenawa
         $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
