@@ -84,7 +84,7 @@ function insert_query($query, $msg, $action)
     }
 
     // Enable Exception Mode for MySQLi
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    // mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 }
 
 // Function for Add Transaction Log
@@ -103,6 +103,6 @@ function transaction_log($transaction_type, $description, $amount)
     } else {
         $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('$transaction_type', '$description', '$amount');";
     }
-    insert_query($sql, "Transaction Log", "Transaction Log");
+    insert_query($sql, "Transaction Type : $transaction_type, description : $description, Rs. $amount by $employee_id ", "Transaction Log");
 }
 ?>
