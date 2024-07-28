@@ -7,7 +7,7 @@ if ($employee_role !== "Admin") {
 }
 require '../inc/header.php';
 require_once '../inc/config.php';
-include '../dashboard/auth.php';
+include 'auth.php';
 
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
