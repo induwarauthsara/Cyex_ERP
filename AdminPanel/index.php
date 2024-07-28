@@ -14,42 +14,90 @@ include 'nav.php';
         <i class="fas fa-file-invoice"></i>
         <div class="info">
             <h3>Today Invoice Count </h3>
-            <h2>100</h2>
+            <h2>
+                <?php
+                $sql = "SELECT count(*) from invoice where invoice_date = CURDATE();";
+                $invoice_count = mysqli_fetch_assoc(mysqli_query($con, $sql))['count(*)'];
+                echo $invoice_count;
+                ?>
+            </h2>
         </div>
     </div>
     <div class="card">
         <i class="fas fa-solid fa-cubes"></i>
         <div class="info">
             <h3>Stock Remain</h3>
-            <h2>100</h2>
+            <h2> <?php
+                    // Get each Item Full Cost (Cost x qty)
+                    $item_capital = array();
+                    $sql = "SELECT * FROM items";
+                    $result = mysqli_query($con, $sql);
+                    if ($result) {
+                        // qury success
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($item_capital_sql = mysqli_fetch_array($result)) {
+                                $item_cost = $item_capital_sql['cost'];
+                                $item_qty = $item_capital_sql['qty'];
+                                $item_fullcost = $item_cost * $item_qty;
+                                // echo $item_fullcost;
+                                array_push($item_capital, $item_fullcost);
+                            }
+                        } else {
+                            echo "No any Item";
+                        }
+                    } else {
+                        echo "Database Query Failed";
+                    }
+
+                    $capital_currency = array_sum($item_capital);
+                    echo number_format($capital_currency, 2);  ?></h2>
         </div>
     </div>
     <div class="card">
         <i class="fa-solid fa-cash-register"></i>
         <div class="info">
             <h3>Today Cash in</h3>
-            <h2>100</h2>
+            <h2>
+                <?php
+                $sql = "SELECT sum(advance) as SUM from invoice where invoice_date = CURDATE();";
+                $cash_in_today = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM'];
+                echo number_format($cash_in_today, 2);
+                ?>
+            </h2>
         </div>
     </div>
     <div class="card">
         <i class="fas fa-wallet"></i>
         <div class="info">
             <h3>Today Profit</h3>
-            <h2>100</h2>
+            <h2> <?php
+                    $sql = "SELECT sum(profit) as SUM from invoice where invoice_date = CURDATE();";
+                    $cash_in_today = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM'];
+                    echo number_format($cash_in_today, 2);
+                    ?></h2>
         </div>
     </div>
     <div class="card">
         <i class="fas fa-right-to-bracket"></i>
         <div class="info">
             <h3>Today Cash Out</h3>
-            <h2>100</h2>
+            <h2 style="font-size:1.5rem;">Bank Deposit + Salary + Petty cash + Purchase </h2>
         </div>
     </div>
     <div class="card">
         <i class="fa-solid fa-hand-holding-dollar"></i>
         <div class="info">
             <h3>Cash In Hand</h3>
-            <h2>100</h2>
+            <h2><?php
+                $sql = "SELECT amount FROM accounts WHERE account_name = 'cash_in_hand'";
+                $result = mysqli_query($con, $sql);
+                if ($result) {
+                    $cash_in_hand_amount = mysqli_fetch_array($result);
+                    echo $cash_in_hand_amount['amount'];
+                } else {
+                    echo "ERROR";
+                }
+                ?></h2>
         </div>
     </div>
     <div class="card">
@@ -58,14 +106,18 @@ include 'nav.php';
         <i class="fa-solid fa-lightbulb"></i>
         <div class="info">
             <h3>Due Payments</h3>
-            <h2>100</h2>
+            <h2 style="font-size:1.5rem;">Credit Bill + Salary + Utility Payments</h2>
         </div>
     </div>
     <div class="card">
         <i class="fa-solid fa-clock-rotate-left"></i>
         <div class="info">
             <h3>Pending Payments</h3>
-            <h2>100</h2>
+            <h2><?php
+                $sql = "SELECT sum(balance) from invoice where balance >= 0;";
+                $payment_pending_total = mysqli_fetch_assoc(mysqli_query($con, $sql))['sum(balance)'];
+                echo number_format($payment_pending_total, 2);
+                ?></h2>
         </div>
     </div>
 
