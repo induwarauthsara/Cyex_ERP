@@ -11,21 +11,17 @@ $product_name = $_GET['productName'];
 
 // Delete from makeProduct table
 $sql = "DELETE FROM makeProduct WHERE product_name = '$product_name'";
-insert_query($sql, "Delete from makeProduct table where product_name = $product_name", "Delete product");
+insert_query($sql, "Delete from makeProduct table where product_name = $product_name", "Delete product from makeProduct table");
 if ($result) {
     // echo "Record deleted successfully";
     $deleted = true;
 } else {
-    echo "Error deleting record: " . mysqli_error($con);
+    echo "Error deleting record in MakeProduct Table : " . mysqli_error($con) . "<br>";
 }
 
 // Delete From products Table
-if ($deleted) {
     $sql = "DELETE FROM products WHERE product_id = '$product_id'";
     insert_query($sql, "Delete product : $product_name", "Delete product");
-    if (mysqli_query($con, $sql)) {
-        echo "Record deleted successfully";
-    } else {
-        echo "Error deleting record: " . mysqli_error($con);
-    }
+if(!$result){
+    echo "Error deleting record in Product Table: " . mysqli_error($con) . "<br>";
 }
