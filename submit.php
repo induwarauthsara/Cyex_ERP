@@ -79,10 +79,25 @@ require_once 'inc/config.php'; ?>
         // Send Invoice Data to Database
         $sql = "INSERT INTO invoice (customer_name, invoice_date, customer_mobile, biller, total, discount, advance, balance, full_paid)
         VALUES ('{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid})";
-        insert_query($sql, "Add New Invoice for : $customer_name", "Add New Invoice");
+        if (mysqli_query($con, $sql)) {
+            // Retrieve the auto-generated InvoiceID
+            $bill_no = mysqli_insert_id($con); // Get the last inserted ID
+            echo "Invoice Number : " . $bill_no . "<br>";
 
-        // Retrieve the auto-generated InvoiceID
-        $bill_no = mysqli_insert_id($con);
+            // Save in Action Log Table
+            $action = "Add New Invoice";
+            $msg = "Invoice Number : $bill_no, Customer Name : $customer_name, Date : $date, Total : $bill_total, Discount : $bill_discount, Advance : $bill_advance, Balance : $bill_balance, Full Paid : $full_paid";
+            if (isset($_SESSION['employee_id'])) {
+                $employee_id = $_SESSION['employee_id'];
+                // CREATE TABLE action_log ( id INT AUTO_INCREMENT PRIMARY KEY, employee_id  INT NOT NULL, action VARCHAR(20) NOT NULL, description TEXT, date DATE DEFAULT CURRENT_DATE, time TIME DEFAULT CURRENT_TIME );
+                $sql = "INSERT INTO action_log (employee_id, action, description) VALUES ('$employee_id', '$action', '$msg');";
+            } else {
+                $sql = "INSERT INTO action_log (action, description) VALUES ('$action', '$msg');";
+            }
+        } else {
+            echo "Error While generation Invoice ID : " . $sql . "<br>" . mysqli_error($con);
+        }
+
 
         // Check todo
         if (isset($_POST['add_to_todo'])) {
@@ -138,9 +153,9 @@ require_once 'inc/config.php'; ?>
                             // Product Cost eka Stock Account eken Adu wenawa (Kalin Thibbe + wenna.)
                             $cost_sql = "SELECT cost, profit FROM products WHERE product_name = '{$product}'";
                             $cost_result = mysqli_query($con, $cost_sql);
-                            $cost = mysqli_fetch_assoc($cost_result);
-                            $cost = $cost['cost'] * $qty;
-                            $profit = $cost['profit'] * $qty;
+                            $cost_row = mysqli_fetch_assoc($cost_result);
+                            $cost = $cost_row['cost'] * $qty;
+                            $profit = $cost_row['profit'] * $qty;
                             $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
                             insert_query($sql, "Rs. $cost", "Add Product Cost to Stock Account");
 
@@ -156,7 +171,7 @@ require_once 'inc/config.php'; ?>
                             $sql = "UPDATE products SET stock_qty = stock_qty - {$qty} WHERE product_name = '{$product}'";
                             insert_query($sql, "Fall Sell Product Qty from Stock");
                              */
-                            
+
 
                             // ==================== Profit Distribution ====================
                             // Send Profit to Accounts
@@ -248,7 +263,7 @@ require_once 'inc/config.php'; ?>
                                 insert_query($sql, "$product is In Stock", "Update Product Has_Stock State");
                             } else {
                                 $sql = "UPDATE products SET has_stock = 0 WHERE product_name = '{$product}'";
-                                insert_query($sql,"$product is Out of Stock", "Update Product Has_Stock State");
+                                insert_query($sql, "$product is Out of Stock", "Update Product Has_Stock State");
                             }
                         }
                     }
@@ -266,11 +281,11 @@ require_once 'inc/config.php'; ?>
 
         // Update Invoice Total Profit And Cost
         $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";
-        insert_query($sql, "Invoice Number : $invoice_number, Total Bill Cost : $total_bill_cost, Total Bill Profit : $total_bill_profit", "Update Invoice Total Profit And Cost");
+        insert_query($sql, "Invoice Number : $bill_no, Total Bill Cost : $total_bill_cost, Total Bill Profit : $total_bill_profit", "Update Invoice Total Profit And Cost");
 
         // Advance Hambuna Salli Cash in Hand Ekata ekathu wenawa
         $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
-        insert_query($sql, "Invoice Number : $invoice_number, Rs. {$bill_advance}", "Add Advance Money to Cash in Hand");
+        insert_query($sql, "Invoice Number : $bill_no, Rs. {$bill_advance}", "Add Advance Money to Cash in Hand");
 
         // Add Transaction Log -> type, description, amount
         $transaction_type = 'Invoice - Cash In';
