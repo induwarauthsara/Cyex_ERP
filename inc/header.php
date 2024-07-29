@@ -42,8 +42,8 @@
             </div>
         </li>
 
-        <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li>
-        <li class="dashboard_icon adminOnly"> <a href="/transactionLog">Transaction Log</a> </li>
+        <!-- <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li> -->
+        <!-- <li class="dashboard_icon adminOnly"> <a href="/transactionLog">Transaction Log</a> </li> -->
         <li class="dashboard_icon"> <a href="/printerCount">Printer Counter</a> </li>
 
         <li class="dashboard_icon adminOnly"> <a href="/AdminPanel/"> <i class="fas fa-cogs header_icons"> </i> Admin Panel </a> </li>

@@ -63,6 +63,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Customers",
             icon: "fas fa-users"
         },
+        "/pettycash.php": {
+            name: "Pettycash",
+            icon: "fas fa-money-bill-wave"
+        },
+        "/transactionLog": { // After Developing "Report" page move this to "Report" page
+            name: "Transaction Log",
+            icon: "fas fa-file-invoice-dollar"
+        },
         "client_website.php": {
             name: "Web",
             icon: "fas fa-globe"
