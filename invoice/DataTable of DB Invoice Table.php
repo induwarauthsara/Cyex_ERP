@@ -1,5 +1,5 @@
 <?php
-include '../inc/DataTable_cdn.php';
+include $_SERVER['DOCUMENT_ROOT'] . '/inc/DataTable_cdn.php';
 if ($result = mysqli_query($con, $sql)) {
     if (mysqli_num_rows($result) > 0) {
         echo "<table id='DataTable'>";
@@ -43,8 +43,8 @@ if ($result = mysqli_query($con, $sql)) {
                 echo 'Yes';
             }
             echo "</td>";
-            echo "<td> <a href='add-fund.php?id={$row['invoice_number']}'>Add</a> </td>";
-            echo "<td> <a href='print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
+            echo "<td> <a href='/invoice/add-fund.php?id={$row['invoice_number']}'>Add</a> </td>";
+            echo "<td> <a href='/invoice/print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
             echo "</tr>";
         }
         echo "</tbody>";

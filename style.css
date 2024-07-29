@@ -476,9 +476,10 @@ tr:nth-child(even) {
     background-color: #dddddd;
 }
 
-tr:hover {
+
+/* tr:hover {
     background-color: lawngreen;
-}
+} */
 
 
 /* Mobile Responsive */

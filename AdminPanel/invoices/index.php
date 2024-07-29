@@ -1,7 +1,7 @@
 <?php
-include 'nav.php';
-require_once '../../inc/config.php';
-require_once '../../inc/header.php';
+include '../nav.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/inc/header.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . './inc/config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
