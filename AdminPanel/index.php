@@ -93,7 +93,8 @@ include 'nav.php';
                 $result = mysqli_query($con, $sql);
                 if ($result) {
                     $cash_in_hand_amount = mysqli_fetch_array($result);
-                    echo $cash_in_hand_amount['amount'];
+                    $cash_in_hand_amountRS = $cash_in_hand_amount['amount'];
+                    echo number_format($cash_in_hand_amountRS, 2);
                 } else {
                     echo "ERROR";
                 }
