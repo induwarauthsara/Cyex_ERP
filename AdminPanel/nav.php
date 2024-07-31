@@ -1,89 +1,93 @@
 <?php
+ini_set('display_errors', 1); // for debugging - Display errors
+ini_set('display_startup_errors', 1); // for debugging - Display errors
+error_reporting(E_ALL); // for debugging - Display errors
+
 // Only Admin can access this page
 session_start();
 $employee_role = $_SESSION['employee_role'];
 if ($employee_role !== "Admin") {
     header("Location: /index.php");
 }
-require_once  '/inc/header.php';
-require_once './inc/config.php';
+require_once(__DIR__ . '/../inc/header.php');
+require_once(__DIR__ . '/../inc/config.php');
 include 'auth.php';
 
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
-<link rel="stylesheet" href="/AdminPanel/acp.css">
+<link rel="stylesheet" href="<?php __DIR__ ?>/AdminPanel/acp.css">
 <div class="nav">
     <h1>Admin Panel</h1>
 </div>
 
 <script>
     var NavLinkList = {
-        "index.php": {
+        "/AdminPanel/": {
             name: "Dashboard",
             icon: "fas fa-tachometer-alt"
         },
-        "invoices/": {
+        "/AdminPanel/invoices/": {
             name: "Invoices",
             icon: "fas fa-file-invoice-dollar"
         },
-        "quotation.php": {
+        "/AdminPanel/quotation.php": {
             name: "Quotation",
             icon: "fas fa-file-invoice"
         },
-        "charts.php": {
+        "/AdminPanel/charts.php": {
             name: "Charts",
             icon: "fas fa-chart-pie"
         },
-        "reports.php": {
+        "/AdminPanel/reports.php": {
             name: "Reports",
             icon: "fas fa-table-list"
         },
-        "suppliers.php": {
+        "/AdminPanel/suppliers.php": {
             name: "Suppliers",
             icon: "fas fa-truck"
         },
-        "due_payments.php": {
+        "/AdminPanel/due_payments.php": {
             name: "Due Payments",
             icon: "fas fa-credit-card"
         },
-        "utility_payments.php": {
+        "/AdminPanel/utility_payments.php": {
             name: "Utility Payments",
             icon: "fas fa-file-invoice"
         },
-        "one_time_products.php": {
+        "/AdminPanel/one_time_products.php": {
             name: "One Time Products",
             icon: "fas fa-box-open"
         },
-        "hrm": {
+        "/AdminPanel/hrm": {
             name: "HRM",
             icon: "fas fa-user-friends"
         },
-        "customers.php": {
+        "/AdminPanel/customers.php": {
             name: "Customers",
             icon: "fas fa-users"
         },
-        "/pettycash.php": {
+        "/AdminPanel//pettycash.php": {
             name: "Pettycash",
             icon: "fas fa-money-bill-wave"
         },
-        "/transactionLog": { // After Developing "Report" page move this to "Report" page
+        "/AdminPanel//transactionLog": { // After Developing "Report" page move this to "Report" page
             name: "Transaction Log",
             icon: "fas fa-file-invoice-dollar"
         },
-        "client_website.php": {
+        "/AdminPanel/client_website.php": {
             name: "Web",
             icon: "fas fa-globe"
         },
-        "printers.php": {
+        "/AdminPanel/printers.php": {
             name: "Printers",
             icon: "fas fa-print"
         },
-        "bank.php": {
+        "/AdminPanel/bank.php": {
             name: "Bank",
             icon: "fas fa-university"
         },
-        "ai_chat.php": {
+        "/AdminPanel/ai_chat.php": {
             name: "AI Chat",
             icon: "fas fa-comments"
         }

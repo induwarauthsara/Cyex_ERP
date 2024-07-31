@@ -121,7 +121,6 @@ include 'nav.php';
                 ?></h2>
         </div>
     </div>
-<?php echo "LINK :'/inc/header.php'"; ?>
 </div>
 
 <!-- 
