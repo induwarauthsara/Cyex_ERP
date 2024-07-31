@@ -165,7 +165,11 @@ include '../nav.php';
                                 showValidationMessage: false,
                                 timer: 2000
                             });
-                            location.reload();
+                            setTimeout(() => {
+                                setTimeout(() => {
+                                location.reload();
+                            }, 3000); // 3-second delay before reloading
+                            }, 5000); // 5-second delay before reloading
                         })
                         .catch(error => {
                             swil.fire({
@@ -222,7 +226,9 @@ include '../nav.php';
                                         showValidationMessage: false,
                                         timer: 2000
                                     });
-                                    location.reload();
+                                    setTimeout(() => {
+                                location.reload();
+                            }, 3000); // 3-second delay before reloading
                                 })
                                 .catch(error => {
                                     swil.fire({
@@ -272,7 +278,9 @@ include '../nav.php';
                             showValidationMessage: false,
                             timer: 2000
                         });
-                        location.reload();
+                        setTimeout(() => {
+                                location.reload();
+                            }, 3000); // 3-second delay before reloading
                     })
                     .catch(error => {
                         swil.fire({
@@ -317,7 +325,9 @@ include '../nav.php';
                                 showValidationMessage: false,
                                 timer: 2000
                             });
-                            location.reload();
+                            setTimeout(() => {
+                                location.reload();
+                            }, 3000); // 3-second delay before reloading
                         })
                         .catch(error => {
                             swil.fire({
@@ -365,7 +375,9 @@ include '../nav.php';
                             showValidationMessage: false,
                             timer: 2000
                         });
-                        location.reload();
+                        setTimeout(() => {
+                                location.reload();
+                            }, 3000); // 3-second delay before reloading
                     })
                     .catch(error => {
                         Swal.fire({

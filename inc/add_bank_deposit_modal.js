@@ -30,7 +30,9 @@
                                             timer: 2000 // Close alert after 2 seconds
                                         });
                                         if (refresh) {
-                                            location.reload();
+                                            setTimeout(() => {
+                                                location.reload();
+                                            }, 3000); // 3-second delay before reloading
                                         }
                                     })
                                     .catch(error => {
