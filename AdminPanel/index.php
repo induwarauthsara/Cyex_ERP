@@ -121,7 +121,7 @@ include 'nav.php';
                 ?></h2>
         </div>
     </div>
-
+<?php echo "LINK :" . $_SERVER['DOCUMENT_ROOT'] . "'/inc/header.php'"; ?>
 </div>
 
 <!-- 
