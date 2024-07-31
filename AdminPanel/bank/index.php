@@ -214,7 +214,7 @@ include '../nav.php';
 
 
                         if (bankAccountName && !isNaN(amount) && deposit_date && deposit_time) {
-                            return fetch(`bank/edit_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${amount}&deposit_date=${deposit_date}&deposit_time=${deposit_time}`, {
+                            return fetch(`/AdminPanel/bank/edit_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${amount}&deposit_date=${deposit_date}&deposit_time=${deposit_time}`, {
                                     method: 'GET'
                                 })
                                 .then(response => response.text())
@@ -268,7 +268,7 @@ include '../nav.php';
             confirmButtonText: 'Yes, delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`bank/delete_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${amount}`)
+                fetch(`/AdminPanel/bank/delete_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${amount}`)
                     .then(response => response.text())
                     .then(html => {
                         Swal.fire({
@@ -313,7 +313,7 @@ include '../nav.php';
                 const amount = Swal.getPopup().querySelector('#amount').value;
                 const change_previous_records = Swal.getPopup().querySelector('#change_previous_records').checked;
                 if (account_name && !isNaN(amount)) {
-                    return fetch(`bank/edit_bank_account.php?account_name=${account_name}&amount=${amount}&change_previous_records=${change_previous_records}&previous_account_name=${previous_account_name}`, {
+                    return fetch(`/AdminPanel/bank/edit_bank_account.php?account_name=${account_name}&amount=${amount}&change_previous_records=${change_previous_records}&previous_account_name=${previous_account_name}`, {
                             method: 'GET'
                         })
                         .then(response => response.text())
@@ -365,7 +365,7 @@ include '../nav.php';
         }).then((result) => {
             if (result.isConfirmed) {
                 const deletePreviousRecords = result.value.deletePreviousRecords;
-                fetch(`bank/delete_bank_account.php?account_name=${account_name}&amount=${amount}&deletePreviousRecords=${deletePreviousRecords}`)
+                fetch(`/AdminPanel/bank/delete_bank_account.php?account_name=${account_name}&amount=${amount}&deletePreviousRecords=${deletePreviousRecords}`)
                     .then(response => response.text())
                     .then(html => {
                         Swal.fire({
