@@ -28,10 +28,6 @@ require_once '../inc/config.php';
 // $con->close();
 
 // 2. Send Database Backup to Email
-$server = 'morgana.webserverlive.com';
-$db_user = 'srijayal_system';
-$db_pwd = 'system@123456';
-$db_name = 'srijayal_system';
 // Email details
 $to = "induwarauthsara19@gmail.com, lochana587@gmail.com, srijayaprint@gmail.com";
 $subject = date('Y-m-d') . " Srijaya Billing System Database Backup";
@@ -45,31 +41,35 @@ echo "<pre>$output</pre>";
 
 // Check if the command was successful
 if ($output !== null) {
-    // Prepare the output as an attachment
-    $encoded_content = chunk_split(base64_encode($output));
+    // Define boundary for separating the different parts of the email
     $uid = md5(uniqid(time()));
 
-    // Headers for attachment
-    $headers .= "\r\nMIME-Version: 1.0\r\n";
+    // Construct the email headers
+    $headers = "From: info@srijaya.lk\r\n";
+    $headers .= "Reply-To: induwarauthsara19@gmail.com\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
     $headers .= "Content-Type: multipart/mixed; boundary=\"$uid\"\r\n\r\n";
-    $headers .= "This is a multi-part message in MIME format.\r\n";
-    $headers .= "--$uid\r\n";
-    $headers .= "Content-type:text/plain; charset=iso-8859-1\r\n";
-    $headers .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-    $headers .= $message . "\r\n\r\n";
-    $headers .= "--$uid\r\n";
-    $headers .= "Content-Type: application/octet-stream; name=\"backup.sql\"\r\n";
-    $headers .= "Content-Transfer-Encoding: base64\r\n";
-    $headers .= "Content-Disposition: attachment; filename=\"backup.sql\"\r\n\r\n";
-    $headers .= $encoded_content . "\r\n\r\n";
-    $headers .= "--$uid--";
+
+    // Start the body of the email
+    $body = "This is a multi-part message in MIME format.\r\n";
+    $body .= "--$uid\r\n";
+    $body .= "Content-type:text/plain; charset=iso-8859-1\r\n";
+    $body .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+    $body .= $message . "\r\n\r\n";
+    $body .= "--$uid\r\n";
+    $body .= "Content-Type: application/octet-stream; name=\"backup.sql\"\r\n";
+    $body .= "Content-Transfer-Encoding: base64\r\n";
+    $body .= "Content-Disposition: attachment; filename=\"backup.sql\"\r\n\r\n";
+    $body .= chunk_split(base64_encode($output)) . "\r\n\r\n";
+    $body .= "--$uid--";
 
     // Send the email
-    if (mail($to, $subject, "", $headers)) {
+    if (mail($to, $subject, $body, $headers)) {
         echo "Email sent successfully.";
     } else {
         echo "Failed to send email.";
     }
+
 } else {
     echo "Database backup failed.";
 }
