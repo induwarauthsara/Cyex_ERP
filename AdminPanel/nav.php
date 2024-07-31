@@ -5,14 +5,14 @@ $employee_role = $_SESSION['employee_role'];
 if ($employee_role !== "Admin") {
     header("Location: /index.php");
 }
-require_once $_SERVER['DOCUMENT_ROOT'] . '/inc/header.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . './inc/config.php';
+require '../inc/header.php';
+require_once '../inc/config.php';
 include 'auth.php';
 
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
-<link rel="stylesheet" href="<?php $_SERVER['DOCUMENT_ROOT']?> /AdminPanel/acp.css">
+<link rel="stylesheet" href="acp.css">
 <div class="nav">
     <h1>Admin Panel</h1>
 </div>
