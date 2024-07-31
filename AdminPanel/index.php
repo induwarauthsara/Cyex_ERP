@@ -5,6 +5,20 @@ include 'nav.php';
 <h1>Dashboard</h1>
 
 <div id="errors">
+    <!-- Database Erros -->
+    <?php
+    $sql = "SELECT COUNT(*) FROM `error_log` WHERE `status` = 'pending';";
+    $result = mysqli_query($con, $sql);
+    if ($result) {
+        $error_count = mysqli_fetch_array($result);
+        $error_count = $error_count['COUNT(*)'];
+        if ($error_count > 0) {
+            echo "<p><b> You have <a href='erros.php'> $error_count  Critical Unsolved Errors.</a> Immediate action is required to prevent potential system failure. Solve them NOW! </b></p>";
+        }
+    } else {
+        echo "Database Query Failed";
+    }
+    ?>
     <p><b>Admin Panel is Currently Under Construction. Please Come Back Soon.!</b></p>
     <p>You have Uncleared 03 One-Time-Products. <a href="index.php">Solve them here</a></p>
 </div>
