@@ -476,6 +476,12 @@ tr:nth-child(even) {
     background-color: #dddddd;
 }
 
+.billHeadButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 
 /* tr:hover {
     background-color: lawngreen;

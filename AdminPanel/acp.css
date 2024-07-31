@@ -175,6 +175,14 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: space-evenly;
+    border: 2px solid transparent;
+    transition: border 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+#cards .card:hover {
+    border-color: #ffffff;
+    background-color: #0c0d14;
+    cursor: pointer;
 }
 
 #cards .card i {
@@ -193,6 +201,13 @@ h1 {
     color: rgb(0, 255, 34);
     font-weight: bold;
     font-size: 2rem;
+}
+
+
+/* Buttons */
+
+.smallIcon i {
+    font-size: 20px !important;
 }
 
 

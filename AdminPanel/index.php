@@ -17,7 +17,7 @@ include 'nav.php';
             <h2>
                 <?php
                 $sql = "SELECT count(*) from invoice where invoice_date = CURDATE();";
-                $invoice_count = mysqli_fetch_assoc(mysqli_query($con, $sql))['count(*)'];
+                $invoice_count = mysqli_fetch_assoc(mysqli_query($con, $sql))['count(*)'] ?? 0;
                 echo $invoice_count;
                 ?>
             </h2>
@@ -36,8 +36,8 @@ include 'nav.php';
                         // qury success
                         if (mysqli_num_rows($result) > 0) {
                             while ($item_capital_sql = mysqli_fetch_array($result)) {
-                                $item_cost = $item_capital_sql['cost'];
-                                $item_qty = $item_capital_sql['qty'];
+                                $item_cost = $item_capital_sql['cost'] ?? 0;
+                                $item_qty = $item_capital_sql['qty'] ?? 0;
                                 $item_fullcost = $item_cost * $item_qty;
                                 // echo $item_fullcost;
                                 array_push($item_capital, $item_fullcost);
@@ -60,7 +60,7 @@ include 'nav.php';
             <h2>
                 <?php
                 $sql = "SELECT sum(advance) as SUM from invoice where invoice_date = CURDATE();";
-                $cash_in_today = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM'];
+                $cash_in_today = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM'] ?? 0;
                 echo number_format($cash_in_today, 2);
                 ?>
             </h2>
@@ -72,8 +72,8 @@ include 'nav.php';
             <h3>Today Profit</h3>
             <h2> <?php
                     $sql = "SELECT sum(profit) as SUM from invoice where invoice_date = CURDATE();";
-                    $cash_in_today = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM'];
-                    echo number_format($cash_in_today, 2);
+                    $today_profit = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM'] ?? 0;
+                    echo number_format($today_profit, 2);
                     ?></h2>
         </div>
     </div>
@@ -81,7 +81,8 @@ include 'nav.php';
         <i class="fas fa-right-to-bracket"></i>
         <div class="info">
             <h3>Today Cash Out</h3>
-            <h2 style="font-size:1.5rem;">Bank Deposit + Salary + Petty cash + Purchase </h2>
+            <h4>(Salary + Petty cash + Purchase)</h4>
+            <h2> </h2>
         </div>
     </div>
     <div class="card">
@@ -93,7 +94,7 @@ include 'nav.php';
                 $result = mysqli_query($con, $sql);
                 if ($result) {
                     $cash_in_hand_amount = mysqli_fetch_array($result);
-                    $cash_in_hand_amountRS = $cash_in_hand_amount['amount'];
+                    $cash_in_hand_amountRS = $cash_in_hand_amount['amount'] ?? 0;
                     echo number_format($cash_in_hand_amountRS, 2);
                 } else {
                     echo "ERROR";
@@ -107,7 +108,8 @@ include 'nav.php';
         <i class="fa-solid fa-lightbulb"></i>
         <div class="info">
             <h3>Due Payments</h3>
-            <h2 style="font-size:1.5rem;">Credit Bill + Salary + Utility Payments</h2>
+            <h4>(Credit Bill + Salary + Utility Payments)</h4>
+            <h2></h2>
         </div>
     </div>
     <div class="card">
@@ -116,9 +118,43 @@ include 'nav.php';
             <h3>Pending Payments</h3>
             <h2><?php
                 $sql = "SELECT sum(balance) from invoice where balance >= 0;";
-                $payment_pending_total = mysqli_fetch_assoc(mysqli_query($con, $sql))['sum(balance)'];
+                $payment_pending_total = mysqli_fetch_assoc(mysqli_query($con, $sql))['sum(balance)'] ?? 0;
                 echo number_format($payment_pending_total, 2);
                 ?></h2>
+        </div>
+    </div>
+    <a href="bank/">
+        <div class="card">
+            <i class="fa-solid fa-piggy-bank"></i>
+            <div class="info">
+                <h3>Today Bank Deposit</h3>
+                <h2><?php
+                    $sql = "SELECT SUM(amount) FROM `bank_deposits` WHERE deposit_date = CURDATE();";
+                    $today_bank_deposit = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM(amount)'] ?? 0;
+                    echo number_format($today_bank_deposit, 2);
+                    ?></h2>
+            </div>
+        </div>
+    </a>
+    <a href="bank/">
+        <div class="card">
+            <i class="fa-solid fa-university"></i>
+            <div class="info">
+                <h3>Total Bank Balance</h3>
+                <h2><?php
+                    $sql = "SELECT sum(amount) FROM `accounts` WHERE account_type = 'bank';";
+                    $total_bank_balance = mysqli_fetch_assoc(mysqli_query($con, $sql))['sum(amount)'] ?? 0;
+                    echo number_format($total_bank_balance, 2);
+                    ?></h2>
+            </div>
+        </div>
+    </a>
+    <div class="card">
+        <i class="fa-solid fa-chart-line"></i>
+        <div class="info">
+            <h3>Summery / Risk</h3>
+            <h4>(Bank Balance - Due Payments)</h4>
+            <h2></h2>
         </div>
     </div>
 </div>

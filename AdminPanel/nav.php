@@ -16,6 +16,14 @@ include 'auth.php';
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
+<!-- For Swal Modal Box Popups -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+<!-- Data Table -->
+<?php include __DIR__ . '/../inc/DataTable_cdn.php'; ?>
+
+
 <link rel="stylesheet" href="<?php __DIR__ ?>/AdminPanel/acp.css">
 <div class="nav">
     <h1>Admin Panel</h1>
@@ -67,11 +75,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Customers",
             icon: "fas fa-users"
         },
-        "/AdminPanel//pettycash.php": {
+        "/AdminPanel/pettycash.php": {
             name: "Pettycash",
             icon: "fas fa-money-bill-wave"
         },
-        "/AdminPanel//transactionLog": { // After Developing "Report" page move this to "Report" page
+        "/AdminPanel/transactionLog": { // After Developing "Report" page move this to "Report" page
             name: "Transaction Log",
             icon: "fas fa-file-invoice-dollar"
         },
@@ -83,7 +91,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Printers",
             icon: "fas fa-print"
         },
-        "/AdminPanel/bank.php": {
+        "/AdminPanel/bank": {
             name: "Bank",
             icon: "fas fa-university"
         },

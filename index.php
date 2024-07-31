@@ -28,7 +28,10 @@
                     <br>071 4730996
                 </h2>
             </div>
-            <button class="add_pettycash" onclick="add_pettycash()"> Add Pettycash </button>
+            <div class="billHeadButtons">
+                <button class="add_pettycash" onclick="add_pettycash()"> Add Pettycash </button>
+                <button class="add_pettycash" onclick="add_bankDeposit()"> Bank Deposit </button>
+            </div>
 
         </div>
         <hr>
@@ -803,6 +806,9 @@
     }
     ?>
 </datalist>
+
+<!-- ======================================== Add Bank Deposit ======================================== -->
+<script src="/inc/add_bank_deposit_modal.js"></script>
 
 </html>
 
