@@ -36,7 +36,7 @@ $db_name = 'srijayal_system';
 $to = "induwarauthsara19@gmail.com, lochana587@gmail.com, srijayaprint@gmail.com";
 $subject = date('Y-m-d') . " Srijaya Billing System Database Backup";
 $message = "Please find attached the database backup for " . date('Y-m-d');
-$headers = "From: no-reply@yourdomain.com"; // Replace with your email address
+$headers = "From: info@srijaya.lk"; // Replace with your email address
 
 // Command to execute mysqldump and capture output
 $command = "mysqldump --opt -h $server -u $db_user -p$db_pwd $db_name";
