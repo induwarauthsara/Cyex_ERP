@@ -1,7 +1,7 @@
 <?php
 include '../nav.php';
-require_once $_SERVER['SERVER_NAME'] . './inc/config.php';
-require_once $_SERVER['SERVER_NAME'] . '/inc/header.php';
+require_once './inc/config.php';
+require_once '/inc/header.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

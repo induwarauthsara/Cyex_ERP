@@ -1,5 +1,5 @@
 <?php
-include $_SERVER['SERVER_NAME'] . '/inc/DataTable_cdn.php';
+include '/inc/DataTable_cdn.php';
 if ($result = mysqli_query($con, $sql)) {
     if (mysqli_num_rows($result) > 0) {
         echo "<table id='DataTable'>";
