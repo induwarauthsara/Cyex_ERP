@@ -1,6 +1,7 @@
 <?php
 // 1. Check difference in amount and update relevant bank account
 // 2. Update Bank Deposit Record
+// 3. Fall Money in Cash-in-Hand Account
 
 require_once '../../inc/config.php';
 
@@ -9,6 +10,7 @@ $bankAccountName = $_GET['bankAccountName'];
 $amount = $_GET['amount'];
 $deposit_date = $_GET['deposit_date'];
 $deposit_time = $_GET['deposit_time'];
+$fallMoneyInCashInHandCheckBox = $_GET['fallMoneyInCashInHand'];
 
 // 1. Check difference in amount and update relevant bank account
 $sql = "SELECT amount, bank_account FROM bank_deposits WHERE bank_deposit_id = '$bank_deposit_id';";
@@ -30,3 +32,17 @@ if ($old_bank_account != $bankAccountName) {
 $sql = "UPDATE bank_deposits SET bank_account = '$bankAccountName', amount = '$amount', deposit_date = '$deposit_date', deposit_time = '$deposit_time' WHERE bank_deposit_id = '$bank_deposit_id';";
 insert_query($sql, "$bankAccountName Bank Account - Rs.$amount at $deposit_date $deposit_time", "Update Bank Deposit");
 
+// 3. Fall Money in Cash-in-Hand Account
+if ($fallMoneyInCashInHandCheckBox == 'true') {
+    if ($old_amount != $amount) {
+        $sql = "UPDATE accounts SET amount = amount + $old_amount - $amount WHERE account_name = 'cash_in_hand';";
+        $change = $old_amount - $amount;
+        insert_query($sql, "Add/Fall Rs.$change in Cash in Hand Account", "Update Bank Deposit");
+        if ($result) {
+            // Add Transaction Log -> type, description, amount
+            $transaction_type = 'Update Bank Deposit';
+            $description = "Add/Fall Rs.$change in Cash in Hand Account for Update Bank Deposit";
+            transaction_log($transaction_type, $description, $change);
+        }
+    }
+}
