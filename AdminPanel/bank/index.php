@@ -91,6 +91,193 @@ include '../nav.php';
         ?>
     </div>
 
+    <!-- Add Charts for display Daily Bank Deposit Record with apexcharts. show separate banks with multi column chart and use line chart mix -->
+    <?php
+    // Database connection (assumed $con is the mysqli connection object)
+    $bankListQuery = "SELECT account_name FROM accounts WHERE account_type = 'bank'";
+    $bankListResult = $con->query($bankListQuery);
+    $banks = [];
+    if ($bankListResult->num_rows > 0) {
+        while ($row = $bankListResult->fetch_assoc()) {
+            $banks[] = $row['account_name'];
+        }
+    }
+
+    // Fetch daily bank deposit records for each bank
+    $depositDataQuery = "SELECT bank_account, deposit_date, SUM(amount) as total_amount 
+                    FROM bank_deposits 
+                    WHERE deposit_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                    GROUP BY bank_account, deposit_date
+                    ORDER BY deposit_date";
+    $depositDataResult = $con->query($depositDataQuery);
+
+    $deposits = [];
+    $categories = [];
+
+    if ($depositDataResult->num_rows > 0) {
+        while ($row = $depositDataResult->fetch_assoc()) {
+            $deposits[$row['bank_account']][] = [
+                'date' => $row['deposit_date'],
+                'amount' => $row['total_amount']
+            ];
+
+            // Collect all unique dates
+            if (!in_array($row['deposit_date'], $categories)) {
+                $categories[] = $row['deposit_date'];
+            }
+        }
+    } else {
+        echo "No records found.";
+    }
+
+    ?>
+
+    <div id="chart"></div>
+
+    <script>
+        var deposits = <?php echo json_encode($deposits); ?>;
+        var categories = <?php echo json_encode($categories); ?>;
+        var seriesData = [];
+
+        // Initialize series data for each bank
+        <?php foreach ($banks as $bank) : ?>
+            var bankData = deposits["<?php echo $bank; ?>"] || [];
+            var data = categories.map(function(date) {
+                var entry = bankData.find(function(d) {
+                    return d.date === date;
+                });
+                return entry ? parseFloat(entry.amount) : 0;
+            });
+            seriesData.push({
+                name: "<?php echo $bank; ?>",
+                type: 'column',
+                data: data
+            });
+        <?php endforeach; ?>
+
+        // Add a line series for the total amount
+        var totalAmounts = categories.map(function(date, index) {
+            return seriesData.reduce(function(sum, series) {
+                return sum + (parseFloat(series.data[index]) || 0);
+            }, 0);
+        });
+
+        seriesData.push({
+            name: 'Total',
+            type: 'line',
+            data: totalAmounts
+        });
+
+        var options = {
+            chart: {
+                type: 'line',
+                height: 450,
+                stacked: false,
+                zoom: {
+                    type: 'x',
+                    enabled: true,
+                    autoScaleYaxis: true
+                },
+                toolbar: {
+                    autoSelected: 'zoom'
+                }
+            },
+            series: seriesData,
+            xaxis: {
+                categories: categories,
+                title: {
+                    text: 'Date',
+                },
+                type: 'datetime',
+                labels: {
+                    rotate: -45,
+                    rotateAlways: true,
+                    formatter: function(val) {
+                        return new Date(val).toLocaleDateString();
+                    }
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Deposit Amount',
+                },
+                labels: {
+                    formatter: function(val) {
+                        return val.toLocaleString('en-US', {});
+                    }
+                }
+            },
+            plotOptions: {
+                bar: {
+                    columnWidth: '80%',
+                    dataLabels: {
+                        position: 'top',
+                    }
+                }
+            },
+            stroke: {
+                width: [0, 4]
+            },
+            legend: {
+                show: true,
+                position: 'bottom',
+                horizontalAlign: 'center',
+                labels: {
+                    colors: undefined,
+                    useSeriesColors: true
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: function(val) {
+                    return val.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                },
+                offsetY: -20,
+                style: {
+                    fontSize: '12px',
+                    colors: ["#304758"]
+                }
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(y) {
+                        if (typeof y !== "undefined") {
+                            return y.toLocaleString('en-US', {});
+                        }
+                        return y;
+                    }
+                }
+            },
+            title: {
+                text: 'Daily Bank Deposit Record',
+                align: 'center'
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    legend: {
+                        position: 'bottom',
+                        offsetX: -10,
+                        offsetY: 0
+                    }
+                }
+            }],
+            theme: {
+                palette: 'palette1'
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+    </script>
+
+
+
     <!-- Bank Deposit Log with DataTable-->
     <table id="DataTable" class="display" style="width:100%">
         <thead>
@@ -167,8 +354,8 @@ include '../nav.php';
                             });
                             setTimeout(() => {
                                 setTimeout(() => {
-                                location.reload();
-                            }, 3000); // 3-second delay before reloading
+                                    location.reload();
+                                }, 3000); // 3-second delay before reloading
                             }, 5000); // 5-second delay before reloading
                         })
                         .catch(error => {
@@ -200,6 +387,9 @@ include '../nav.php';
                         '</select>' +
                         '<label for="amount" class="swal2-label">Amount:</label>' +
                         '<input id="amount" class="swal2-input" value="' + amount + '">' +
+                        // If Amount is Changed, ask changed money to fall in Cash-in-Hand Account
+                        '<label for="fallMoneyInCash" class="swal2-label">Add/Fall Changed Money in  Cash-in-Hand Account:</label>' +
+                        '<input type="checkbox" id="fallMoneyInCashInHand" class="swal3-input" name="fallMoneyInCashInHand"> <br> <br>' +
                         '<label for="date" class="swal2-label">Date:</label>' +
                         '<input type="date" id="deposit_date" class="swal2-input" value="' + deposit_date + '">' +
                         '<label for="time" class="swal2-label">Time:</label>' +
@@ -207,14 +397,13 @@ include '../nav.php';
                     confirmButtonText: 'Update',
                     preConfirm: () => {
                         const bankAccountName = Swal.getPopup().querySelector('#bankAccountName').value;
-                        const amount = Swal.getPopup().querySelector('#amount').value;
+                        const changedAmount = Swal.getPopup().querySelector('#amount').value;
                         const deposit_date = Swal.getPopup().querySelector('#deposit_date').value;
                         const deposit_time = Swal.getPopup().querySelector('#deposit_time').value;
+                        const fallMoneyInCashInHand = Swal.getPopup().querySelector('#fallMoneyInCashInHand').checked;
 
-
-
-                        if (bankAccountName && !isNaN(amount) && deposit_date && deposit_time) {
-                            return fetch(`/AdminPanel/bank/edit_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${amount}&deposit_date=${deposit_date}&deposit_time=${deposit_time}`, {
+                        if (bankAccountName && !isNaN(changedAmount) && deposit_date && deposit_time) {
+                            return fetch(`/AdminPanel/bank/edit_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${changedAmount}&deposit_date=${deposit_date}&deposit_time=${deposit_time}&fallMoneyInCashInHand=${fallMoneyInCashInHand}`, {
                                     method: 'GET'
                                 })
                                 .then(response => response.text())
@@ -227,8 +416,8 @@ include '../nav.php';
                                         timer: 2000
                                     });
                                     setTimeout(() => {
-                                location.reload();
-                            }, 3000); // 3-second delay before reloading
+                                        location.reload();
+                                    }, 3000); // 3-second delay before reloading
                                 })
                                 .catch(error => {
                                     swil.fire({
@@ -265,10 +454,18 @@ include '../nav.php';
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+            confirmButtonText: 'Yes, delete it!',
+            html: // If Amount is Changed, ask changed money to fall in Cash-in-Hand Account
+                '<label for="fallMoneyInCashInHand" class="swal2-label">Return This Money to Cash-in-Hand Account:</label>' +
+                '<input type="checkbox" id="fallMoneyInCashInHand" class="swal3-input"> <br> <br>',
+            preConfirm: () => {
+                return {
+                    fallMoneyInCashInHand: document.getElementById('fallMoneyInCashInHand').checked
+                };
+            }
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/AdminPanel/bank/delete_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${amount}`)
+                fetch(`/AdminPanel/bank/delete_bank_deposit.php?bank_deposit_id=${bank_deposit_id}&bankAccountName=${bankAccountName}&amount=${amount}&fallMoneyInCashInHand=${result.value.fallMoneyInCashInHand}`)
                     .then(response => response.text())
                     .then(html => {
                         Swal.fire({
@@ -279,8 +476,8 @@ include '../nav.php';
                             timer: 2000
                         });
                         setTimeout(() => {
-                                location.reload();
-                            }, 3000); // 3-second delay before reloading
+                            location.reload();
+                        }, 3000); // 3-second delay before reloading
                     })
                     .catch(error => {
                         swil.fire({
@@ -376,8 +573,8 @@ include '../nav.php';
                             timer: 2000
                         });
                         setTimeout(() => {
-                                location.reload();
-                            }, 3000); // 3-second delay before reloading
+                            location.reload();
+                        }, 3000); // 3-second delay before reloading
                     })
                     .catch(error => {
                         Swal.fire({
