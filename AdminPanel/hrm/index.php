@@ -63,17 +63,25 @@ include '../nav.php';
                     // $password = $row['password'];
                     $status = $row['status'];
 
+                    $action = "<button>Edit</button><br>";
+
                     if ($status == 1) {
                         $status = "Active";
+                        $action .= "<button>Pay Salary</button><br>"
+                        . "<button>Terminate</button><br>";
                     } else {
                         $status = "Terminated";
                     }
 
                     if ($is_clocked_in == 1) {
                         $is_clocked_in = "Working";
+                        $action .= "<button>Clock Out</button><br>";
                     } else {
                         $is_clocked_in = "Off";
+                        $action .= "<button>Clock In</button><br>";
                     }
+
+                    
 
                     echo "<tr>";
                     echo "<td>$emoloyee_id</td>";
@@ -88,11 +96,7 @@ include '../nav.php';
                     echo "<td>$day_salary</td>";
                     // echo "<td>$password</td>";
                     echo "<td>$status</td>";
-                    echo "<td>
-                                <button>Edit</button><br>
-                                <button>Pay Salary</button><br>
-                                <button>Terminate</button>
-                            </td>";
+                    echo "<td> $action </td>";
                     echo "</tr>";
                 }
             }
