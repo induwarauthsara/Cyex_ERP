@@ -483,6 +483,45 @@ tr:nth-child(even) {
 }
 
 
+/* Tab */
+
+.tab {
+    display: flex;
+    justify-content: center;
+}
+
+
+/* Select first child of .tab */
+
+.tablinks:first-child {
+    /* Your styles here */
+    border-radius: 1rem 0 0 1rem;
+}
+
+
+/* Select last child of .tab */
+
+.tablinks:last-child {
+    /* Your styles here */
+    border-radius: 0 1rem 1rem 0;
+}
+
+.tablinks {
+    margin: 0;
+    padding: 10px 20px;
+    border-radius: unset;
+    background-color: white;
+    border: 2px solid #2778c4;
+    color: #2778c4;
+    cursor: pointer;
+}
+
+.tablinks.active {
+    background-color: #2778c4;
+    color: white;
+}
+
+
 /* tr:hover {
     background-color: lawngreen;
 } */

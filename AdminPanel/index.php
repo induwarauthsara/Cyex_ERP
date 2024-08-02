@@ -13,14 +13,28 @@ include 'nav.php';
         $error_count = mysqli_fetch_array($result);
         $error_count = $error_count['COUNT(*)'];
         if ($error_count > 0) {
-            echo "<p><b> You have <a href='erros.php'> $error_count  Critical Unsolved Errors.</a> Immediate action is required to prevent potential system failure. Solve them NOW! </b></p>";
+            echo "<p><b> You have <a href='erros.php'> $error_count  Critical Unsolved Errors.</a> Immediate action is required to prevent potential system failure. Solve them NOW! For any help, please contact the developer. </b></p>";
         }
     } else {
         echo "Database Query Failed";
     }
     ?>
     <p><b>Admin Panel is Currently Under Construction. Please Come Back Soon.!</b></p>
-    <p>You have Uncleared 03 One-Time-Products. <a href="index.php">Solve them here</a></p>
+
+    <!-- One-Time-Products -->
+    <?php
+    $sql = "SELECT COUNT(*) FROM `oneTimeProducts_sales` WHERE `status` = 'uncleared';";
+    $result = mysqli_query($con, $sql);
+    if ($result) {
+        $uncleared_oneTimeProducts_count = mysqli_fetch_array($result);
+        $uncleared_oneTimeProducts_count = $uncleared_oneTimeProducts_count['COUNT(*)'];
+        if ($uncleared_oneTimeProducts_count > 0) {
+            echo "<p><b> You have  $uncleared_oneTimeProducts_count  Uncleared One-Time-Products. <a href='one_time_products.php'>Solve them NOW !</a>  </b></p>";
+        }
+    } else {
+        echo "Database Query Failed";
+    }
+    ?>
 </div>
 
 <div id="cards">
