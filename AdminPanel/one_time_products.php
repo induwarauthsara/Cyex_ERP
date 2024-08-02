@@ -12,13 +12,14 @@ if (isset($_GET['s'])) {
     } elseif ($status == 'Cleared') {
         $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
     } else {
+        $status = 'Uncleared';
         $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
     }
-
-    echo "<h1> $status One Time Products List </h1>";
 } else {
+    $status = 'Uncleared';
     $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
 }
+echo "<h1> $status One-Time Products List </h1>";
 
 ?>
 <!DOCTYPE html>
