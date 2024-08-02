@@ -11,7 +11,7 @@ if (isset($_GET['s'])) {
         $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'skip';";
     } elseif ($status == 'Cleared') {
         $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
-    }else{
+    } else {
         $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
     }
 
@@ -74,6 +74,7 @@ if (isset($_GET['s'])) {
                 <th>Profit</th>
                 <th>Status</th>
                 <th>Supplier</th>
+                <th>Account</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -99,10 +100,11 @@ if (isset($_GET['s'])) {
 
                         if ($oneTimeProducts['status'] == 'uncleared') {
                             $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`)'>Solve</button> <br>
-                                        <button onclick='skipProduct(`$OTProduct_id`)'> Skip </button>";
+                            <button onclick='skipProduct(`$OTProduct_id`)'> Skip </button>";
                         } else {
                             $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`, `$OTProduct_cost`, `$OTProduct_profit`, `$OTProduct_status`, `$OTProduct_supplier`, `$OTProduct_account`)'>Edit</button>";
                         }
+                        $OTProduct_account = $OTProduct_account == 'cash_in_hand' ? 'Cash in Hand' : $OTProduct_account;
                         echo "<tr>";
                         echo "<td>" . $OTProduct_id . "</td>";
                         echo "<td>" . $OTProduct_invoice_number . "</td>";
@@ -114,6 +116,7 @@ if (isset($_GET['s'])) {
                         echo "<td>" . $OTProduct_profit . "</td>";
                         echo "<td>" . $OTProduct_status . "</td>";
                         echo "<td>" . $OTProduct_supplier . "</td>";
+                        echo "<td>" . $OTProduct_account . "</td>";
                         echo "<td>" . $action . "</td>";
                         echo "</tr>";
                     }
@@ -222,7 +225,7 @@ if (isset($_GET['s'])) {
                         if ((isTotal && !isNaN(total_cost)) || isEachItem && !isNaN(each_cost) && !isNaN(quantity)) {
                             total_cost = isEachItem ? each_cost * quantity : total_cost;
 
-                            return fetch(`/AdminPanel/OneTimeProduct/solve.php?id=${id}&supplier=${supplier}&cost=${total_cost}&profit=${profit}&tab=${activeTab}&account=${account}&invoiceID=${invoice_id}`, {
+                            return fetch(`/AdminPanel/OneTimeProduct/solve.php?id=${id}&supplier=${supplier}&cost=${total_cost}&profit=${profit}&tab=${activeTab}&account=${account}&invoiceID=${invoice_id}&edit=${OTPEdit}`, {
                                     method: 'Get'
                                 }).then(response => {
                                     if (!response.ok) {
@@ -363,7 +366,7 @@ if (isset($_GET['s'])) {
     //         <label for="total-cost"> Total Cost : </label>
     //         <input id="total-cost" class="swal2-input" placeholder="Total Product Cost" value="${cost}">
     //         </div>
-            
+
     //         <div id="EachItemCost" class="tabcontent" style="display:none; margin-top: 20px;">
     //             <label for="each-cost"> Each Item Cost : </label>
     //             <input id="each-cost" class="swal2-input" placeholder="Each Item Cost" value="${EachCostValue}">
@@ -381,7 +384,7 @@ if (isset($_GET['s'])) {
 
     //         <label for="amount"> Cash In : Rs. <b>${amount}</b> </label><br><br>
     //         <input id="amount" class="swal2-input" value="${amount}" hidden>
-            
+
     //         <div id="profit-calculation">
     //         <label for="profit"> Profit : </label>
     //             <p id="calculation-steps"></p>
