@@ -236,3 +236,8 @@ div#DataTable_wrapper input {
     /* color: white; */
     background: #ffffffc2;
 }
+
+.swal2-container {
+    transform: translateY(60px);
+    padding-bottom: 80px;
+}

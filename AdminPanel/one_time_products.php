@@ -30,12 +30,6 @@ echo "<h1> $status One-Time Products List </h1>";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>One Time Products</title>
 
-    <style>
-        .swal2-container {
-            transform: translateY(60px);
-            padding-bottom: 80px;
-        }
-    </style>
 </head>
 
 <body>
