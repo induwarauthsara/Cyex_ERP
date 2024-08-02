@@ -31,7 +31,7 @@ require_once 'inc/config.php'; ?>
             $customer_mobile = 0;
         } else {
             $customer_name = $_POST['name'];
-            $customer_mobile = $_POST['tele'];
+            $customer_mobile = $_POST['tele'] ?? 0;
         }
         // $bill_no = $_POST['bill-no'];
         $date = $_POST['today'];
@@ -71,7 +71,7 @@ require_once 'inc/config.php'; ?>
 
         $selected_customer = mysqli_fetch_array($result);
         if ($selected_customer['COUNT(customer_name)'] == 0) {
-            $sql = "INSERT INTO customers (customer_name, customer_mobile) VALUES ('$customer_name', $customer_mobile)";
+            $sql = "INSERT INTO customers (customer_name, customer_mobile) VALUES ('$customer_name', '$customer_mobile')";
             insert_query($sql, "$customer_name", "Add New Customer");
         }
 
