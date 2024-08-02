@@ -11,6 +11,15 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
     $sql = "INSERT INTO attendance (employee_id, action) VALUES ('$employee_id', '$action')";
     // echo $sql;
     insert_query($sql, "Attendance : Employee Name : $employee_name , Action : $action", "Attendance Submitted");
+
+    // Update the status of the employee in the employees table
+    if ($action == 'Clock In') {
+        $sql = "UPDATE employees SET is_clocked_in = 1 WHERE employ_id = '$employee_id'";
+    } else {
+        $sql = "UPDATE employees SET is_clocked_in = 0 WHERE employ_id = '$employee_id'";
+    }
+    // echo $sql;
+    insert_query($sql, "Employee Name : $employee_name , Action : $action", "Attendance Updated in Employee Profile");
 } else {
     echo 'Error2';
 }

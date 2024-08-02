@@ -105,6 +105,19 @@ include 'nav.php';
                     ?></h2>
         </div>
     </div>
+    <a href="/AdminPanel/hrm/index.php">
+        <div class="card">
+            <i class="fas fa-user-friends"></i>
+            <div class="info">
+                <h3>Currently Working Employees</h3>
+                <h2> <?php
+                        $sql = "SELECT COUNT(`is_clocked_in`) FROM `employees` WHERE `is_clocked_in` = '1';";
+                        $currently_working_employees = mysqli_fetch_assoc(mysqli_query($con, $sql))['COUNT(`is_clocked_in`)'] ?? 0;
+                        echo $currently_working_employees;
+                        ?></h2>
+            </div>
+        </div>
+    </a>
     <div class="card">
         <i class="fas fa-right-to-bracket"></i>
         <div class="info">
