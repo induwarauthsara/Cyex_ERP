@@ -232,6 +232,7 @@ echo "<h1> $status One-Time Products List </h1>";
                                             icon: 'success',
                                             timer: 2000
                                         });
+                                        console.log('response', response);
                                         setTimeout(() => {
                                             location.reload();
                                         }, 1900); // 3-second delay before reloading
@@ -239,6 +240,7 @@ echo "<h1> $status One-Time Products List </h1>";
                                 })
                                 .catch(error => {
                                     Swal.showValidationMessage(`Request failed: ${error}`)
+                                    console.log('response', response);
                                 });
                         } else {
                             Swal.showValidationMessage(`Please fill all the required fields with valid numbers`);
