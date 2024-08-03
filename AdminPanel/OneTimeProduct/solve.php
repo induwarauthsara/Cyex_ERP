@@ -17,8 +17,10 @@ $account = $_GET['account'];
 $invoiceID = $_GET['invoiceID'];
 $edit = $_GET['edit'];
 
+echo "EDIT REQUEST : $edit (for debugging)<br>";
+
 // 1. Cost -=  Account
-if($edit){
+if($edit == 'true'){
     // Revert Previous Cost to Account
     $sql = "SELECT cost, account_name FROM oneTimeProducts_sales WHERE oneTimeProduct_id = {$OneTimeProduct_id}";
     $previous = mysqli_fetch_assoc(mysqli_query($con, $sql));
