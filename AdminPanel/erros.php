@@ -67,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['error_id'])) {
                     echo "<p><b>Error</b> <br> Code " . $error['error_code'] . "</p><br>";
                     echo "<p><b>Error</b> <br> Message " . $error['error_message'] . "</p><br>";
                     echo "<p><b>Query</b> <br> " . $error['query'] . "</p><br>";
+                    echo "<p><b>Action</b> <br> " . $error['action'] . "</p><br>";
+                    echo "<p><b>Description</b> <br> " . $error['action_description'] . "</p><br>";
                     echo "<p><b>Date</b> <br> " . $error['date'] . "</p><br>";
                     echo "<p><b>Time</b> <br> " . $error['time'] . "</p><br>";
                     echo "<p><b>Employee</b> <br> " . $error['emp_name'] . "</p><br>";
