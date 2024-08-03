@@ -63,25 +63,26 @@ include '../nav.php';
                     // $password = $row['password'];
                     $status = $row['status'];
 
-                    $action = "<button>Edit</button><br>";
+                    $action = "";
 
                     if ($status == 1) {
                         $status = "Active";
                         $action .= "<button>Pay Salary</button><br>"
-                        . "<button>Terminate</button><br>";
+                        . "<button>Terminate</button><br>"
+                        . "<button>Edit</button><br>";
+
+                        if ($is_clocked_in == 1) {
+                            $is_clocked_in = "Working";
+                            $action .= "<button>Clock Out</button><br>";
+                        } else {
+                            $is_clocked_in = "Off";
+                            $action .= "<button>Clock In</button><br>";
+                        }
                     } else {
                         $status = "Terminated";
+                        $action .= "<button>Hire</button><br>";
                     }
-
-                    if ($is_clocked_in == 1) {
-                        $is_clocked_in = "Working";
-                        $action .= "<button>Clock Out</button><br>";
-                    } else {
-                        $is_clocked_in = "Off";
-                        $action .= "<button>Clock In</button><br>";
-                    }
-
-                    
+                   
 
                     echo "<tr>";
                     echo "<td>$emoloyee_id</td>";
