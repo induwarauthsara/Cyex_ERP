@@ -71,9 +71,9 @@ function insert_query($query, $msg, $action)
         $error_message = mysqli_error($con);
 
         // Insert the error details into the error_log table
-        $logQuery = "INSERT INTO error_log (error_code, error_message, query, date, time, employee_id) VALUES (?, ?, ?, CURRENT_DATE, CURRENT_TIME, ?)";
+        $logQuery = "INSERT INTO error_log (error_code, error_message, query, date, time, employee_id, action, action_description) VALUES (?, ?, ?, CURRENT_DATE, CURRENT_TIME, ?, ?, ?)";
         $stmt = mysqli_prepare($con, $logQuery);
-        mysqli_stmt_bind_param($stmt, 'issi', $error_code, $error_message, $query, $employee_id);
+        mysqli_stmt_bind_param($stmt, 'ississ', $error_code, $error_message, $query, $employee_id, $action, $msg);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
