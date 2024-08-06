@@ -35,6 +35,21 @@ include 'nav.php';
         echo "Database Query Failed";
     }
     ?>
+
+    <!-- Stock Low Alert -->
+    <?php
+    $sql = "SELECT COUNT(*) FROM items WHERE qty <= 20;";
+    $result = mysqli_query($con, $sql);
+    if ($result) {
+        $low_stock_count = mysqli_fetch_array($result);
+        $low_stock_count = $low_stock_count['COUNT(*)'];
+        if ($low_stock_count > 0) {
+            echo "<p><b>Stock Alert :    You have  $low_stock_count  Items with Low Stock (items less than 20). <a href='/comboProduct/RawItemList.php'>Update Stock NOW !</a>  </b></p>";
+        }
+    } else {
+        echo "Database Query Failed";
+    }
+     ?>
 </div>
 
 <div id="cards">
