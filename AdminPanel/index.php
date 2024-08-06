@@ -19,7 +19,7 @@ include 'nav.php';
         echo "Database Query Failed";
     }
     ?>
-    <p><b>Admin Panel is Currently Under Construction. Please Come Back Soon.!</b></p>
+    <p><b>Admin Panel is currently under construction. Some functions may not work.!</b></p>
 
     <!-- One-Time-Products -->
     <?php
