@@ -187,6 +187,7 @@ include 'nav.php';
                     echo "ERROR";
                 }
                 ?></h2>
+            <button class='smallIcon' onclick='edit_CashInHand_balance(<?php echo "$cash_in_hand_amountRS" ?>)'><i class='fa-solid fa-pen'></i></button>
         </div>
     </div>
     <div class="card">
@@ -269,6 +270,48 @@ Answer: apexcharts
 
 <!-- Create a Script for Chart -->
 <script>
+    // Edit Cash In Hand Balance
+    function edit_CashInHand_balance(cash_in_hand_amount) {
+        // Input : New Amount
+        Swal.fire({
+            title: 'Edit Cash In Hand Amount',
+            html: `<label for = "new_cash_in_hand_amount"> Amount : </label>
+                    <input type="number" id="new_cash_in_hand_amount" value="${cash_in_hand_amount}" class="swal2-input">`,
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                const new_cash_in_hand_amount = Swal.getPopup().querySelector('#new_cash_in_hand_amount').value;
+                if (!new_cash_in_hand_amount) {
+                    Swal.showValidationMessage(`Please enter amount`);
+                }
+                return fetch(`/AdminPanel/api/edit_cash_in_hand.php?new_cash_in_hand_amount=${new_cash_in_hand_amount}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(response.statusText)
+                        }
+                        return response.json()
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Request failed: ${error}`)
+                    })
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: `Cash In Hand Balance Updated Successfully`,
+                    icon: 'success',
+                    timer: 1000
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        });
+
+    }
+
+    // Chart Example
     var options = {
         series: [{
             name: 'Goods Sold',
