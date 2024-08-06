@@ -394,7 +394,7 @@ include '../nav.php';
 
             showCancelButton: false,
             confirmButtonText: 'Pay',
-            showLoaderOnConfirm: false,
+            showLoaderOnConfirm: true,
             focusConfirm: false,
             preConfirm: (login) => {
                 // Pay the Salary to the Employee
