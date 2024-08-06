@@ -17,4 +17,8 @@ if (isset($_POST['employee_id']) && isset($_POST['amount'])) {
     // 2. Update Employee Salary
     $sql = "UPDATE employees SET salary = salary - '$amount' WHERE employ_id = '$employee_id'";
     insert_query($sql, "Employee ID: $employee_id, Rs. $amount", "Salary Paid - Update Employee Table");
+
+    // 3. Fall Money in Cash in Hand
+    $sql = "UPDATE accounts SET amount = amount - '$amount' WHERE account_name = 'cash_in_hand'";
+    insert_query($sql, "Employee ID: $employee_id, Rs. $amount", "Salary Paid - Update Cash in Hand");
 }
