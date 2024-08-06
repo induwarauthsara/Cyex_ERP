@@ -50,7 +50,7 @@ include '../nav.php';
 
             if ($resultCheck > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
-                    $emoloyee_id = $row['employ_id'];
+                    $employee_id = $row['employ_id'];
                     $emp_name = $row['emp_name'];
                     $mobile = $row['mobile'];
                     $address = $row['address'];
@@ -66,26 +66,25 @@ include '../nav.php';
                     $action = "";
 
                     if ($status == 1) {
-                        $status = "Active";
-                        $action .= "<button>Pay Salary</button><br>"
-                        . "<button>Terminate</button><br>"
-                        . "<button>Edit</button><br>";
-
                         if ($is_clocked_in == 1) {
                             $is_clocked_in = "Working";
-                            $action .= "<button>Clock Out</button><br>";
+                            $action .= "<button onclick='updateAttendance($employee_id, `$emp_name`, `Clock Out`)'>Clock Out</button><br>";
                         } else {
                             $is_clocked_in = "Off";
-                            $action .= "<button>Clock In</button><br>";
+                            $action .= "<button onclick='updateAttendance($employee_id, `$emp_name`, `Clock In`)'>Clock In</button><br>";
                         }
+                        $status = "Active";
+                        $action .= "<button onclick='paySalary($employee_id, `$emp_name`, `$bank_account`, `$salary`)'>Pay Salary</button><br>"
+                            . "<button onclick='editEmployee($employee_id, `$emp_name`, `$mobile`, `$address`, `$bank_account`, `$role`, `$nic`, `$salary`, `$day_salary`)'>Edit</button><br>"
+                            . "<button onclick='terminate($employee_id, `$emp_name`)'>Terminate</button><br>";
                     } else {
                         $status = "Terminated";
-                        $action .= "<button>Hire</button><br>";
+                        $action .= "<button onclick='hire($employee_id, `$emp_name`)'>Hire Again</button><br>";
                     }
-                   
+
 
                     echo "<tr>";
-                    echo "<td>$emoloyee_id</td>";
+                    echo "<td>$employee_id</td>";
                     echo "<td>$emp_name</td>";
                     echo "<td>$mobile</td>";
                     echo "<td>$address</td>";
@@ -178,6 +177,264 @@ include '../nav.php';
                 }
             }
         });
+    }
+
+    // Edit Employee
+    function editEmployee(emp_id, emp_name, mobile, address, bank_account, role, nic, salary, day_salary) {
+        Swal.fire({
+            title: 'Edit Employee',
+            html: `<label for='emp_name'>Name :</label> 
+                    <input type='text' id='emp_name' placeholder='Name' class='swal2-input' value='${emp_name}'>
+                    <label for='mobile'>Mobile :</label> 
+                    <input type='text' id='mobile' placeholder='Mobile' class='swal2-input' value='${mobile}'>
+                    <label for='address'>Address :</label> 
+                    <input type='text' id='address' placeholder='Address' class='swal2-input' value='${address}'>
+                    <label for='bank_account'>Bank Account Number :</label> 
+                    <input type='text' id='bank_account' placeholder='Bank Account Number' class='swal2-input' value='${bank_account}'>
+                    <label for='role'>Role :</label> 
+                    <input type='text' id='role' placeholder='Role' class='swal2-input' value='${role}'>
+                    <label for='salary'>To pay Salary :</label>
+                    <input type='text' id='salary' placeholder='Salary' class='swal2-input' value='${salary}'>
+                    <label for='nic'>NIC :</label> 
+                    <input type='text' id='nic' placeholder='NIC' class='swal2-input' value='${nic}'>
+                    <label for='day_salary'>Day Salary Amount :</label> 
+                    <input type='text' id='day_salary' placeholder='Day Salary' class='swal2-input' value='${day_salary}'>`,
+
+            showCancelButton: false,
+            confirmButtonText: 'Update',
+            showLoaderOnConfirm: false,
+            focusConfirm: false,
+            preConfirm: (login) => {
+                // Update the Employee in the database
+                if (isNaN($('#mobile').val())) {
+                    Swal.showValidationMessage("Mobile number should be numbers");
+                } else if (isNaN($('#day_salary').val())) {
+                    Swal.showValidationMessage("Day Salary should be numbers");
+                } else if ($('#emp_name').val() == "" || $('#mobile').val() == "" || $('#address').val() == "" || $('#bank_account').val() == "" || $('#role').val() == "" || $('#nic').val() == "" || $('#day_salary').val() == "") {
+                    Swal.showValidationMessage("Please fill all the fields");
+                } else {
+                    $.ajax({
+                        type: "POST",
+                        url: '/AdminPanel/hrm/editEmployee.php',
+                        data: {
+                            emp_id: emp_id,
+                            emp_name: $('#emp_name').val(),
+                            mobile: $('#mobile').val(),
+                            address: $('#address').val(),
+                            bank_account: $('#bank_account').val(),
+                            role: $('#role').val(),
+                            nic: $('#nic').val(),
+                            salary: $('#salary').val(),
+                            day_salary: $('#day_salary').val()
+                        },
+                        success: function(data) {
+                            Swal.fire({
+                                title: 'Employee Updated successfully',
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000); // 3-second delay before reloading
+                        },
+                        error: function(data) {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Error Updating Employee',
+                                icon: 'error'
+                            });
+                            console.log(data);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+    // Update Attendance
+    function updateAttendance(emp_id, emp_name, action) {
+        Swal.fire({
+            title: 'Update Attendance',
+            text: `Are you sure you want to ${action} ${emp_name}?`,
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            showLoaderOnConfirm: true,
+            focusConfirm: false,
+            preConfirm: (login) => {
+                // Update the Attendance in the database
+                $.ajax({
+                    type: "GET",
+                    url: '/AdminPanel/hrm/updateClockInOut.php',
+                    data: {
+                        employee_id: emp_id,
+                        employee_name: emp_name,
+                        action: action
+                    },
+                    success: function(data) {
+                        Swal.fire({
+                            title: 'Attendance Updated successfully',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000); // 3-second delay before reloading
+                        console.log(data);
+                    },
+                    error: function(data) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error Updating Attendance',
+                            icon: 'error'
+                        });
+                        console.log(data);
+                    }
+                });
+            }
+        });
+    }
+
+    // Terminate Employee
+    function terminate(emp_id, emp_name) {
+        Swal.fire({
+            title: 'Terminate Employee',
+            text: `Are you sure you want to Terminate ${emp_name}?`,
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            showLoaderOnConfirm: true,
+            focusConfirm: false,
+            preConfirm: (login) => {
+                // Update the Attendance in the database
+                $.ajax({
+                    type: "GET",
+                    url: '/AdminPanel/hrm/terminateEmployee.php',
+                    data: {
+                        employee_id: emp_id,
+                    },
+                    success: function(data) {
+                        Swal.fire({
+                            title: 'Employee Terminated successfully',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000); // 3-second delay before reloading
+                        console.log(data);
+                    },
+                    error: function(data) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error Terminating Employee',
+                            icon: 'error'
+                        });
+                        console.log(data);
+                    }
+                });
+            }
+        });
+    }
+
+    // Hire Employee
+    function hire(emp_id, emp_name) {
+        Swal.fire({
+            title: 'Hire Employee',
+            text: `Are you sure you want to Hire ${emp_name} again?`,
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            showLoaderOnConfirm: true,
+            focusConfirm: false,
+            preConfirm: (login) => {
+                // Update the Attendance in the database
+                $.ajax({
+                    type: "GET",
+                    url: '/AdminPanel/hrm/hireEmployee.php',
+                    data: {
+                        employee_id: emp_id,
+                    },
+                    success: function(data) {
+                        Swal.fire({
+                            title: 'Employee Hired successfully',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        setTimeout(() => {
+                            location.reload();
+                        }, 10); // 3-second delay before reloading
+                        console.log(data);
+                    },
+                    error: function(data) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error Hiring Employee',
+                            icon: 'error'
+                        });
+                        console.log(data);
+                    }
+                });
+            }
+        });
+    }
+
+    // Pay Salary
+    function paySalary(employee_id, emp_name, bank_account, salary) {
+        Swal.fire({
+            title: 'Pay Salary',
+            html: `
+            <label>Employee Name : <b>${emp_name} </b></label> <br> <br>
+            <label>Bank Account : <b>${bank_account} </b></label> <br> <br>
+            <label>To pay Salary : <b>${salary} </b></label> <br> <br>
+            <label for='amount'> Pay Amount :</label> 
+                    <input type='text' id='amount' placeholder='Amount' class='swal2-input'>`,
+
+            showCancelButton: false,
+            confirmButtonText: 'Pay',
+            showLoaderOnConfirm: false,
+            focusConfirm: false,
+            preConfirm: (login) => {
+                // Pay the Salary to the Employee
+                if (isNaN($('#amount').val())) {
+                    Swal.showValidationMessage("Amount should be numbers");
+                } else if ($('#amount').val() == "") {
+                    Swal.showValidationMessage("Please fill the amount field");
+                } else {
+                    $.ajax({
+                        type: "POST",
+                        url: '/AdminPanel/hrm/paySalary.php',
+                        data: {
+                            employee_id: employee_id,
+                            amount: $('#amount').val()
+                        },
+                        success: function(data) {
+                            Swal.fire({
+                                title: 'Salary Paid successfully',
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000); // 3-second delay before reloading
+                            console.log(data);
+                        },
+                        error: function(data) {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Error Paying Salary',
+                                icon: 'error'
+                            });
+                            console.log(data);
+                        }
+                    });
+                }
+            }
+        });
+
     }
 </script>
 
