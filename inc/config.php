@@ -23,6 +23,14 @@ function end_db_con()
 }
 ?>
 <?php
+
+if (!isset($employee_id) && session_status() === PHP_SESSION_ACTIVE) {
+    $employee_id = $_SESSION['employee_id'];
+}else{
+    session_start();
+    $employee_id = $_SESSION['employee_id'];
+}
+
 /// SQL Query Add Data to DB Function
 function insert_query($query, $msg, $action)
 {
