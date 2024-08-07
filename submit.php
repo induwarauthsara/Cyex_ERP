@@ -183,60 +183,63 @@ require_once 'inc/config.php'; ?>
                                 while ($recoard = mysqli_fetch_assoc($result)) {
                                     array_push($ingridians_list, $recoard["item_name"]);
                                 }
+                                $thisProductHasRawMaterials = true;
                             }
 
                             // --------  Fall Product Items from Item List -------
-                            // Select Item Qty of Product
-                            for ($i = 0; $i < count($ingridians_list); $i++) {
-                                $selected_item = $ingridians_list[$i];
-                                $ingridians_product_item_qty = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
-                                $result = mysqli_query($con, $ingridians_product_item_qty);
-                                $product_item_qty = mysqli_fetch_array($result)['qty'] * $qty;
+                            if ($thisProductHasRawMaterials) {
+                                // Select Item Qty of Product
+                                for ($i = 0; $i < count($ingridians_list); $i++) {
+                                    $selected_item = $ingridians_list[$i];
+                                    $ingridians_product_item_qty = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
+                                    $result = mysqli_query($con, $ingridians_product_item_qty);
+                                    $product_item_qty = mysqli_fetch_array($result)['qty'] * $qty;
 
-                                // Fall Item qty
-                                $fall_item = "UPDATE `items` SET qty= qty - {$product_item_qty} WHERE item_name = '{$selected_item}'";
-                                insert_query($fall_item, "$selected_item, Qty : $qty items", "fall item from stock");
-                            }
+                                    // Fall Item qty
+                                    $fall_item = "UPDATE `items` SET qty= qty - {$product_item_qty} WHERE item_name = '{$selected_item}'";
+                                    insert_query($fall_item, "$selected_item, Qty : $qty items", "fall item from stock");
+                                }
 
 
-                            /// ========== Stock eke Product wala QTY eka hadanawa ==========
+                                /// ========== Stock eke Product wala QTY eka hadanawa ==========
 
-                            // -------- Get QTY of ingridians_list to Array --------
-                            $ingridians_requement_qty_array = array();
-                            $item_qty_array = array();
-                            $makeable_product_qty_array = array();
+                                // -------- Get QTY of ingridians_list to Array --------
+                                $ingridians_requement_qty_array = array();
+                                $item_qty_array = array();
+                                $makeable_product_qty_array = array();
 
-                            for ($i = 0; $i < count($ingridians_list); $i++) {
-                                $selected_item = $ingridians_list[$i];
+                                for ($i = 0; $i < count($ingridians_list); $i++) {
+                                    $selected_item = $ingridians_list[$i];
 
-                                $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
-                                $result = mysqli_query($con, $selected_item_req_qty_sql);
-                                $recoard = mysqli_fetch_assoc($result);
-                                array_push($ingridians_requement_qty_array, $recoard["qty"]);
+                                    $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
+                                    $result = mysqli_query($con, $selected_item_req_qty_sql);
+                                    $recoard = mysqli_fetch_assoc($result);
+                                    array_push($ingridians_requement_qty_array, $recoard["qty"]);
 
-                                $selected_item_qty_sql = "SELECT qty FROM items WHERE item_name = '{$selected_item}';";
-                                $result = mysqli_query($con, $selected_item_qty_sql);
-                                $recoard = mysqli_fetch_assoc($result);
-                                array_push($item_qty_array, $recoard["qty"]);
+                                    $selected_item_qty_sql = "SELECT qty FROM items WHERE item_name = '{$selected_item}';";
+                                    $result = mysqli_query($con, $selected_item_qty_sql);
+                                    $recoard = mysqli_fetch_assoc($result);
+                                    array_push($item_qty_array, $recoard["qty"]);
 
-                                $selected_item_ingridians_requement = $ingridians_requement_qty_array[$i];
-                                $selected_item_qty = $item_qty_array[$i];
-                                $makeable_product_qty = $selected_item_qty / $selected_item_ingridians_requement;
-                                array_push($makeable_product_qty_array, $makeable_product_qty);
-                            }
-                            // -------- Select Min QTY of ingridians_qty --------
-                            $min_ingridians_qty = min($makeable_product_qty_array);
-                            // -------- Set Product QTY = $min_ingridians_qty --------
-                            $sql = "UPDATE products SET stock_qty = {$min_ingridians_qty} WHERE product_name = '{$product}'";
-                            insert_query($sql, "$product Available Qty : $min_ingridians_qty", "Update Product available Qty");
+                                    $selected_item_ingridians_requement = $ingridians_requement_qty_array[$i];
+                                    $selected_item_qty = $item_qty_array[$i];
+                                    $makeable_product_qty = $selected_item_qty / $selected_item_ingridians_requement;
+                                    array_push($makeable_product_qty_array, $makeable_product_qty);
+                                }
+                                // -------- Select Min QTY of ingridians_qty --------
+                                $min_ingridians_qty = min($makeable_product_qty_array);
+                                // -------- Set Product QTY = $min_ingridians_qty --------
+                                $sql = "UPDATE products SET stock_qty = {$min_ingridians_qty} WHERE product_name = '{$product}'";
+                                insert_query($sql, "$product Available Qty : $min_ingridians_qty", "Update Product available Qty");
 
-                            /// ========== update Has_Stock state ==========
-                            if ($min_ingridians_qty > 0) {
-                                $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
-                                insert_query($sql, "$product is In Stock", "Update Product Has_Stock State");
-                            } else {
-                                $sql = "UPDATE products SET has_stock = 0 WHERE product_name = '{$product}'";
-                                insert_query($sql, "$product is Out of Stock", "Update Product Has_Stock State");
+                                /// ========== update Has_Stock state ==========
+                                if ($min_ingridians_qty > 0) {
+                                    $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
+                                    insert_query($sql, "$product is In Stock", "Update Product Has_Stock State");
+                                } else {
+                                    $sql = "UPDATE products SET has_stock = 0 WHERE product_name = '{$product}'";
+                                    insert_query($sql, "$product is Out of Stock", "Update Product Has_Stock State");
+                                }
                             }
                         }
                     }
