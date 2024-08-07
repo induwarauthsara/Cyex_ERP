@@ -146,8 +146,8 @@ include '../UCPnav.php';
                                 text: `You have successfully ${action.toLowerCase()}. Good ${getGreeting(action)}!`,
                                 icon: 'success'
                             });
-                            refreshEntranceTable();
-
+                            // Refresh Page
+                            location.reload();
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -156,7 +156,6 @@ include '../UCPnav.php';
                                 text: 'An error occurred. Please try again later.',
                                 icon: 'error'
                             });
-                            refreshEntranceTable();
                         });
                 }
             });

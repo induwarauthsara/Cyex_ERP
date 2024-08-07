@@ -24,11 +24,17 @@ function end_db_con()
 ?>
 <?php
 
-if (!isset($employee_id) && session_status() === PHP_SESSION_ACTIVE) {
+// Start Session if not started
+if (session_status() === PHP_SESSION_ACTIVE) {
+    //echo "Session Active";
+} else {
+    session_start();
+}
+
+if (!isset($employee_id) && isset($_SESSION['employee_id']) ){
     $employee_id = $_SESSION['employee_id'];
 }else{
-    session_start();
-    $employee_id = $_SESSION['employee_id'];
+    $employee_id = 0;
 }
 
 /// SQL Query Add Data to DB Function
