@@ -26,7 +26,8 @@ $salary = number_format($salary, 2);
         $sql = "SELECT employees.emp_name, amount, description, date, time
                 FROM salary, employees
                 WHERE salary.emp_id = employees.employ_id
-                    AND employees.employ_id = '$employee_id'";
+                    AND employees.employ_id = '$employee_id'
+                ORDER BY date DESC, time DESC";
         $result = mysqli_query($con, $sql);
 
         if ($result) {
@@ -47,7 +48,7 @@ $salary = number_format($salary, 2);
 </table>
 
 <style>
-    h3{
-        color:white;
+    h3 {
+        color: white;
     }
 </style>
