@@ -102,7 +102,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     };
 
     var nav = document.querySelector('.nav');
-    var current_page = '<?= $current_page ?>'; // PHP variable for the current page
+    const current_page = window.location.pathname;
 
     for (var key in NavLinkList) {
         var a = document.createElement('a');
