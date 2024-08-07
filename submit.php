@@ -123,6 +123,7 @@ require_once 'inc/config.php'; ?>
                         global $bill_no;
                         global $total_bill_cost;
                         global $default_worker;
+                        global $employee_id;
 
                         $product = $_POST["{$product}_{$no}"];
                         // $description = $_POST["{$description}_{$no}"];
@@ -175,13 +176,17 @@ require_once 'inc/config.php'; ?>
 
                             // ==================== Profit Distribution ====================
                             // Send Profit to Accounts
-                            $profit_for_worker = ($profit / 100) * 05;
-                            $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$default_worker}'";
-                            insert_query($sql, "send worker Profit : {$default_worker} Rs. {$profit_for_worker}", "Add Worker Profit");
-
-                            $profit_for_biller = ($profit / 100) * 5;
+                            $profit_for_biller = ($profit / 100) * 15;
                             $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
-                            insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit");
+                            insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
+
+                            $description = "Profit from Invoice Number : $bill_no";
+                            $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$employee_id', '$profit_for_biller', '$description')";
+                            insert_query($sql, "Employee ID: $employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
+
+                            // $profit_for_worker = ($profit / 100) * 05;
+                            // $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$default_worker}'";
+                            // insert_query($sql, "send worker Profit : {$default_worker} Rs. {$profit_for_worker}", "Add Worker Profit");
 
                             // $profit_for_utility_bills_account = ($profit / 100) * 20;
                             // $sql = "UPDATE accounts SET amount = amount + {$profit_for_utility_bills_account} WHERE account_name = 'Utility Bills'";
