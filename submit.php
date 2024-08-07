@@ -174,38 +174,6 @@ require_once 'inc/config.php'; ?>
                              */
 
 
-                            // ==================== Profit Distribution ====================
-                            // Send Profit to Accounts
-                            $profit_for_biller = ($profit / 100) * 15;
-                            $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
-                            insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
-
-                            $description = "Profit from Invoice Number : $bill_no";
-                            $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$employee_id', '$profit_for_biller', '$description')";
-                            insert_query($sql, "Employee ID: $employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
-
-                            // $profit_for_worker = ($profit / 100) * 05;
-                            // $sql = "UPDATE employees SET salary = salary + {$profit_for_worker} WHERE emp_name = '{$default_worker}'";
-                            // insert_query($sql, "send worker Profit : {$default_worker} Rs. {$profit_for_worker}", "Add Worker Profit");
-
-                            // $profit_for_utility_bills_account = ($profit / 100) * 20;
-                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_utility_bills_account} WHERE account_name = 'Utility Bills'";
-                            // insert_query($sql, "send Utility Bills Profit");
-                            // 
-                            // $profit_for_machines_account = ($profit / 100) * 20;
-                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_machines_account} WHERE account_name = 'Machines Account'";
-                            // insert_query($sql, "send Machines Account Profit");
-                            // 
-                            // $profit_for_stock_account = ($profit / 100) * 8.5;
-                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_stock_account} WHERE account_name = 'Stock Account'";
-                            // insert_query($sql, "send Stock Account Profit");
-                            // 
-                            // $profit_for_company_profit_account = ($profit / 100) * 15;
-                            // $sql = "UPDATE accounts SET amount = amount + {$profit_for_company_profit_account} WHERE account_name = 'Company Profit'";
-                            // insert_query($sql, "send Company Profit Profit");
-
-
-
                             // ========== Wikunapu Product eka Stock eken adu wenawa. ==========
                             // -------- Get Product makeProduct to Array --------
                             $sql = "SELECT item_name FROM makeProduct WHERE product_name='{$product}'";
@@ -281,8 +249,18 @@ require_once 'inc/config.php'; ?>
             echo "<br>";
         }
 
-        // Prfit
+        // Profit
         $total_bill_profit = $bill_advance - $total_bill_cost;
+
+        // ==================== Profit Distribution ====================
+        // Send Profit to Accounts
+        $profit_for_biller = ($total_bill_profit / 100) * 15;
+        $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
+        insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
+
+        $description = "Profit from Invoice Number : $bill_no";
+        $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$employee_id', '$profit_for_biller', '$description')";
+        insert_query($sql, "Employee ID: $employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
 
         // Update Invoice Total Profit And Cost
         $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";
