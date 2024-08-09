@@ -84,6 +84,11 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
             // echo "pay_amount Rs. $DaySalary"; // for debugging
             // echo $sql; // for debugging
             insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today", "Add Day Salary"); // for production
+
+            // Update the employee's salary in the employees table
+            $sql = "UPDATE employees SET salary = salary + $DaySalary WHERE employ_id = '$employee_id'";
+            // echo $sql; // for debugging
+            insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today", "Update Employee Day Salary"); // for production
         } elseif ($emp_worked_hours < $WorkingDayHours) {
             // echo 'Error: Working Hours Less Than 8 Hours'; // for debugging
             $pay_amount = $emp_worked_hours * $HourSalary;
@@ -96,6 +101,11 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
             // echo $sql . "<br>"; // for debugging
             insert_query($sql, "Employee Name : $employee_name , Salary : $pay_amount , Day : $today, Worked Hours : $emp_worked_hours", "Add Day Salary"); // for production
             // echo "Pay Amount: $pay_amount <br>"; // for debugging
+
+            // Update the employee's salary in the employees table
+            $sql = "UPDATE employees SET salary = salary + $pay_amount WHERE employ_id = '$employee_id'";
+            // echo $sql; // for debugging
+            insert_query($sql, "Employee Name : $employee_name , Salary : $pay_amount , Day : $today, Worked Hours : $emp_worked_hours", "Update Employee Day Salary"); // for production
         } elseif ($emp_worked_hours > $WorkingDayMaxHours) {
             echo "Error: Working Hours More Than $WorkingDayMaxHours Hours";  // for debugging
         } else {
