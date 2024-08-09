@@ -20,7 +20,7 @@ include 'nav.php';
     }
     ?>
     <p><b>Admin Panel is currently under construction. Some functions may not work.!</b></p>
-    
+
     <!-- One-Time-Products -->
     <?php
     $sql = "SELECT COUNT(*) FROM `oneTimeProducts_sales` WHERE `status` = 'uncleared';";
@@ -125,7 +125,6 @@ include 'nav.php';
 
                     $capital_currency = array_sum($item_capital);
                     echo number_format($capital_currency, 2);  ?></h2>
-            <button class='smallIcon' onclick='edit_CashInHand_balance(<?php echo "$cash_in_hand_amountRS" ?>)'><i class='fa-solid fa-pen'></i></button>
         </div>
     </div>
     <div class="card">
@@ -188,6 +187,7 @@ include 'nav.php';
                     echo "ERROR";
                 }
                 ?></h2>
+            <button class='smallIcon' onclick='edit_CashInHand_balance(<?php echo "$cash_in_hand_amountRS" ?>)'><i class='fa-solid fa-pen'></i></button>
         </div>
     </div>
     <div class="card">
