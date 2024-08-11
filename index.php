@@ -362,6 +362,19 @@
     <script>
         var no = 0;
 
+        // Add Input Event Listener to #advance Input Field 
+        document.getElementById('advance').addEventListener('input', function() {
+            var advance = document.getElementById('advance');
+            // if advance is available, disable name[submit_and_fullPayment] and name[submit_and_print_fullPayment] buttons
+            if (advance.value > 0) {
+                document.querySelector('button[name="submit_and_fullPayment"]').disabled = true;
+                document.querySelector('button[name="submit_and_print_fullPayment"]').disabled = true;
+            } else {
+                document.querySelector('button[name="submit_and_fullPayment"]').disabled = false;
+                document.querySelector('button[name="submit_and_print_fullPayment"]').disabled = false;
+            }
+        });
+
 
         function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, oneTimeProduct) {
             const product_list = document.getElementById('list');
