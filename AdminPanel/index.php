@@ -4,6 +4,9 @@ include 'nav.php';
 <title>Admin Panel</title>
 <h1>Dashboard</h1>
 
+<!-- Add Refresh Button -->
+<button id="refreshPage" class="smallIcon" onclick="location.reload()"><i class="fa-solid fa-sync"></i> &nbsp; Refresh Page</button>
+
 <div id="errors">
     <!-- Database Erros -->
     <?php
