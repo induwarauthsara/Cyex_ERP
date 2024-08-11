@@ -5,14 +5,15 @@ session_start(); ?>
 $for = $_GET['for'];
 $amount = $_GET['amount'];
 $employee_name = $_SESSION['employee_name'];
+$account = $_GET['account'];
 
 // Add data to Petty Cash Tabel
 $sql = "INSERT INTO pettycash (perrycash, amount, emp_name) VALUES ('{$for}','{$amount}', '{$employee_name}') ";
 insert_query($sql, "for : $for , Rs. $amount, By : $employee_name", "Add Petty Cash");
 
 // Petty Cash eka Company Profit eken adu karanawa
-$sql = "UPDATE accounts SET amount = amount - {$amount} WHERE account_name = 'cash_in_hand'";
-insert_query($sql,"for : $for , Rs. $amount, By : $employee_name", "Fall Petty Cash from Cash in Hand");
+$sql = "UPDATE accounts SET amount = amount - {$amount} WHERE account_name = '$account'";
+insert_query($sql,"for : $for , Rs. $amount, By : $employee_name, Account : $account", "Fall Petty Cash from $account Account");
 
 // Add Transaction Log
 $transaction_type = 'Petty Cash';
