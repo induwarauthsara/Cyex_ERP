@@ -7,7 +7,7 @@ $row = mysqli_fetch_assoc($result);
 $salary = $row['salary'];
 $salary = number_format($salary, 2);
 ?>
-
+<title>Payroll</title>
 <h1>Payroll</h1>
 <h3>Rs. <?php echo $salary ?> </h3>
 
