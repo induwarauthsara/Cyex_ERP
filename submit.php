@@ -261,7 +261,7 @@ require_once 'inc/config.php'; ?>
         $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
         insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
 
-        $description = "Profit from Invoice Number : $bill_no";
+        $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
         $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$employee_id', '$profit_for_biller', '$description')";
         insert_query($sql, "Employee ID: $employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
 
