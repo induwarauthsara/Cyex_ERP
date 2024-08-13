@@ -16,8 +16,10 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<th>Balance</th>";
         echo "<th>Total Cost</th>";
         echo "<th>Total Profit</th>";
+        echo "<th>Biller</th>";
         echo "<th>Full Paid</th>";
         echo "<th>Add <br> Fund</th>";
+        echo "<th>Actions</th>";
         echo "<th>Print</th>";
         echo "</tr>";
         echo "</thead>";
@@ -35,6 +37,7 @@ if ($result = mysqli_query($con, $sql)) {
             echo "<td> " . $row['balance'] . "</td>";
             echo "<td> " . $row['cost'] . "</td>";
             echo "<td> " . $row['profit'] . "</td>";
+            echo "<td> " . $row['biller'] . "</td>";
             echo "<td>";
             $paided = $row['full_paid'];
             if ($paided == 0) {
@@ -44,6 +47,7 @@ if ($result = mysqli_query($con, $sql)) {
             }
             echo "</td>";
             echo "<td> <a href='/invoice/add-fund.php?id={$row['invoice_number']}'>Add</a> </td>";
+            echo "<td> <a href='/invoice/edit-bill.php?id={$row['invoice_number']}'>Edit</a> </td>";
             echo "<td> <a href='/invoice/print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
             echo "</tr>";
         }
