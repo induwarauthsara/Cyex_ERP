@@ -1,5 +1,8 @@
 <?php
 include '../nav.php';
+
+// total salary to pay
+$total_salary_have_pay = number_format(mysqli_fetch_assoc(mysqli_query($con, "SELECT SUM(salary) as total_salary FROM employees WHERE status = 1"))['total_salary'], 2);
 ?>
 <!DOCTYPE html>
 <html class="dark" lang="en">
@@ -18,8 +21,10 @@ include '../nav.php';
 
 <body>
     <h1>Human Resource Management</h1>
+    <h2 style="color:white">Total Salary to Pay : Rs. <?= $total_salary_have_pay ?></h2>
 
-    <button onclick="addNewEmployee()">Add New Employee</button>
+
+    <button onclick="addNewEmployee()" id="refreshPage">Add New Employee</button>
 
     <table id="DataTable" class="display" style="width:100%">
         <thead>
@@ -76,6 +81,7 @@ include '../nav.php';
                         $status = "Active";
                         $action .= "<button onclick='paySalary($employee_id, `$emp_name`, `$bank_account`, `$salary`)'>Pay Salary</button><br>"
                             . "<button onclick='editEmployee($employee_id, `$emp_name`, `$mobile`, `$address`, `$bank_account`, `$role`, `$nic`, `$salary`, `$day_salary`)'>Edit</button><br>"
+                            . "<a href='/AdminPanel/hrm/viewPayrolls.php?employee_id=$employee_id'> <button>View Payroll</button> </a><br>"
                             . "<button onclick='terminate($employee_id, `$emp_name`)'>Terminate</button><br>";
                     } else {
                         $status = "Terminated";
