@@ -118,8 +118,8 @@ require_once 'inc/config.php'; ?>
 
 
         // Send Invoice Data to Database
-        $sql = "INSERT INTO invoice (invoice_description, customer_name, invoice_date, customer_mobile, biller, total, discount, advance, balance, full_paid, paymentMethod)
-         VALUES ('$InvoiceDescription', '{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid}, '{$paymentMethod}')";
+        $sql = "INSERT INTO invoice (invoice_description, customer_name, invoice_date, customer_mobile, biller, primary_worker, total, discount, advance, balance, full_paid, paymentMethod)
+         VALUES ('$InvoiceDescription', '{$customer_name}', '{$date}', '{$customer_mobile}', '{$biller}', '{$default_worker}', '{$bill_total}', '{$bill_discount}', '{$bill_advance}', '{$bill_balance}', {$full_paid}, '{$paymentMethod}')";
         if (mysqli_query($con, $sql)) {
             // Retrieve the auto-generated InvoiceID
             $bill_no = mysqli_insert_id($con); // Get the last inserted ID
