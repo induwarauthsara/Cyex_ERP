@@ -99,6 +99,7 @@
 
             <div class="content">
                 <!--tabel-->
+                <textarea name="InvoiceDescription" id="InvoiceDescription" placeholder="Add Details about this Job / Invoice. Paper Size, Colour, Size, Binding Margin"></textarea>
                 <div class="container">
                     <!--Tabel Head Start-->
                     <div class="Product tabel-head">Description</div>
@@ -164,6 +165,16 @@
                                 }
                             }
                         </script>
+                        <br><br>
+                        <label for="PaymentMethod">Payment Method:</label>
+                        <select name="PaymentMethod" id="PaymentMethod">
+                            <option value="Cash" selected>Cash</option>
+                            <option value="BankTransfer">Bank Transfer</option>
+                            <option value="CardPayment">Card Payment</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="QRPayment">QR Payment</option>
+                        </select>
+
                     </div>
                     <div>
                         <input type="checkbox" name="add_to_todo" id="add_to_todo" value="1" style="width: 50px; height:30px;">
