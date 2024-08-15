@@ -1,7 +1,7 @@
 <?php
 include '../nav.php';
-require_once(__DIR__ . '../../../inc/header.php');
-require_once(__DIR__ . '../../../inc/config.php');
+// require_once(__DIR__ . '../../../inc/header.php');
+// require_once(__DIR__ . '../../../inc/config.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">

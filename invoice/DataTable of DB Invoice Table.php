@@ -1,13 +1,12 @@
 <?php
-include  __DIR__ . '/../inc/DataTable_cdn.php';
 if ($result = mysqli_query($con, $sql)) {
     if (mysqli_num_rows($result) > 0) {
-        echo "<table id='DataTable'>";
+        echo "<table id='DataTable' style='width: 80%'>";
         echo "<thead>";
         echo "<tr>";
         echo "<th>Date</th>";
         echo "<th>Invoice No</th>";
-        
+
         echo "<th>Customer Name</th>";
         echo "<th>Tele</th>";
         echo "<th>Time</th>";
@@ -49,7 +48,10 @@ if ($result = mysqli_query($con, $sql)) {
             }
             echo "</td>";
             echo "<td> " . $row['paymentMethod'] . "</td>";
-            echo "<td> <a href='/invoice/add-fund.php?id={$row['invoice_number']}'>Add</a> </td>";
+            echo "<td> 
+                        <a href='/invoice/add-fund.php?id={$row['invoice_number']}'><button>Add Fund </button></a> <br>  
+                        <a href='/invoice/add-fund.php?id={$row['invoice_number']}'><button>Full Payment </button></a>  
+                </td>";
             echo "<td> <a href='/invoice/edit-bill.php?id={$row['invoice_number']}'>Edit</a> </td>";
             echo "<td> <a href='/invoice/print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
             echo "</tr>";
