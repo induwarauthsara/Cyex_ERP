@@ -94,7 +94,7 @@ hr {
     display: grid;
     -ms-grid-columns: 6fr 1fr 1fr 1.8fr;
     grid-template-columns: 4fr 2fr 2fr 2.8fr;
-    -ms-grid-rows: (auto) [4];
+    /* -ms-grid-rows: (auto) [4]; */
     grid-template-rows: repeat(4, auto);
     grid-auto-flow: row;
     grid-template-areas: "Product QTY Rate Amount" "product_list Qty_list Rate_list amount_list" "employ_details Total_tag Total_tag Total" "employ_details Discount_tag Discount_tag Discount" "employ_details Advance_tag Advance_tag Advance" "employ_details Balance_tag Balance_tag Balance";
@@ -497,6 +497,12 @@ button:disabled {
 .tab {
     display: flex;
     justify-content: center;
+}
+
+#InvoiceDescription {
+    width: 100%;
+    margin: 10px;
+    padding: 15px;
 }
 
 
