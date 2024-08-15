@@ -1,5 +1,6 @@
 <?php require_once '../inc/config.php';
 require_once '../inc/header.php';
+include  __DIR__ . '/../inc/DataTable_cdn.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
