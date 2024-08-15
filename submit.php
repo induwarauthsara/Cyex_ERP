@@ -300,32 +300,34 @@ require_once 'inc/config.php'; ?>
 
         // ==================== Profit Distribution ====================
         // Send Profit to Accounts
-        if ($biller == $default_worker) {
-            $profit_for_biller = ($total_bill_profit / 100) * 15;
-            $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
-            insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
+        if ($total_bill_profit > 0) {
+            if ($biller == $default_worker) {
+                $profit_for_biller = ($total_bill_profit / 100) * 15;
+                $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
+                insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
 
-            $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
-            $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$profit_for_biller', '$description')";
-            insert_query($sql, "Employee ID: $biller_employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
-        } else { // if Biller is not Worker
-            $for_biller = ($total_bill_profit / 100) * 5;
-            $for_worker = ($total_bill_profit / 100) * 10;
-            // for Biller
-            $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
-            insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
+                $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
+                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$profit_for_biller', '$description')";
+                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
+            } else { // if Biller is not Worker
+                $for_biller = ($total_bill_profit / 100) * 5;
+                $for_worker = ($total_bill_profit / 100) * 10;
+                // for Biller
+                $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
+                insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
 
-            $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
-            $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description')";
-            insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller", "Employee Salary Paid - Update Salary Table");
+                $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
+                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description')";
+                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller", "Employee Salary Paid - Update Salary Table");
 
-            // for Worker
-            $sql = "UPDATE employees SET salary = salary + {$for_worker} WHERE emp_name = '{$default_worker}'";
-            insert_query($sql, "send worker Profit : {$default_worker} Rs. {$for_worker}", "Add Worker Profit to Employee Table");
+                // for Worker
+                $sql = "UPDATE employees SET salary = salary + {$for_worker} WHERE emp_name = '{$default_worker}'";
+                insert_query($sql, "send worker Profit : {$default_worker} Rs. {$for_worker}", "Add Worker Profit to Employee Table");
 
-            $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
-            $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$worker_employee_id', '$for_worker', '$description')";
-            insert_query($sql, "Employee ID: $worker_employee_id, Rs. $for_worker", "Employee Salary Paid - Update Salary Table");
+                $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
+                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$worker_employee_id', '$for_worker', '$description')";
+                insert_query($sql, "Employee ID: $worker_employee_id, Rs. $for_worker", "Employee Salary Paid - Update Salary Table");
+            }
         }
 
         // Update Invoice Total Profit And Cost
@@ -344,7 +346,7 @@ require_once 'inc/config.php'; ?>
         } else if ($paymentMethod == "CardPayment") {
             $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'DFCC'";
             insert_query($sql, "Invoice Number : $bill_no, Rs. {$bill_advance}, Payment Mothod : $paymentMethod", "Add Invoice Advance Money to DFCC Account");
-        }else if ($paymentMethod == "BankTransfer" || $paymentMethod == "Cheque" || $paymentMethod == "QRPayment") {
+        } else if ($paymentMethod == "BankTransfer" || $paymentMethod == "Cheque" || $paymentMethod == "QRPayment") {
             $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'BOC'";
             insert_query($sql, "Invoice Number : $bill_no, Rs. {$bill_advance}, Payment Mothod : $paymentMethod", "Add Invoice Advance Money to BOC Account");
         }
