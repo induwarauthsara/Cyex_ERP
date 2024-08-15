@@ -169,10 +169,10 @@
                         <label for="PaymentMethod">Payment Method:</label>
                         <select name="PaymentMethod" id="PaymentMethod">
                             <option value="Cash" selected>Cash</option>
-                            <option value="BankTransfer">Bank Transfer</option>
-                            <option value="CardPayment">Card Payment</option>
-                            <option value="Cheque">Cheque</option>
-                            <option value="QRPayment">QR Payment</option>
+                            <option value="BankTransfer">Bank Transfer (BOC)</option>
+                            <option value="CardPayment">Card Payment (DFCC)</option>
+                            <option value="Cheque">Cheque (BOC)</option>
+                            <option value="QRPayment">QR Payment (BOC)</option>
                         </select>
 
                     </div>

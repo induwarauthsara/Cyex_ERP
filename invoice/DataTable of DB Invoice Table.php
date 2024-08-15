@@ -7,6 +7,7 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<tr>";
         echo "<th>Date</th>";
         echo "<th>Invoice No</th>";
+        
         echo "<th>Customer Name</th>";
         echo "<th>Tele</th>";
         echo "<th>Time</th>";
@@ -18,6 +19,7 @@ if ($result = mysqli_query($con, $sql)) {
         echo "<th>Total Profit</th>";
         echo "<th>Biller</th>";
         echo "<th>Full Paid</th>";
+        echo "<th>Payment Method</th>";
         echo "<th>Add <br> Fund</th>";
         echo "<th>Actions</th>";
         echo "<th>Print</th>";
@@ -46,6 +48,7 @@ if ($result = mysqli_query($con, $sql)) {
                 echo 'Yes';
             }
             echo "</td>";
+            echo "<td> " . $row['paymentMethod'] . "</td>";
             echo "<td> <a href='/invoice/add-fund.php?id={$row['invoice_number']}'>Add</a> </td>";
             echo "<td> <a href='/invoice/edit-bill.php?id={$row['invoice_number']}'>Edit</a> </td>";
             echo "<td> <a href='/invoice/print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
