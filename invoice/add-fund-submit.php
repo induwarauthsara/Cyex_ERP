@@ -160,7 +160,7 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
 
         // ====================== 3. Add Transaction Log
         $description = "Add Fund to Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
-        $sql = "INSERT INTO transaction_log (invoice_number, amount, description, account) VALUES ('$invoice_number', '$amount', '$description', '$account')";
+        $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('Add Invoice Balance Payment', '$description', '$amount')";
         echo $sql . "<br>";
         insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice");
         $ERROR_Status = ($result) ? $ERROR_Status : false;
