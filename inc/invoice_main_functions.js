@@ -7,7 +7,7 @@ function customer_add() {
     var customer_mobile = document.getElementById("tele").value;
     //alert(customer_name);
     $.ajax({
-        url: "inc/get_customer_mobile.php",
+        url: "/inc/get_customer_mobile.php",
         method: "POST",
         data: {
             cus: customer_name
@@ -96,7 +96,7 @@ function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, o
         // Set Rate Value
         oneTimeProductRate ? rate.value = oneTimeProductRate :
             $.ajax({
-                url: "inc/get_product_rate.php",
+                url: "/inc/get_product_rate.php",
                 method: "POST",
                 data: {
                     product: product.value
