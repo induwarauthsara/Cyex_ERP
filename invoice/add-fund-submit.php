@@ -86,7 +86,7 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
         // ======================================== Full Payment ========================================
         $amount = $invoice_balance;
         $full_paid = 1;
-        $new_advance_amount = $invoice_balance;
+        $new_advance_amount = $invoice_total_amount;
         $new_balance_amount = 0.00;
         $new_profit = $new_advance_amount - $invoice_total_cost; // New Profit eka
         $generated_profit = $new_profit - $invoice_total_profit; // Wadi una Profit eka
@@ -151,14 +151,14 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
 
             // for Company
             $for_company = $generated_profit - ($for_biller + $for_worker);
-            $sql = "UPDATE company SET profit = profit + {$for_company}";
+            $sql = "UPDATE accounts SET amount = amount + {$for_company} WHERE account_name = 'Company Profit'";
             insert_query($sql, "Company Profit : Rs. {$for_company}, Invoice $invoice_number Balance Payment", "Update Company Profit when Invoice Balance Payment");
             $ERROR_Status = ($result) ? $ERROR_Status : false;
             $ERR_msg .= (!$result) ? 'Failed to update company profit in Company Table. ' : '';
 
             $description = "Profit (Balance Pay) from Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
             $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('Invoice - Company Profit', '$description', '$for_company')";
-            insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice");
+            insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Invoice Company Profit - transaction_log");
             $ERROR_Status = ($result) ? $ERROR_Status : false;
             $ERR_msg .= (!$result) ? 'Failed to add transaction log. ' : '';
         }
@@ -175,7 +175,7 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
         $description = "Add Fund to Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
         $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('Add Invoice Balance Payment', '$description', '$amount')";
         echo $sql . "<br>";
-        insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice");
+        insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice - transaction_log");
         $ERROR_Status = ($result) ? $ERROR_Status : false;
         $ERR_msg .= (!$result) ? 'Failed to add transaction log. ' : '';
 
@@ -183,7 +183,7 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
         // ====================== 4. Add Record to `InvBalPayRecords` Table
         $sql = "INSERT INTO `InvoiceBalPayRecords` (`invoice_number`, `amount`, `account`, `invoice_status`) VALUES ('$invoice_number', '$amount', '$account', '$invoice_status')";
         echo $sql . "<br>";
-        insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice");
+        insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice - Add Invoice Balance Pay Records");
         $ERROR_Status = ($result) ? $ERROR_Status : false;
         $ERR_msg .= (!$result) ? 'Failed to add record to InvoiceBalPayRecords Table. ' : '';
 
@@ -191,7 +191,7 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
         // ====================== 5. Update Invoice Table
         $sql = "UPDATE `invoice` SET `advance` = '$new_advance_amount', `balance` = '$new_balance_amount', `full_paid` = $full_paid, `profit` = '$new_profit' WHERE `invoice`.`invoice_number` = $invoice_number;";
         echo $sql . "<br>";
-        insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice");
+        insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice - Update Invoice Table");
         $ERROR_Status = ($result) ? $ERROR_Status : false;
         $ERR_msg .= (!$result) ? 'Failed to update invoice table. ' : '';
     } else {
