@@ -174,7 +174,7 @@
 
     <script src="/inc/add_petty_cash_modal.js"></script>
     <script src="/inc/add_todo_functions_modals.js"></script>
-    <script src="/inc/invoice_main_functions.js"></script>
+    <script src="/inc/invoice_main_functions.jsx"></script>
 </body>
 <!-- == Customer name list get - Datalist from Database == -->
 <datalist id="customer_list">
