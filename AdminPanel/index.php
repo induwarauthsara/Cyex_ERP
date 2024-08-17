@@ -146,7 +146,7 @@ include 'nav.php';
     <div class="card">
         <i class="fas fa-wallet"></i>
         <div class="info">
-            <h3>Today Profit</h3>
+            <h3>Today Total Invoice Profit</h3>
             <h2> <?php
                     $sql = "SELECT sum(profit) as SUM from invoice where invoice_date = CURDATE();";
                     $today_profit = mysqli_fetch_assoc(mysqli_query($con, $sql))['SUM'] ?? 0;
@@ -243,9 +243,19 @@ include 'nav.php';
     <div class="card">
         <i class="fa-solid fa-chart-line"></i>
         <div class="info">
-            <h3>Summery / Risk</h3>
-            <h4>(Bank Balance - Due Payments)</h4>
-            <h2></h2>
+            <h3>Total Profit</h3>
+            <h4>(Invoice Profit - Due Payments + Pettycash)</h4>
+            <h2><?php
+                $sql = "SELECT amount FROM accounts WHERE account_name = 'Company Profit'";
+                $result = mysqli_query($con, $sql);
+                if ($result) {
+                    $CompanyProfit = mysqli_fetch_array($result);
+                    $CompanyProfitRS = $CompanyProfit['amount'] ?? 0;
+                    echo number_format($CompanyProfitRS, 2);
+                } else {
+                    echo "ERROR";
+                }
+                ?></h2>
         </div>
     </div>
 </div>

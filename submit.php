@@ -330,6 +330,16 @@ require_once 'inc/config.php'; ?>
             }
         }
 
+        // Send Profit to Company Profit Accounts
+        $company_profit = $total_bill_profit - $for_biller - $for_worker;
+        $sql = "UPDATE accounts SET amount = amount + {$company_profit} WHERE account_name = 'Company Profit'";
+        insert_query($sql, "Company Profit : Rs. $company_profit", "Add Company Profit to Company Profit Account");
+        // Add Transaction Log -> type, description, amount
+        $transaction_type = 'Invoice - Company Profit';
+        $transaction_description = "85% Profit to Company. Inv: $bill_no - $customer_name, Profit : Rs. $company_profit";
+        transaction_log($transaction_type, $transaction_description, $company_profit);
+
+
         // Update Invoice Total Profit And Cost
         $sql = "UPDATE invoice SET cost = {$total_bill_cost}, profit = {$total_bill_profit} WHERE invoice_number = {$bill_no}";
         insert_query($sql, "Invoice Number : $bill_no, Total Bill Cost : $total_bill_cost, Total Bill Profit : $total_bill_profit", "Update Invoice Total Profit And Cost");
