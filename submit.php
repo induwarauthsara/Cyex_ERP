@@ -302,13 +302,13 @@ require_once 'inc/config.php'; ?>
         // Send Profit to Accounts
         if ($total_bill_profit > 0) {
             if ($biller == $default_worker) {
-                $profit_for_biller = ($total_bill_profit / 100) * 15;
-                $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
-                insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
+                $for_biller = ($total_bill_profit / 100) * 15;
+                $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
+                insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
 
                 $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
-                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$profit_for_biller', '$description')";
-                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
+                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description')";
+                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller", "Employee Salary Paid - Update Salary Table");
             } else { // if Biller is not Worker
                 $for_biller = ($total_bill_profit / 100) * 5;
                 $for_worker = ($total_bill_profit / 100) * 10;
@@ -328,16 +328,16 @@ require_once 'inc/config.php'; ?>
                 $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$worker_employee_id', '$for_worker', '$description')";
                 insert_query($sql, "Employee ID: $worker_employee_id, Rs. $for_worker", "Employee Salary Paid - Update Salary Table");
             }
-        }
 
-        // Send Profit to Company Profit Accounts
-        $company_profit = $total_bill_profit - $for_biller - $for_worker;
-        $sql = "UPDATE accounts SET amount = amount + {$company_profit} WHERE account_name = 'Company Profit'";
-        insert_query($sql, "Company Profit : Rs. $company_profit", "Add Company Profit to Company Profit Account");
-        // Add Transaction Log -> type, description, amount
-        $transaction_type = 'Invoice - Company Profit';
-        $transaction_description = "85% Profit to Company. Inv: $bill_no - $customer_name, Profit : Rs. $company_profit";
-        transaction_log($transaction_type, $transaction_description, $company_profit);
+            // Send Profit to Company Profit Accounts
+            $company_profit = $total_bill_profit - $for_biller - $for_worker;
+            $sql = "UPDATE accounts SET amount = amount + {$company_profit} WHERE account_name = 'Company Profit'";
+            insert_query($sql, "Company Profit : Rs. $company_profit", "Add Company Profit to Company Profit Account");
+            // Add Transaction Log -> type, description, amount
+            $transaction_type = 'Invoice - Company Profit';
+            $transaction_description = "85% Profit to Company. Inv: $bill_no - $customer_name, Profit : Rs. $company_profit";
+            transaction_log($transaction_type, $transaction_description, $company_profit);
+        }
 
 
         // Update Invoice Total Profit And Cost

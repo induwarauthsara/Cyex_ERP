@@ -103,19 +103,19 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
         $ERROR_Status = true;
         $ERR_msg = '';
         echo "Generated Profit : $generated_profit <br><br>";
-        // ====================== 1. Generated Profit goto Biller & Worker
+        // ====================== 1. Generated Profit goto Biller & Worker & Company
         if ($generated_profit > 0) {
             if ($biller == $worker) {
-                $profit_for_biller = ($generated_profit / 100) * 15;
-                $sql = "UPDATE employees SET salary = salary + {$profit_for_biller} WHERE emp_name = '{$biller}'";
-                insert_query($sql, "send biller Profit : {$biller} Rs. {$profit_for_biller}", "Add Biller Profit to Employee Table");
+                $for_biller = ($generated_profit / 100) * 15;
+                $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
+                insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
                 $ERROR_Status = ($result) ? $ERROR_Status : false;
                 $ERR_msg .= 'Failed to update biller profit in Employee Profile. ';
 
 
                 $description = "Profit (Balance Pay) from Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
-                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$profit_for_biller', '$description')";
-                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $profit_for_biller", "Employee Salary Paid - Update Salary Table");
+                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description')";
+                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller", "Employee Salary Paid - Update Salary Table");
                 $ERROR_Status = ($result) ? $ERROR_Status : false;
                 $ERR_msg .= (!$result) ? 'Failed to update biller profit in Salary Table. ' : '';
             } else { // if Biller is not Worker
@@ -148,6 +148,19 @@ if (isset($_GET['status']) && isset($_GET['invoice_number']) && isset($_GET['acc
                 $ERROR_Status = ($result) ? $ERROR_Status : false;
                 $ERR_msg .= (!$result) ? 'Failed to update worker profit in Salary Table. ' : '';
             }
+
+            // for Company
+            $for_company = $generated_profit - ($for_biller + $for_worker);
+            $sql = "UPDATE company SET profit = profit + {$for_company}";
+            insert_query($sql, "Company Profit : Rs. {$for_company}, Invoice $invoice_number Balance Payment", "Update Company Profit when Invoice Balance Payment");
+            $ERROR_Status = ($result) ? $ERROR_Status : false;
+            $ERR_msg .= (!$result) ? 'Failed to update company profit in Company Table. ' : '';
+
+            $description = "Profit (Balance Pay) from Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
+            $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('Invoice - Company Profit', '$description', '$for_company')";
+            insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Fund to Invoice");
+            $ERROR_Status = ($result) ? $ERROR_Status : false;
+            $ERR_msg .= (!$result) ? 'Failed to add transaction log. ' : '';
         }
 
         // ====================== 2. Update (+) Accounts Amount
