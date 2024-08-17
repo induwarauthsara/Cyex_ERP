@@ -11,9 +11,9 @@ $account = $_GET['account'];
 $sql = "INSERT INTO pettycash (perrycash, amount, emp_name) VALUES ('{$for}','{$amount}', '{$employee_name}') ";
 insert_query($sql, "for : $for , Rs. $amount, By : $employee_name", "Add Petty Cash");
 
-// Petty Cash eka Company Profit eken adu karanawa
-$sql = "UPDATE accounts SET amount = amount - {$amount} WHERE account_name = '$account'";
-insert_query($sql,"for : $for , Rs. $amount, By : $employee_name, Account : $account", "Fall Petty Cash from $account Account");
+// Petty Cash eka Company Profit & Casg Account eken adu karanawa
+$sql = "UPDATE accounts SET amount = amount - {$amount} WHERE account_name = IN ('Company Profit', '$account');";
+insert_query($sql,"for : $for , Rs. $amount, By : $employee_name, Account : $account and profit", "Fall Petty Cash from $account Account and profit");
 
 // Add Transaction Log
 $transaction_type = 'Petty Cash';

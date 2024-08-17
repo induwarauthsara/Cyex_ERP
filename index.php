@@ -172,7 +172,7 @@
     </div>
     </div>
 
-    <script src="/inc/addFundInvoiceModal.js"></script>
+    <script src="/inc/add_petty_cash_modal.js"></script>
     <script src="/inc/add_todo_functions_modals.js"></script>
     <script src="/inc/invoice_main_functions.js"></script>
 </body>
