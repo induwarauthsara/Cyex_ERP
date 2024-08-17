@@ -14,9 +14,6 @@ include 'nav.php';
 </head>
 
 <body>
-    <center>
-        <h1>All Invoices</h1>
-    </center>
 
     <?php
     require '../pettycash.php'; ?>
