@@ -244,7 +244,7 @@ include 'nav.php';
         <i class="fa-solid fa-chart-line"></i>
         <div class="info">
             <h3>Total Profit</h3>
-            <h4>(Invoice Profit - Due Payments + Pettycash)</h4>
+            <h4>(Invoice Profit - Due Payments & Pettycash)</h4>
             <h2><?php
                 $sql = "SELECT amount FROM accounts WHERE account_name = 'Company Profit'";
                 $result = mysqli_query($con, $sql);
@@ -256,6 +256,26 @@ include 'nav.php';
                     echo "ERROR";
                 }
                 ?></h2>
+        </div>
+    </div>
+    <div class="card">
+        <?php
+        $Financial_Safety = $CompanyProfitRS - 1;
+        if ($Financial_Safety < 0) {
+            $Financial_Safety_color = "red";
+            echo "<i class='fa-solid fa-exclamation-triangle' style='color:$Financial_Safety_color'></i>";
+        } else {
+            $Financial_Safety_color = "gold";
+            echo "<i class='fa-solid fa-shield-alt' style='color:$Financial_Safety_color'></i>";
+        }
+        ?>
+        <div class="info">
+            <h3>Financial Safety</h3>
+            <h4>(Total Profit - Due Payments)</h4>
+                <?php
+                // echo "<h2 style='color:$Financial_Safety_color'>" . number_format($Financial_Safety, 2) . "</h2>";
+                echo "<h2 style='color:$Financial_Safety_color'> Coming Soon </h2>";
+                ?>
         </div>
     </div>
 </div>
