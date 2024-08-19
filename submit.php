@@ -192,11 +192,11 @@ require_once 'inc/config.php'; ?>
                                 // This is Regular (Database Saved) Product (Not One-Time-Product) 
 
                                 // Product Cost eka Stock Account eken Adu wenawa (Kalin Thibbe + wenna.)
-                                $cost_sql = "SELECT cost, profit FROM products WHERE product_name = '{$product}'";
+                                $cost_sql = "SELECT cost FROM products WHERE product_name = '{$product}'";
                                 $cost_result = mysqli_query($con, $cost_sql);
                                 $cost_row = mysqli_fetch_assoc($cost_result);
                                 $cost = $cost_row['cost'] * $qty;
-                                $profit = $cost_row['profit'] * $qty;
+                                $profit = $amount - $cost;
                                 $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
                                 insert_query($sql, "Rs. $cost", "Add Product Cost to Stock Account");
 
