@@ -224,6 +224,8 @@ require_once 'inc/config.php'; ?>
                                         array_push($ingridians_list, $recoard["item_name"]);
                                     }
                                     $thisProductHasRawMaterials = true;
+                                } else {
+                                    $thisProductHasRawMaterials = false;
                                 }
 
                                 // --------  Fall Product Items from Item List -------
