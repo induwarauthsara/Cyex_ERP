@@ -303,6 +303,7 @@ require_once 'inc/config.php'; ?>
         if ($total_bill_profit > 0) {
             if ($biller == $default_worker) {
                 $for_biller = ($total_bill_profit / 100) * 15;
+                $for_worker = 0;
                 $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
                 insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
 
