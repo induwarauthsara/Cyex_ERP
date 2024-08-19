@@ -384,6 +384,15 @@ hr {
     width: 100%;
 }
 
+#changeInvoiceOptions-stock,
+#changeInvoiceOptions-account {
+    border: 3px solid #a71212;
+    color: #a71212;
+    font-weight: bolder;
+    width: 80%;
+    margin: -2px 0;
+}
+
 input[type="checkbox"] {
     accent-color: green;
 }
