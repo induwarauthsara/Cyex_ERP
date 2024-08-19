@@ -79,6 +79,7 @@ function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, o
         product.setAttribute("list", "products");
         product.setAttribute("name", product.id);
         product.setAttribute("onchange", "change('product', className, id)");
+        product.setAttribute("readonly", "readonly");
 
         // Create a Qty in row
         let qty = document.createElement("input");
