@@ -134,11 +134,11 @@ hr {
 }
 
 .bill .container .tabel input {
-    width: 90%;
+    width: 100%;
     display: block;
     height: 1.5rem;
-    margin: 2px;
-    padding: 3px;
+    margin: 5px 3px;
+    padding: 5px;
     border: 1px solid #747373;
 }
 
@@ -378,6 +378,10 @@ hr {
 
 #no {
     display: none;
+}
+
+.bill #list {
+    width: 100%;
 }
 
 input[type="checkbox"] {
