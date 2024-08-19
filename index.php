@@ -14,6 +14,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 
+<style>
+    .bill .container {
+        grid-template-areas: "Product QTY Rate Amount" "product_list Qty_list Rate_list amount_list" "employ_details AddTodoFieldSet Total_tag Total" "employ_details AddTodoFieldSet Discount_tag Discount" "employ_details AddTodoFieldSet Advance_tag Advance" "employ_details AddTodoFieldSet Balance_tag Balance";
+    }
+</style>
+
 <body><br>
 
     <div class="main">
@@ -141,7 +147,8 @@
                         </select>
 
                     </div>
-                    <div>
+                    <div id="AddTodoFieldSet">
+                        <br>
                         <input type="checkbox" name="add_to_todo" id="add_to_todo" value="1" style="width: 50px; height:30px;">
                         <label for="add_to_todo"> Add to TODO List </label><br>
                         <label for="todoName"> TODO Name : </label> <input type="text" name="todoName" id="todoName" disabled required style="border: 1px solid black; padding:5px; margin: 2px;"><br>
