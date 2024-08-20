@@ -19,9 +19,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $rawData = $data['rawData'];
 
     // Update product data in the database
-    $productUpdateQuery = "UPDATE products SET product_name = '$productName', rate = '$productRate', show_in_landing_page = '$showInLandingPage', cost = '$finalCost', profit = '$profit' WHERE product_id = '$productId'";
+    $productUpdateQuery = "UPDATE products SET product_name = '$productName', rate = '$productRate', show_in_landing_page = '$showInLandingPage', cost = '$finalCost', profit = '$profit' WHERE product_id = '$productId';";
     echo $productUpdateQuery;
-    insert_query($productUpdateQuery, "Update Product Data (ID: $productId, Name: $productName, Rate: $productRate, Landing Page: $showInLandingPage, Cost: $finalCost, Profit: $profit)", "Update Product Data");
+    // insert_query($productUpdateQuery, "Update Product Data (ID: $productId, Name: $productName, Rate: $productRate, Landing Page: $showInLandingPage, Cost: $finalCost, Profit: $profit)", "Update Product Data");
+    $result = mysqli_query($con, $productUpdateQuery);
+
+    echo "Result :". $result;
+    // $result = true;
     $productUpdateQueryDb = $result;
 
     // Delete item data from the database where product name is $productName
@@ -29,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $deleteQuery = "DELETE FROM makeProduct WHERE product_name = '$productName'";
         echo $deleteQuery;
         insert_query($deleteQuery, "Delete Raw Items from makeProduct Table (Product Name: $productName)", "Delete Raw Items");
+        // $result = true;
         $deleteQueryDB = $result;
 
         // =============== Delete Product from products table ===============
@@ -36,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $deleteProductQuery = "DELETE FROM products WHERE product_id = '$productId'";
             echo $deleteProductQuery;
             insert_query($deleteProductQuery, "Delete Product from products Table (Product Name: $productName)", "Delete Product");
+            // $result = true;
             $deleteProductQueryDB = $result;
             exit();
         }
@@ -102,12 +108,9 @@ if ($result) {
             $has_stock = 0;
         }
         $sql = "UPDATE products SET stock_qty = $min_qty, has_stock = $has_stock WHERE product_name = '$product_name'";
-        
-        // Execute the SQL update query
-        if ($con->query($sql) === TRUE) {
-            // echo "Record updated successfully for product: $product_name <br>";
-            // echo "Stock quantity updated successfully for product: $product_name <br>";
-        } else {
+        insert_query($sql, "Update Stock Quantity in products Table (Product Name: $product_name, Stock Qty: $min_qty, Has Stock: $has_stock)", "Update Stock Product Quantity");
+        // $result = true;
+        if (!$result) {
             echo "Error updating record for product: $product_name <br>";
         }
     }
