@@ -60,7 +60,7 @@ require_once '../inc/header.php'; ?>
                 </table>
                 <div style="padding: 5px; margin:10px; display:flex; flex-direction:column; align-items:center;">
                     <div>
-                        Select Raw Item : <input type="text" list="rawItemsDataList" id="rawItem">
+                        Add Saved Item : <input type="text" list="rawItemsDataList" id="rawItem">
                         QTY : <input type="number" id="qty" value="1"> <br>
                     </div>
                     <button type="button" id="addRawItem">Add </button>
@@ -148,6 +148,15 @@ require_once '../inc/header.php'; ?>
                                 var itemId = data.id;
                                 var cost = price;
 
+                                if (isNaN(price) || price <= 0) {
+                                    console.error("Invalid price for raw item:", price);
+                                    // Hide loading spinner
+                                    spinner.remove();
+                                    // Trigger #add_raw_item button click
+                                    document.getElementById("add_raw_item").click();
+                                    return;
+                                }
+
 
                                 // Calculate the cost
                                 // var cost = price * parseFloat(qty);
@@ -155,7 +164,7 @@ require_once '../inc/header.php'; ?>
                                 // Append raw item details to table
                                 var displayStyle = showCostProfit ? "" : "none";
                                 var newRow = "<tr><td>" + rawItem + "</td><td>" + qty + "</td><td style='display: " + displayStyle + "'>" + cost.toFixed(2) + "</td><td>";
-                                newRow += "<button class='deleteRawItem'>Remove</button> &nbsp; ";
+                                newRow += "<button class='deleteRawItem'>X</button> &nbsp; ";
                                 // newRow += "<a target='_blank' href='editRawitem.php?id=" + itemId + "'>Edit </a></td></tr>";
                                 spinner.remove();
                                 document.getElementById("rawItemsBody").innerHTML += newRow;
@@ -221,13 +230,15 @@ require_once '../inc/header.php'; ?>
 
                     // Add New Raw Item
                     document.querySelector('#add_raw_item').addEventListener('click', function() {
+                        var showCostProfit = document.getElementById("showCostProfit").checked;
+
                         Swal.fire({
                             title: 'Add Raw Item',
                             html: '<label for="itemName" class="swal2-label">Item Name:</label>' +
                                 '<input id="itemName" class="swal2-input" placeholder="Enter Item Name">' +
-                                '<label for="itemPrice" class="swal2-label">Item Price:</label>' +
+                                '<label for="itemPrice" class="swal2-label">Item Price (Cost):</label>' +
                                 '<input id="itemPrice" class="swal2-input" placeholder="Enter Item Price">' +
-                                '<label for="itemQty" class="swal2-label">Quantity:</label>' +
+                                '<label for="itemQty" class="swal2-label">Stock Available Quantity:</label>' +
                                 '<input id="itemQty" class="swal2-input" placeholder="Enter Quantity">',
                             focusConfirm: false,
                             preConfirm: () => {
@@ -262,6 +273,24 @@ require_once '../inc/header.php'; ?>
                                         option.value = itemName;
                                         rawItemsDataList.appendChild(option);
 
+                                        // Append raw item details to table
+                                        var displayStyle = showCostProfit ? "" : "none";
+                                        var newRow = "<tr><td>" + itemName + "</td><td>" + 1 + "</td><td style='display: " + displayStyle + "'>" + parseFloat(itemPrice).toFixed(2) + "</td><td>";
+                                        newRow += "<button class='deleteRawItem'>X</button> &nbsp; ";
+                                        document.getElementById("rawItemsBody").innerHTML += newRow;
+
+                                        // Add event listener for delete button of the newly added row
+                                        var deleteButtons = document.getElementsByClassName("deleteRawItem");
+                                        for (var i = 0; i < deleteButtons.length; i++) {
+                                            deleteButtons[i].addEventListener("click", function() {
+                                                this.parentNode.parentNode.remove(); // Remove the row
+                                                // Update totals after removing the item
+                                                updateTotals();
+                                            });
+                                        }
+
+                                        // Update totals after adding the item
+                                        updateTotals();
 
                                         Swal.fire({
                                             icon: 'success',
