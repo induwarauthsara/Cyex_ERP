@@ -4,20 +4,20 @@ include 'nav.php';
 if (isset($_GET['s'])) {
     $status = $_GET['s'];
     if ($status == 'All') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number;";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number;";
     } elseif ($status == 'Uncleared') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared'";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared'";
     } elseif ($status == 'Skipped') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'skip';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'skip';";
     } elseif ($status == 'Cleared') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
     } else {
         $status = 'Uncleared';
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
     }
 } else {
     $status = 'Uncleared';
-    $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
+    $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
 }
 echo "<h1> $status One-Time Products List </h1>";
 
@@ -81,6 +81,7 @@ echo "<h1> $status One-Time Products List </h1>";
                     while ($oneTimeProducts = mysqli_fetch_array($result)) {
                         $OTProduct_id = $oneTimeProducts['oneTimeProduct_id'];
                         $OTProduct_invoice_number = $oneTimeProducts['invoice_number'];
+                        $OTProduct_invoice_description = $oneTimeProducts['invoice_description'];
                         $customer_name = $oneTimeProducts['customer_name'];
                         $OTProduct_product = $oneTimeProducts['product'];
                         $OTProduct_qty = $oneTimeProducts['qty'];
@@ -94,10 +95,10 @@ echo "<h1> $status One-Time Products List </h1>";
                         $action = '';
 
                         if ($oneTimeProducts['status'] == 'uncleared') {
-                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`)'>Solve</button> <br>
+                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`)'>Solve</button> <br>
                             <button onclick='skipProduct(`$OTProduct_id`)'> Skip </button>";
                         } else {
-                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`, `$OTProduct_cost`, `$OTProduct_profit`, `$OTProduct_status`, `$OTProduct_supplier`, `$OTProduct_account`)'>Edit</button>";
+                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`, `$OTProduct_cost`, `$OTProduct_profit`, `$OTProduct_status`, `$OTProduct_supplier`, `$OTProduct_account`)'>Edit</button>";
                         }
                         $OTProduct_account = $OTProduct_account == 'cash_in_hand' ? 'Cash in Hand' : $OTProduct_account;
                         echo "<tr>";
@@ -136,7 +137,7 @@ echo "<h1> $status One-Time Products List </h1>";
     //         Profit = Amount - (Item Cost x Quantity)
     //     Supplier Name
 
-    function solveProduct(id, invoice_id, customer_name, product_name, qty, rate, amount, cost, profit, status, supplier, CashOutAccount) {
+    function solveProduct(id, invoice_id, customer_name, description, product_name, qty, rate, amount, cost, profit, status, supplier, CashOutAccount) {
         if (typeof cost !== 'undefined') {
             // Product Edit
             var OTPEdit = true;
@@ -185,6 +186,8 @@ echo "<h1> $status One-Time Products List </h1>";
 
                                 <label for="amount"> Cash In : Rs. <b>${amount}</b> </label><br><br>
                                 <input id="amount" class="swal2-input" value="${amount}" hidden>
+
+                                <label for="description"> Description : <b> ${description} </b> </label><br><br>
                                 
                                 <div id="profit-calculation">
                                 <label for="profit"> Profit : </label>
