@@ -619,3 +619,111 @@ button {
 a {
     text-decoration: none;
 }
+
+
+/* Style the modal */
+
+.swal2-popup {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    margin: auto;
+}
+
+
+/* Style the form elements */
+
+.swal2-popup label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.swal2-popup input[type="number"],
+.swal2-popup input[type="text"],
+.swal2-popup input[type="date"],
+.swal2-popup input[list],
+.swal2-popup select {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.swal2-popup input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.swal2-popup input[type="number"]:disabled,
+.swal2-popup input[type="text"]:disabled,
+.swal2-popup input[type="date"]:disabled {
+    background-color: #e9ecef;
+}
+
+.swal2-popup #total,
+.swal2-popup #balancePayment {
+    font-weight: bold;
+    color: #ff5733;
+    display: block;
+    margin-top: 5px;
+}
+
+.swal2-popup button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.swal2-popup button:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+
+/* Adjust the spacing and alignment */
+
+.swal2-popup .checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.swal2-popup .checkbox-group label {
+    margin-bottom: 0;
+}
+
+.swal2-popup .input-group {
+    margin-bottom: 15px;
+}
+
+.swal2-popup .input-group label {
+    margin-bottom: 5px;
+    display: inline-block;
+}
+
+.swal2-popup .input-group input {
+    width: calc(100% - 20px);
+}
+
+
+/* Responsive design */
+
+@media (max-width: 480px) {
+    .swal2-popup {
+        width: 100%;
+        padding: 15px;
+    }
+    .swal2-popup input[type="number"],
+    .swal2-popup input[type="text"],
+    .swal2-popup input[type="date"],
+    .swal2-popup input[list] {
+        width: 100%;
+    }
+}
