@@ -62,8 +62,6 @@ include '../inc/DataTable_cdn.php';
             ?>
         </tbody>
     </table>
-
-
 </body>
 
 </html>
@@ -334,19 +332,107 @@ include '../inc/DataTable_cdn.php';
     function buyRawItem(itemId, itemName) {
         Swal.fire({
             title: 'Buy ' + itemName,
-            html: ' <label for="itemQty">Quantity:</label>' +
-                '<input type="number" id="itemQty" placeholder="Enter Quantity"> <br>' +
-                '<label for="itemCost">Cost:</label>' +
-                '<input type="number" id="itemCost" placeholder="Enter Cost"> <br>',
+            html: '<label for="itemCost">Single Unit Cost:</label>' +
+                '<input type="number" oninput="changeTotal()" onchange="changeTotal()" id="itemCost" placeholder="Enter Single Unit Cost"> <br>' +
+                ` 
+                <label for="packetPurchaseCheckBox">Packet Purchase : </label> <input type="checkbox" id="packetPurchaseCheckBox" onchange="changePacketPurchaseCheckBox()"> <br>
+                <div id="packetPurchaseDiv" style="display:none;">
+                    <label for="packetQty">Number of Packet Purchased:</label>
+                    <input type="number" id="packetQty" placeholder="Enter Number of Packets you Purchased" oninput="changeTotal()" disabled> <br>
+                    <label for="quantityPerPacket">Qty per Packet (in Pcs/gm/ml/kg):</label>
+                    <input type="number" id="quantityPerPacket" placeholder="Enter Quantity (Pcs/gm) per Packet" oninput="packetPrice();" oninput="packetPrice();" disabled> <br>
+                    <label for="packetPrice">One Packet Price (optional) :</label>
+                    <input type="number" id="packetPrice" oninput="packetPrice()" onchange="packetPrice()" placeholder="Enter Packet Price" disabled> <br>
+
+                </div>
+                 ` +
+                '<br> <label for="itemQty">Quantity:</label>' +
+                '<input type="number" oninput="changeTotal()" id="itemQty" placeholder="Enter Quantity"> <br>' +
+                `Total : <span id="total"></span> <br>
+                <label for="creditPaymentCheckBox">Credit Purchase : </label> <input type="checkbox" id="creditPaymentCheckBox" onchange="changeCreditPaymentCheckBox()"> <br>
+                <div id="creditPaymentDiv" style="display:none;">
+                    <label for="creditPayment">First Payment:</label>
+                    <input type="number" id="creditPayment" placeholder="Enter Down Payment" oninput="changeCreditPaymentCheckBox();" onchange="changeCreditPaymentCheckBox()" disabled> <br>
+                    <label for="BalancePaymentDate">Balance Payment Date:</label> <input type="date" id="BalancePaymentDate" disabled> <br>
+                    Balance Payment: <span id="balancePayment"></span> <br>
+                </div>
+                <br><label for="paymentAccount">Payment Account:</label> <select id="paymentAccount"> <?php echo implode('', $bankAccountsOptionList); ?> </select> <br>
+                <label for="supplier">Supplier:</label> <input list="Suppliers" id="supplier" placeholder="Select Supplier">
+                `,
 
             focusConfirm: false,
             preConfirm: () => {
                 // Retrieve the quantity of raw item to buy
-                const itemQty = document.getElementById('itemQty').value;
-                const itemCost = document.getElementById('itemCost').value;
+                var singleUnitCost = document.getElementById('itemCost').value;
+                //packet purchase
+                var packetPurchaseCheckBox = document.getElementById('packetPurchaseCheckBox').checked;
+                var purchasedPacketQty = document.getElementById('packetQty').value;
+                var quantityPerPacket = document.getElementById('quantityPerPacket').value;
+                var packetPrice = document.getElementById('packetPrice').value;
+                // credit purchase
+                var creditPaymentCheckBox = document.getElementById('creditPaymentCheckBox').checked;
+                var FirstPayment = document.getElementById('creditPayment').value;
+                var BalancePaymentDate = document.getElementById('BalancePaymentDate').value;
+                var BalancePayment = document.getElementById('balancePayment').innerHTML;
+
+                var itemQty = document.getElementById('itemQty').value;
+                var BillTotal = document.getElementById('total').innerHTML;
+                var paymentAccount = document.getElementById('paymentAccount').value;
+                var supplier = document.getElementById('supplier').value;
+
+                // singleUnitCost and itemQty are must be a number and it must greater than 0. 
+                if (isNaN((parseInt(singleUnitCost))) || parseFloat(singleUnitCost) <= 0) {
+                    Swal.showValidationMessage('Please enter a valid single unit cost');
+                    return false;
+                }
+                if (isNaN(parseInt(itemQty)) || parseInt(itemQty) <= 0) {
+                    Swal.showValidationMessage('Please enter a valid quantity');
+                    return false;
+                }
+                // Check if credit payment is selected and validate the credit payment fields
+                if (creditPaymentCheckBox.checked) {
+                    if (isNaN(parseInt(FirstPayment)) || parseFloat(FirstPayment) <= 0) {
+                        Swal.showValidationMessage('Please enter a valid down payment');
+                        return false;
+                    }
+                    if (!BalancePaymentDate) {
+                        Swal.showValidationMessage('Please select a balance payment date');
+                        return false;
+                    }
+                    if (!BalancePaymentDate) {
+                        Swal.showValidationMessage('Please select a balance payment date');
+                        return false;
+                    }
+                }
+                // Packet purchase validation
+                if (packetPurchaseCheckBox.checked) {
+                    if (isNaN(purchasedPacketQty) || parseInt(purchasedPacketQty) <= 0) {
+                        Swal.showValidationMessage('Please enter a valid number of packets purchased');
+                        return false;
+                    }
+                    if (isNaN(quantityPerPacket) || parseInt(quantityPerPacket) <= 0) {
+                        Swal.showValidationMessage('Please enter a valid quantity per packet');
+                        return false;
+                    }
+                    if (isNaN(packetPrice) || parseFloat(packetPrice) <= 0) {
+                        Swal.showValidationMessage('Please enter a valid packet price');
+                        return false;
+                    }
+                }
+                // Validate payment account and supplier
+                if (!paymentAccount) {
+                    Swal.showValidationMessage('Please select a payment account');
+                    return false;
+                }
+                if (!supplier) {
+                    Swal.showValidationMessage('Please select a supplier');
+                    return false;
+                }
+
+
 
                 // Send the buy request to the server
-                return fetch(`purchaseRawItems-submit.php?itemId=${itemId}&itemQty=${itemQty}&itemCost=${itemCost}&itemName=${itemName}`)
+                return fetch(`purchaseRawItems-submit.php?itemId=${itemId}&itemName=${itemName}&singleUnitCost=${singleUnitCost}&itemQty=${itemQty}&paymentAccount=${paymentAccount}&supplier=${supplier}&purchasedPacketQty=${purchasedPacketQty}&quantityPerPacket=${quantityPerPacket}&packetPrice=${packetPrice}&FirstPayment=${FirstPayment}&BalancePaymentDate=${BalancePaymentDate}&BalancePayment=${BalancePayment}&BillTotal=${BillTotal}&creditPaymentCheckBox=${creditPaymentCheckBox}&packetPurchaseCheckBox=${packetPurchaseCheckBox}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to buy raw item');
@@ -375,6 +461,122 @@ include '../inc/DataTable_cdn.php';
                 });
             }
         });
+    }
+
+    // onInput itemPrice & inputQty change total
+    function changeTotal() {
+        var itemQty = document.getElementById('itemQty').value;
+        var itemCost = document.getElementById('itemCost').value;
+        var totalSpan = document.getElementById('total');
+
+        // Check itemQty & itemCost are not empty
+        // if (!isNaN(parseFloat(itemQty)) || !isNaN(parseFloat(itemCost))) {
+        var total = itemQty * itemCost;
+        totalSpan.innerHTML = total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'); // show total in "123,456.78" format
+        // }
+        changeCreditPaymentCheckBox();
+    }
+
+    function packetPrice() {
+        var packetPrice = document.getElementById('packetPrice').value;
+        var quantityPerPacket = document.getElementById('quantityPerPacket').value;
+        var itemCost = document.getElementById('itemCost');
+
+        var singleUnitPrice = packetPrice / quantityPerPacket;
+        itemCost.value = singleUnitPrice;
+        changeTotal();
+    }
+
+    function changePacketPurchaseCheckBox() {
+        const packetPurchaseCheckBox = document.getElementById("packetPurchaseCheckBox");
+        const packetPurchaseDiv = document.getElementById("packetPurchaseDiv");
+        const packetQty = document.getElementById("packetQty");
+        const quantityPerPacket = document.getElementById("quantityPerPacket");
+        const packetPrice = document.getElementById("packetPrice");
+        const itemQty = document.getElementById("itemQty");
+        const itemQtyLabel = document.querySelector('label[for="itemQty"]');
+        const singleUnitPrice = document.getElementById("itemCost");
+        const singleUnitPriceLabel = document.querySelector('label[for="itemCost"]');
+
+
+        if (packetPurchaseCheckBox.checked) {
+            packetPurchaseDiv.style.display = "block";
+            packetQty.disabled = false;
+            quantityPerPacket.disabled = false;
+            packetPrice.disabled = false;
+            itemQty.readOnly = true;
+            itemQty.placeholder = "Quantity auto-calculated";
+            itemQtyLabel.innerText = "Quantity: (auto-calculated)";
+            singleUnitPrice.readOnly = true;
+            singleUnitPrice.placeholder = "Single Unit Price (auto-calculated)";
+            singleUnitPriceLabel.innerHTML = "Single Unit Price: (auto-calculated)";
+
+            // Calculate itemQty based on packetQty and quantityPerPacket
+            packetQty.addEventListener('input', updateItemQty);
+            quantityPerPacket.addEventListener('input', updateItemQty);
+            changeTotal();
+        } else {
+            packetPurchaseDiv.style.display = "none";
+            packetQty.disabled = true;
+            quantityPerPacket.disabled = true;
+            itemQty.readOnly = false;
+            itemQty.placeholder = "Enter Quantity";
+            itemQtyLabel.innerText = "Quantity:";
+            singleUnitPrice.readOnly = false;
+            singleUnitPrice.placeholder = "Single Unit Cost:";
+            singleUnitPriceLabel.innerHTML = "Single Unit Cost:";
+
+            // Remove event listeners when checkbox is unchecked
+            packetQty.removeEventListener('input', updateItemQty);
+            quantityPerPacket.removeEventListener('input', updateItemQty);
+        }
+        changeTotal();
+    }
+
+    function updateItemQty() {
+        const packetQty = document.getElementById("packetQty").value;
+        const quantityPerPacket = document.getElementById("quantityPerPacket").value;
+        const itemQty = document.getElementById("itemQty");
+
+        itemQty.value = packetQty * quantityPerPacket;
+        changeTotal();
+    }
+
+    function changeCreditPaymentCheckBox() {
+        const creditPaymentCheckBox = document.getElementById("creditPaymentCheckBox");
+        const creditPaymentDiv = document.getElementById("creditPaymentDiv");
+        const creditPayment = document.getElementById("creditPayment");
+        const balancePaymentDate = document.getElementById("BalancePaymentDate");
+        const balancePayment = document.getElementById("balancePayment");
+
+        // Function to update balance payment
+        function updateBalancePayment() {
+            const total = document.getElementById("total").innerText.replace(/,/g, ''); // Remove commas from total
+            const numberTotal = parseFloat(total) || 0; // Parse total as float
+            const creditValue = parseFloat(creditPayment.value) || 0; // Parse creditPayment as float
+            const balancePaymentValue = (numberTotal - creditValue).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'); // Format balance payment
+            balancePayment.innerText = balancePaymentValue;
+        }
+
+        if (creditPaymentCheckBox.checked) {
+            creditPaymentDiv.style.display = "block";
+            creditPayment.disabled = false;
+            balancePaymentDate.disabled = false;
+
+            // Initial update of balance payment
+            updateBalancePayment();
+
+            // Attach event listeners only once
+            creditPayment.addEventListener('input', updateBalancePayment);
+            creditPayment.addEventListener('change', updateBalancePayment);
+        } else {
+            creditPaymentDiv.style.display = "none";
+            creditPayment.disabled = true;
+            balancePaymentDate.disabled = true;
+
+            // Reset balance payment when checkbox is unchecked
+            balancePayment.innerText = '';
+        }
     }
 
     // ===================================== Delete Raw Item =====================================

@@ -71,6 +71,37 @@
 
     </ul>
 
+    <!-- option list for Bank Accounts for select tag -->
+     <?php
+     $bankAccountsOptionList = [];
+            array_push($bankAccountsOptionList, '<option value="cash_in_hand"> Cash In Hand </option>');
+        $query = "SELECT `account_name` FROM `accounts` WHERE `account_type` = 'bank';";
+        if (isset($con)) {
+            $result = mysqli_query($con, $query);
+            if ($result) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    array_push($bankAccountsOptionList, '<option value="' . $row['account_name'] . '"> ' . $row['account_name'] . ' </option>');
+                }
+            }
+        }
+        ?>
+
+
+    <!-- DataList for Suppliers -->
+    <datalist id="Suppliers">
+        <?php
+        $query = "SELECT `supplier_name` FROM `suppliers`;";
+        if (isset($con)) {
+            $result = mysqli_query($con, $query);
+            if ($result) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo '<option value="' . $row['supplier_name'] . '">';
+                }
+            }
+        }
+        ?>
+    </datalist>
+
     <?php
     // Function for Displaying Rupess ## 10000 -> (Rs. 10,000.00)
     function asRS($value)
