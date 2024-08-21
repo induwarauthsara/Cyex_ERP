@@ -193,12 +193,31 @@ include 'nav.php';
             <button class='smallIcon' onclick='edit_CashInHand_balance(<?php echo "$cash_in_hand_amountRS" ?>)'><i class='fa-solid fa-pen'></i></button>
         </div>
     </div>
+    <a href="/AdminPanel/creditBills.php">
+        <div class="card">
+            <i class="fa-solid fa-receipt"></i>
+            <div class="info">
+                <h3>Purches Credit Bills</h3>
+                <h2><?php
+                    $sql = "SELECT SUM(`balance_payment`) AS `balance_payment` FROM `purchase` WHERE `balance_payment` > 0;";
+                    $result = mysqli_query($con, $sql);
+                    if ($result) {
+                        $balance_payment = mysqli_fetch_array($result);
+                        $balance_paymentRS = $balance_payment['balance_payment'] ?? 0;
+                        echo number_format($balance_paymentRS, 2);
+                    } else {
+                        echo "ERROR";
+                    }
+                    ?></h2>
+            </div>
+        </div>
+    </a>
     <div class="card">
         <i class="fa-solid fa-credit-card"></i>
         <br>
         <i class="fa-solid fa-lightbulb"></i>
         <div class="info">
-            <h3>Due Payments</h3>
+            <h3>Total Due Payments</h3>
             <h4>(Credit Bill + Salary + Utility Payments)</h4>
             <h2></h2>
         </div>
@@ -272,10 +291,10 @@ include 'nav.php';
         <div class="info">
             <h3>Financial Safety</h3>
             <h4>(Total Profit - Due Payments)</h4>
-                <?php
-                // echo "<h2 style='color:$Financial_Safety_color'>" . number_format($Financial_Safety, 2) . "</h2>";
-                echo "<h2 style='color:$Financial_Safety_color'> Coming Soon </h2>";
-                ?>
+            <?php
+            // echo "<h2 style='color:$Financial_Safety_color'>" . number_format($Financial_Safety, 2) . "</h2>";
+            echo "<h2 style='color:$Financial_Safety_color'> Coming Soon </h2>";
+            ?>
         </div>
     </div>
 </div>
