@@ -38,7 +38,7 @@ $BalancePayment = str_replace(',', '', $BalancePayment);
 
 
 // Buy Item
-$sql = "UPDATE `items` SET `qty`= qty + {$item_qty}, `cost`={$singleUnitCost}, `supplier`={$supplier} WHERE id = {$item_id}";
+$sql = "UPDATE `items` SET `qty`= qty + {$item_qty}, `cost`={$singleUnitCost}, `supplier`='{$supplier}' WHERE id = {$item_id}";
 echo $sql;
 insert_query($sql, "Item Name : $item_name, Item ID : $item_id, Item Qty : $item_qty, Item Cost : $singleUnitCost", "Purchased Raw Item");
 
