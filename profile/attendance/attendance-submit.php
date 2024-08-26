@@ -28,6 +28,9 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
         $result = mysqli_query($con, $sql);
         $row = mysqli_fetch_assoc($result);
         $DaySalary = $row['day_salary'];
+
+        if ($DaySalary > 0) {
+            
         // Employee Should be Working for 8 Hours
         $WorkingDayHours = 8;
         $WorkingDayMaxHours = 17;
@@ -111,6 +114,7 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
         } else {
             echo 'Error: Unknown Error'; // for debugging
         }    }
+     }
 } else {
     echo 'Error2';
 }
