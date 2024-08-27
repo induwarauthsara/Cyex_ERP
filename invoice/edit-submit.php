@@ -655,7 +655,10 @@ if (empty($error_array)) {
 
     // Refresh Page
     echo "<script>
-    window.open('/invoice/print.php?id=$invoice_number', '_blank');
+            window.history.back();
+            window.setTimeout(function() {
+                window.open('/invoice/print.php?id=2265', '_blank');
+            }, 100); // 100 milliseconds delay to ensure the back navigation happens first
     </script> ";
 } else {
     echo "<h1>Error List</h1>";
