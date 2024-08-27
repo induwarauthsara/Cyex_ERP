@@ -654,10 +654,8 @@ require_once '../inc/config.php'; ?>
 if (empty($error_array)) {
 
     // Refresh Page
-    // $this_url = "/index.php";
-    /*header("refresh:2; url={$this_url}");*/
     echo "<script>
-    setTimeout(`location.href = '$this_url';`, 100);
+    window.open('/invoice/print.php?id=$invoice_number', '_blank');
     </script> ";
 } else {
     echo "<h1>Error List</h1>";
