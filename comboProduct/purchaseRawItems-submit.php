@@ -63,10 +63,13 @@ if (mysqli_num_rows($result) == 0) {
 $bill_payment_type = $creditPaymentCheckBox == 'true' ? "credit" : "full";
 // if this is full payment, then make $FirstPayment = $BillTotal
 $FirstPayment = $creditPaymentCheckBox == 'false' ? $BillTotal : $FirstPayment;
+$BalancePaymentDate = $creditPaymentCheckBox == 'false' ? date('Y-m-d') : $BalancePaymentDate;
+// if this is full payment, then make payment_status = paid. Otherwise, due
+$payment_status = $creditPaymentCheckBox == 'false' ? "paid" : "due";
 $sql = "INSERT INTO `purchase`(`item_id`, `item_name`, `single_unit_cost`, `item_qty`, `payment_account`, `supplier`, `purchased_packet_qty`, `quantity_per_packet`, `packet_price`, `first_payment`, 
-            `balance_payment_date`, `balance_payment`, `bill_total`, `bill_payment_type`, `packet_purchase`) 
+            `balance_payment_date`, `balance_payment`, `bill_total`, `bill_payment_type`, `packet_purchase`, `payment_status`) 
         VALUES ({$item_id}, '{$item_name}', '{$singleUnitCost}', '{$item_qty}', '{$paymentAccount}', '{$supplier}', '{$purchasedPacketQty}', '{$quantityPerPacket}', '{$packetPrice}', '{$FirstPayment}',
-            '{$BalancePaymentDate}', '{$BalancePayment}', '{$BillTotal}', '{$bill_payment_type}', {$packetPurchaseCheckBox})";
+            '{$BalancePaymentDate}', '{$BalancePayment}', '{$BillTotal}', '{$bill_payment_type}', {$packetPurchaseCheckBox}, '{$payment_status}')";
 echo $sql;
 insert_query($sql, "Item Name : $item_name, Item ID : $item_id, Item Qty : $item_qty, Item Cost : $singleUnitCost", "Purchased Raw Item add to Purchase Table");
 
