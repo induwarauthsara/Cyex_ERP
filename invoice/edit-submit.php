@@ -1,7 +1,7 @@
 <?php
 //  !+!+!+!+!++!+!+!+!++!+!+!+!+!++!+!+!++!+!+ IMPORTANT   : 
 // ====================================================================================================================================
-// if you wish to Continue this file, Make Sure to add 3 Parameters for // insert_query function (// insert_query($query, $msg, $action))
+// if you wish to Continue this file, Make Sure to add 3 Parameters for insert_query function (insert_query($query, $msg, $action))
 // ====================================================================================================================================
 
 //   1. Retrieve Previous Invoice and Sales Data
@@ -111,11 +111,11 @@ require_once '../inc/config.php'; ?>
             if ($result['COUNT(title)'] == 0) {
                 $sql = "INSERT INTO `todo`(`invoice_number`, `title`, `submision_time`) VALUES ('$invoice_number','$todoName','$todoTime');";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "$todoName must Complete at $todoTime", "Update Todo Task");
+                insert_query($sql, "$todoName must Complete at $todoTime", "Update Todo Task");
             }else{
                 $sql = "UPDATE `todo` SET `title`='$todoName',`submision_time`='$todoTime' WHERE invoice_number = '$invoice_number';";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "$todoName must Complete at $todoTime", "Update Todo Task");
+                insert_query($sql, "$todoName must Complete at $todoTime", "Update Todo Task");
             }
         }
 
@@ -139,7 +139,8 @@ require_once '../inc/config.php'; ?>
         if ($selected_customer['COUNT(customer_name)'] == 0) {
             $sql = "INSERT INTO customers (customer_name, customer_mobile) VALUES ('$customer_name', $customer_mobile);";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "Add New Customer");
+            // insert_query($query, $msg, $action)
+            insert_query($sql, "Add New Customer" , "Add New Customer");
         }
 
         // =|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|=|  Calculate Cost Profit and Update Invoice and Relevant Account Data (Employee, Biller, Company Profit)
@@ -264,7 +265,7 @@ require_once '../inc/config.php'; ?>
                     `cost` = '$new_invoice_cost', `profit` = '$profit'
                 WHERE `invoice_number` = $invoice_number ;";
         echo "<br>EXPLAIN $sql</br>";
-        // insert_query($sql, "InvoiceNumber : $invoice_number, Invoice Description : $invoice_description, Customer Name : $customer_name, Invoice Date : $invoice_date, Customer Mobile : $customer_mobile, Biller : $biller, Primary Worker : $worker, Total : $total, Discount : $discount, Advance : $advance, Balance : $balance, Full Paid : $full_paid, Payment Method : $paymentMethod, Cost : $new_invoice_cost, Profit : $profit", "Update Invoice");
+        insert_query($sql, "InvoiceNumber : $invoice_number, Invoice Description : $invoice_description, Customer Name : $customer_name, Invoice Date : $invoice_date, Customer Mobile : $customer_mobile, Biller : $biller, Primary Worker : $worker, Total : $total, Discount : $discount, Advance : $advance, Balance : $balance, Full Paid : $full_paid, Payment Method : $paymentMethod, Cost : $new_invoice_cost, Profit : $profit", "Update Invoice");
 
         // ============= Generated Profit goto Biller & Worker & Company
         echo "<br> New Invoice One-Time Product Profit : $new_invoice_oneTimeProduct_profit</br>";
@@ -279,12 +280,12 @@ require_once '../inc/config.php'; ?>
             echo "</br>Biller and Worker equal. Profit : $for_biller</br>";
             $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}';";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller} , when Invoice Edit : $invoice_number", "Add Biller Profit to Employee Table when Invoice Edit");
+            insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller} , when Invoice Edit : $invoice_number", "Add Biller Profit to Employee Table when Invoice Edit");
 
             $description = "Profit (Invoice Edit) from Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
             $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description');";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller , when Invoice Edit : $invoice_number", "Employee Salary Paid - Update Salary Table when Invoice Edit");
+            insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller , when Invoice Edit : $invoice_number", "Employee Salary Paid - Update Salary Table when Invoice Edit");
         } else { // if Biller is not Worker
             $for_biller = ($generated_profit / 100) * 5;
             $for_worker = ($generated_profit / 100) * 10;
@@ -292,29 +293,29 @@ require_once '../inc/config.php'; ?>
             // for Biller
             $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}';";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller} , when Invoice Edit : $invoice_number", "Add Biller Profit to Employee Table when Invoice Edit");
+            insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller} , when Invoice Edit : $invoice_number", "Add Biller Profit to Employee Table when Invoice Edit");
 
             $description = "Profit (Invoice Edit) from Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'>$invoice_number</a>";
             $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description');";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller , when Invoice Edit : $invoice_number", "Employee Salary Paid - Update Salary Table when Invoice Edit");
+            insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller , when Invoice Edit : $invoice_number", "Employee Salary Paid - Update Salary Table when Invoice Edit");
 
             // for Worker
             $sql = "UPDATE employees SET salary = salary + {$for_worker} WHERE emp_name = '{$worker}';";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "send worker Profit : {$worker} Rs. {$for_worker} , when Invoice Edit : $invoice_number", "Add Worker Profit to Employee Table");
+            insert_query($sql, "send worker Profit : {$worker} Rs. {$for_worker} , when Invoice Edit : $invoice_number", "Add Worker Profit to Employee Table");
 
             $description = "Profit (Invoice Edit) from Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
             $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$worker_employee_id', '$for_worker', '$description');";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "Employee ID: $worker_employee_id, Rs. $for_worker , when Invoice Edit : $invoice_number", "Employee Salary Paid - Update Salary Table");
+            insert_query($sql, "Employee ID: $worker_employee_id, Rs. $for_worker , when Invoice Edit : $invoice_number", "Employee Salary Paid - Update Salary Table");
         }
 
         // 85% for Company Profit
         $for_company = $generated_profit - ($for_biller + $for_worker);
         $sql = "UPDATE accounts SET amount = amount + {$for_company} WHERE account_name = 'Company Profit';";
         echo "<br>EXPLAIN $sql</br>";
-        // insert_query($sql, "Company Profit : Rs. {$for_company}, Invoice $invoice_number Invoice Edit", "Update Company Profit when Invoice Edit");
+        insert_query($sql, "Company Profit : Rs. {$for_company}, Invoice $invoice_number Invoice Edit", "Update Company Profit when Invoice Edit");
 
 
 
@@ -416,7 +417,7 @@ require_once '../inc/config.php'; ?>
                         // Fall Item qty
                         $fall_item = "UPDATE `items` SET qty= qty - {$product_item_qty} WHERE item_name = '{$selected_item}';";
                         echo "<br>EXPLAIN $fall_item</br>";
-                        // insert_query($fall_item, "fall item from stock");
+                        insert_query($fall_item, "Fall $selected_item - $product_item_qty from Stock", "fall item from stock");
                     }
 
 
@@ -453,17 +454,17 @@ require_once '../inc/config.php'; ?>
                     // -------- Set Product QTY = $min_ingredients_qty --------
                     $sql = "UPDATE products SET stock_qty = {$min_ingredients_qty} WHERE product_name = '{$product}';";
                     echo "<br>EXPLAIN $sql</br>";
-                    // insert_query($sql, "Update Product available Qty");
+                    insert_query($sql, "$product has $min_ingredients_qty qty", "Update Product available Qty");
 
                     /// ========== update Has_Stock state ==========
                     if ($min_ingredients_qty > 0) {
                         $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}';";
                         echo "<br>EXPLAIN $sql</br>";
-                        // insert_query($sql, "Update Product Has_Stock State");
+                        insert_query($sql, "$product stock is available", "Update Product Has_Stock State");
                     } else {
                         $sql = "UPDATE products SET has_stock = 0 WHERE product_name = '{$product}';";
                         echo "<br>EXPLAIN $sql</br>";
-                        // insert_query($sql, "Update Product Has_Stock State");
+                        insert_query($sql, "$product stock is not available", "Update Product Has_Stock State");
                     }
                 }
             }
@@ -489,7 +490,7 @@ require_once '../inc/config.php'; ?>
                 $sql = "INSERT INTO sales (invoice_number, product, qty, rate, amount, worker, cost, profit)
                                     VALUES ('{$invoice_number}', '{$product}', '{$qty}', '{$rate}', '{$amount}', '{$worker}', '{$cost}', '{$profit}');";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "Add New Sale : $product When Invoice $invoice_number Edit", "Add New Sale");
+                insert_query($sql, "Add New Sale : $product When Invoice $invoice_number Edit", "Add New Sale");
 
                 // Update Raw Item Stock When Product Sales Change (Add, Edit, Delete)
                 updateRawItemStock($product, $qty);
@@ -512,7 +513,7 @@ require_once '../inc/config.php'; ?>
 
                 $sql = "UPDATE sales SET qty = $qty, rate = $rate, amount = $amount, cost = $cost WHERE sales_id = $sales_id;";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "Update Sales Data When Invoice $invoice_number Edit", "Update Sales Data");
+                insert_query($sql, "Update Sales Data When Invoice $invoice_number Edit", "Update Sales Data");
 
                 // get changed qty
                 $sql = "SELECT qty FROM sales WHERE sales_id = $sales_id;";
@@ -532,7 +533,7 @@ require_once '../inc/config.php'; ?>
                 $qty = $sale['qty'];
                 $sql = "DELETE FROM sales WHERE sales_id = $sales_id;";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "Delete Sales Data When Invoice $invoice_number Edit", "Delete Sales Data");
+                insert_query($sql, "Delete Sales Data When Invoice $invoice_number Edit", "Delete Sales Data");
 
                 // Update Raw Item Stock When Product Sales Change (Add, Edit, Delete)
                 updateRawItemStock($product, -$qty);
@@ -552,7 +553,7 @@ require_once '../inc/config.php'; ?>
                 $sql = "INSERT INTO oneTimeProducts_sales (invoice_number, product, qty, rate, amount)
                                     VALUES ('{$invoice_number}', '{$product}', '{$qty}', '{$rate}', '{$amount}');";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "Add New One-Time Product Sale : $product When Invoice $invoice_number Edit", "Add New One-Time Product Sale");
+                insert_query($sql, "Add New One-Time Product Sale : $product When Invoice $invoice_number Edit", "Add New One-Time Product Sale");
             }
 
             // Update One-Time Product Sales Data
@@ -572,7 +573,7 @@ require_once '../inc/config.php'; ?>
 
                 $sql = "UPDATE oneTimeProducts_sales SET qty = $qty, rate = $rate, amount = $amount, cost = $profit WHERE oneTimeProduct_id = $oneTimeProduct_id;";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "Update One-Time Product Sales Data When Invoice $invoice_number Edit", "Update One-Time Product Sales Data");
+                insert_query($sql, "Update One-Time Product Sales Data When Invoice $invoice_number Edit", "Update One-Time Product Sales Data");
             }
 
             // Delete One-Time Product Sales Data
@@ -582,7 +583,7 @@ require_once '../inc/config.php'; ?>
                 $qty = $sale['qty'];
                 $sql = "DELETE FROM oneTimeProducts_sales WHERE oneTimeProduct_id = $oneTimeProduct_id;";
                 echo "<br>EXPLAIN $sql</br>";
-                // insert_query($sql, "Delete One-Time Product Sales Data When Invoice $invoice_number Edit", "Delete One-Time Product Sales Data");
+                insert_query($sql, "Delete One-Time Product Sales Data When Invoice $invoice_number Edit", "Delete One-Time Product Sales Data");
             }
 
 
@@ -632,7 +633,7 @@ require_once '../inc/config.php'; ?>
             $description = "Profit (Invoice Edit) from Invoice Number : <a href=\'/invoice/print.php?id=$invoice_number\'> $invoice_number </a>";
             $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('Invoice - Company Profit', '$description', '$for_company');";
             echo "<br>EXPLAIN $sql</br>";
-            // insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Invoice Company Profit - transaction_log");
+            insert_query($sql, "Invoice Number : $invoice_number, Payment  : $new_advance_amount, New Invoice Balance : $new_balance_amount ", "Add Invoice Company Profit - transaction_log");
 
         }
     }
@@ -653,11 +654,11 @@ require_once '../inc/config.php'; ?>
 if (empty($error_array)) {
 
     // Refresh Page
-    // // $this_url = "/index.php";
-    // /*header("refresh:2; url={$this_url}");*/
-    // echo "<script>
-    // setTimeout(`location.href = '$this_url';`, 100);
-    // </script> ";
+    // $this_url = "/index.php";
+    /*header("refresh:2; url={$this_url}");*/
+    echo "<script>
+    setTimeout(`location.href = '$this_url';`, 100);
+    </script> ";
 } else {
     echo "<h1>Error List</h1>";
     echo "<pre>";
