@@ -31,7 +31,7 @@
             <div class="topic">
                 <h1>Srijaya Print House</h1>
                 <h2>FF26, Megacity, Athurugiriya.
-                    <br>071 4730996
+                    <br>071 4730 996
                 </h2>
             </div>
             <div class="billHeadButtons">
