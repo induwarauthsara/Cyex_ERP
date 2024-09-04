@@ -29,7 +29,7 @@
                 </a>
             </div>
             <div class="topic">
-                <h1>iFix Mobile</h1>
+                <h1>Srijaya Print House</h1>
                 <h2>FF26, Megacity, Athurugiriya.
                     <br>071 4730996
                 </h2>
