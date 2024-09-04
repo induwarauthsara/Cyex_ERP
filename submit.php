@@ -150,6 +150,8 @@ require_once 'inc/config.php'; ?>
         // Total Bill Product Cost
         $total_bill_cost = 0;
 
+        $one_time_product_advance = 0; // Declare a variable to track the advance from One-Time-Product
+
         if ($bill_rows > -1) {
             for ($no = 0; $no <= $bill_rows; $no++) {
                 if (isset($_POST["product_{$no}"])) { // Check row is removed
@@ -164,6 +166,7 @@ require_once 'inc/config.php'; ?>
                             global $bill_no;
                             global $total_bill_cost;
                             global $default_worker;
+                            global $one_time_product_advance;
 
                             $product = $_POST["{$product}_{$no}"];
                             // $description = $_POST["{$description}_{$no}"];
@@ -188,6 +191,9 @@ require_once 'inc/config.php'; ?>
                                 $sql = "INSERT INTO `oneTimeProducts_sales`(`invoice_number`, `product`, `qty`, `rate`, `amount`) VALUES 
                             ('$bill_no','$product','$qty','$rate','$amount')";
                                 insert_query($sql, "$product", "Sale One-Time-Product");
+
+                                // Accumulate the amount from One-Time-Product sales
+                                $one_time_product_advance += $amount;
                             } else {
                                 // This is Regular (Database Saved) Product (Not One-Time-Product) 
 
@@ -300,11 +306,14 @@ require_once 'inc/config.php'; ?>
         // Profit
         $total_bill_profit = $bill_advance - $total_bill_cost;
 
+        // Calculate the profit from regular products (excluding One-Time-Products)
+        $profit_from_regular_products = $total_bill_profit - $one_time_product_advance;
+
         // ==================== Profit Distribution ====================
         // Send Profit to Accounts
-        if ($total_bill_profit > 0) {
+        if ($profit_from_regular_products > 0) {
             if ($biller == $default_worker) {
-                $for_biller = ($total_bill_profit / 100) * 15;
+                $for_biller = ($profit_from_regular_products / 100) * 15;
                 $for_worker = 0;
                 $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
                 insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
@@ -313,8 +322,8 @@ require_once 'inc/config.php'; ?>
                 $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description')";
                 insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller", "Employee Salary Paid - Update Salary Table");
             } else { // if Biller is not Worker
-                $for_biller = ($total_bill_profit / 100) * 5;
-                $for_worker = ($total_bill_profit / 100) * 10;
+                $for_biller = ($profit_from_regular_products / 100) * 5;
+                $for_worker = ($profit_from_regular_products / 100) * 10;
                 // for Biller
                 $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
                 insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
