@@ -53,36 +53,8 @@ include 'nav.php';
     }
     ?>
 
-    <!-- Add Printer Counter Alert -->
-    <?php
-    $db_user = "srijayal_shopprintercounter";
-    $db_pwd = "srijayal_shopprintercounter";
-    $dbname = "srijayal_shopprintercounter";
-    $PrinterCounterDB = "srijayal_shopprintercounter";
-    $printerCounterConn = mysqli_connect($server, $db_user, $db_pwd, $PrinterCounterDB);
-    if (mysqli_connect_errno()) {
-        die('Database connection failed' . mysqli_connect_error());
-    } else {
-        $lastDBUpdateDate = "SELECT MAX(date) FROM `count`;";
-        $result = mysqli_query($printerCounterConn, $lastDBUpdateDate);
-        // echo
-        if ($result) {
-            $lastDBUpdateDate = mysqli_fetch_array($result);
-            $lastDBUpdateDate = $lastDBUpdateDate['MAX(date)'];
-            $today = date("Y-m-d");
-            $diff = abs(strtotime($today) - strtotime($lastDBUpdateDate));
-            $days = floor($diff / (60 * 60 * 24));
-            // Check Time is after 7PM (19:00)
-            $time = date("H:i:s");
-            $time = date("H:i:s", strtotime($time) + 12600);
-            if ($days > 0 && $time > "18:00:00") {
-                echo "<p><b>Printer Counter Alert : The print counter database has not been updated in $days days. <a href='/printerCount'>Add Printer Counters NOW !</a>  </b></p>";
-            }
-        } else {
-            echo "Database Query Failed";
-        }
-    }
-    ?>
+    <!-- -->
+
 </div>
 
 <div id="cards">
