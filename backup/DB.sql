@@ -43,7 +43,7 @@ INSERT INTO `accounts` (`id`, `account_name`, `account_type`, `amount`) VALUES
 (2, 'Company Profit', 'cash', 0.00),
 (6, 'Utility Bills', 'cash', 83420.30),
 (7, 'cash_in_hand', 'cash', 10000.70),
-(12, 'BOC', 'bank', 6800.00),
+(12, 'BOC', 'bank', 6800.00);
 
 
 -- --------------------------------------------------------
