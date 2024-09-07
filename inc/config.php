@@ -24,6 +24,9 @@ function end_db_con()
 ?>
 <?php
 
+$ERP_COMPANY_NAME = "iFix Mobile";
+$ERP_COMPANY_ADDRESS = "GF19, Megacity, Athurugiriya.";
+$ERP_COMPANY_PHONE = "071 836 6077";
 // Start Session if not started
 if (session_status() === PHP_SESSION_ACTIVE) {
     //echo "Session Active";

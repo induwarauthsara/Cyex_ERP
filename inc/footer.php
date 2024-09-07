@@ -23,7 +23,7 @@
     <p class="footer_p">
         <center>
             <hr>
-            Developed by Induwara Uthsara | &copy; 2021 - <?php echo date("Y"); ?> Srijaya Print House
+            Developed by Induwara Uthsara | &copy; 2021 - <?php echo date("Y"), " | ", $ERP_COMPANY_NAME; ?>
         </center>
     </p>
 

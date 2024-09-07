@@ -37,7 +37,7 @@ require_once 'inc/header.php';
             while ($row = mysqli_fetch_array($result)) {
                 $emp_name = $row['emp_name'];
                 if ($emp_name == '') {
-                    $emp_name = 'Srijaya Print House';
+                    $emp_name = $ERP_COMPANY_NAME;
                 }
                 echo "<tr>";
                 echo "<td>" . $row['id'] . "</td>";

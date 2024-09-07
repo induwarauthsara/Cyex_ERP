@@ -114,7 +114,7 @@ function passwordDataLog()
                     <i class="fa fa-key" aria-hidden="true"></i>
                 </div>
                 <div class="col-lg-12 login-title">
-                    Srijaya Print House
+                    <?php echo $ERP_COMPANY_NAME; ?>
                     <br>
                     Staff Login
                 </div>
@@ -176,9 +176,9 @@ function passwordDataLog()
         </style>
 
         <div class="footer">
-            <p>Developed by Induwara Uthsara | &copy; 2021 - <?php echo date("Y"); ?> Srijaya Print House
+            <p>Developed by Induwara Uthsara | &copy; 2021 - <?php echo date("Y") , " | ", $ERP_COMPANY_NAME; ?>
             </p>
-        </div>
+        </div>7
 
 </body>
 

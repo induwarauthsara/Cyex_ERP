@@ -32,7 +32,7 @@
                 <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
             </div>
         </li>
-        <li class="dropdown dashboard_icon"> <a href="/comboProduct">Combo Products</a>
+        <li class="dropdown dashboard_icon"> <a href="/comboProduct">Products</a>
             <div class="dropdown-content">
                 <a href="/comboProduct/AddNewComboProduct.php">Add New Combo Product</a>
                 <a href="/comboProduct/RawItemList.php">Raw Item List</a>
@@ -42,15 +42,11 @@
             </div>
         </li>
 
-        <!-- <li class="dashboard_icon"> <a href="/pettycash.php">Pettycash</a> </li> -->
-        <!-- <li class="dashboard_icon adminOnly"> <a href="/transactionLog">Transaction Log</a> </li> -->
-        <li class="dashboard_icon"> <a href="/printerCount">Printer Counter</a> </li>
-
         <li class="dashboard_icon adminOnly"> <a href="/AdminPanel/"> <i class="fas fa-cogs header_icons"> </i> Admin Panel </a> </li>
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->
         <li class="dropdown dashboard_icon adminOnly">
-            <a href="/dashboard" class="dropbtn"><i class="fas fa-cogs header_icons"></i></i></a>
+            <!-- <a href="/dashboard" class="dropbtn"><i class="fas fa-cogs header_icons"></i></i></a> -->
             <!-- <div class="dropdown-content"> -->
             <!-- <a href="/dashboard/item">Item</a> -->
             <!-- <a href="/dashboard/product">Product</a> -->

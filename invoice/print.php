@@ -21,9 +21,9 @@ if (isset($_GET['invoice'])) {
         <div class="logo-img"> <a href="../index.php"> <img src="../logo.png" alt="LOGO"> </a>
         </div>
         <div class="topic">
-            <h1>Srijaya Print House</h1>
-            <h2>FF26, Megacity, Athurugiriya.
-                <br>071 4730996
+            <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
+            <h2><?php echo $ERP_COMPANY_ADDRESS; ?>
+                <br><?php echo $ERP_COMPANY_PHONE; ?>
             </h2>
         </div>
     </div>
