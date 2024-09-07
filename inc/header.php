@@ -32,11 +32,11 @@
                 <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
             </div>
         </li>
-        <li class="dropdown dashboard_icon"> <a href="/comboProduct">Products</a>
+        <li class="dropdown dashboard_icon"> <a href="/comboProduct/productsList.php">Products</a>
             <div class="dropdown-content">
-                <a href="/comboProduct/AddNewComboProduct.php">Add New Combo Product</a>
+                <a href="/comboProduct/AddNewComboProduct.php">Add New Product</a>
                 <a href="/comboProduct/RawItemList.php">Raw Item List</a>
-                <a href="/comboProduct/productsList.php">Products List</a>
+                <a href="/comboProduct">Combo Product Breakdown</a>
                 <!-- <a href="/dashboard/item/list.php">Raw Item List</a> -->
                 <!-- <a href="/dashboard/product">Products List</a> -->
             </div>
@@ -68,19 +68,19 @@
     </ul>
 
     <!-- option list for Bank Accounts for select tag -->
-     <?php
-     $bankAccountsOptionList = [];
-            array_push($bankAccountsOptionList, '<option value="cash_in_hand"> Cash In Hand </option>');
-        $query = "SELECT `account_name` FROM `accounts` WHERE `account_type` = 'bank';";
-        if (isset($con)) {
-            $result = mysqli_query($con, $query);
-            if ($result) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    array_push($bankAccountsOptionList, '<option value="' . $row['account_name'] . '"> ' . $row['account_name'] . ' </option>');
-                }
+    <?php
+    $bankAccountsOptionList = [];
+    array_push($bankAccountsOptionList, '<option value="cash_in_hand"> Cash In Hand </option>');
+    $query = "SELECT `account_name` FROM `accounts` WHERE `account_type` = 'bank';";
+    if (isset($con)) {
+        $result = mysqli_query($con, $query);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                array_push($bankAccountsOptionList, '<option value="' . $row['account_name'] . '"> ' . $row['account_name'] . ' </option>');
             }
         }
-        ?>
+    }
+    ?>
 
 
     <!-- DataList for Suppliers -->
