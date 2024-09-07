@@ -3,10 +3,10 @@
 // $db_user = 'root';
 // $db_pwd = '';
 // $db_name = 'srijaya';
-$server = 'morgana.webserverlive.com';
-$db_user = 'srijayal_system';
-$db_pwd = 'system@123456';
-$db_name = 'srijayal_system';
+$server = '68.183.191.157';
+$db_user = 'ifix';
+$db_pwd = 'ifix_DP_PW@123';
+$db_name = 'ifix';
 // Connect DB
 $con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
 
