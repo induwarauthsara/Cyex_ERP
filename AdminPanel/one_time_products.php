@@ -4,22 +4,22 @@ include 'nav.php';
 if (isset($_GET['s'])) {
     $status = $_GET['s'];
     if ($status == 'All') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number;";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number;";
     } elseif ($status == 'Uncleared') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared'";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared'";
     } elseif ($status == 'Skipped') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'skip';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'skip';";
     } elseif ($status == 'Cleared') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
     } else {
         $status = 'Uncleared';
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
     }
 } else {
     $status = 'Uncleared';
-    $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
+    $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
 }
-echo "<h1> $status One-Time Products List </h1>";
+echo "<h1> $status Services List </h1>";
 
 ?>
 <!DOCTYPE html>
@@ -28,7 +28,7 @@ echo "<h1> $status One-Time Products List </h1>";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>One Time Products</title>
+    <title>Services</title>
 
 </head>
 
@@ -41,7 +41,7 @@ echo "<h1> $status One-Time Products List </h1>";
             $uncleared_oneTimeProducts_count = mysqli_fetch_array($result);
             $uncleared_oneTimeProducts_count = $uncleared_oneTimeProducts_count['COUNT(*)'];
             if ($uncleared_oneTimeProducts_count > 0) {
-                echo "<p><b> You have  $uncleared_oneTimeProducts_count  Uncleared One-Time-Products. <a href='one_time_products.php'>Solve them NOW !</a>  </b></p>";
+                echo "<p><b> You have  $uncleared_oneTimeProducts_count  Uncleared Services Bills. <a href='one_time_products.php'>Solve them NOW !</a>  </b></p>";
             }
         } else {
             echo "Database Query Failed";
@@ -65,11 +65,10 @@ echo "<h1> $status One-Time Products List </h1>";
                 <th>Qty</th>
                 <th>Rate</th>
                 <th>Amount</th>
-                <th>Cost</th>
+                <th>Employee Payment</th>
                 <th>Profit</th>
                 <th>Status</th>
-                <th>Supplier</th>
-                <th>Account</th>
+                <th>Worker</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -92,13 +91,14 @@ echo "<h1> $status One-Time Products List </h1>";
                         $OTProduct_status = $oneTimeProducts['status'];
                         $OTProduct_supplier = $oneTimeProducts['supplier'];
                         $OTProduct_account = $oneTimeProducts['account_name'];
+                        $worker = $oneTimeProducts['biller'];
                         $action = '';
 
                         if ($oneTimeProducts['status'] == 'uncleared') {
-                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`)'>Solve</button> <br>
+                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$worker`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`)'>Solve</button> <br>
                             <button onclick='skipProduct(`$OTProduct_id`)'> Skip </button>";
                         } else {
-                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`, `$OTProduct_cost`, `$OTProduct_profit`, `$OTProduct_status`, `$OTProduct_supplier`, `$OTProduct_account`)'>Edit</button>";
+                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$worker`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`, `$OTProduct_cost`, `$OTProduct_profit`, `$OTProduct_status`, `$OTProduct_supplier`, `$OTProduct_account`)'>Edit</button>";
                         }
                         $OTProduct_account = $OTProduct_account == 'cash_in_hand' ? 'Cash in Hand' : $OTProduct_account;
                         echo "<tr>";
@@ -111,13 +111,12 @@ echo "<h1> $status One-Time Products List </h1>";
                         echo "<td>" . $OTProduct_cost . "</td>";
                         echo "<td>" . $OTProduct_profit . "</td>";
                         echo "<td>" . $OTProduct_status . "</td>";
-                        echo "<td>" . $OTProduct_supplier . "</td>";
-                        echo "<td>" . $OTProduct_account . "</td>";
+                        echo "<td>" . $worker . "</td>";
                         echo "<td>" . $action . "</td>";
                         echo "</tr>";
                     }
                 } else {
-                    echo "No any One Time Products";
+                    echo "No any Services";
                 }
             } else {
                 echo "Database Query Failed";
@@ -137,7 +136,7 @@ echo "<h1> $status One-Time Products List </h1>";
     //         Profit = Amount - (Item Cost x Quantity)
     //     Supplier Name
 
-    function solveProduct(id, invoice_id, customer_name, description, product_name, qty, rate, amount, cost, profit, status, supplier, CashOutAccount) {
+    function solveProduct(id, worker, invoice_id, customer_name, description, product_name, qty, rate, amount, cost, profit, status, supplier, CashOutAccount) {
         if (typeof cost !== 'undefined') {
             // Product Edit
             var OTPEdit = true;
@@ -157,7 +156,7 @@ echo "<h1> $status One-Time Products List </h1>";
             .then(response => response.json())
             .then(data => {
                 Swal.fire({
-                    title: `${OTPEdit ? 'Edit' : 'Solve'} One Time Product`,
+                    title: `${OTPEdit ? 'Edit' : 'Solve'} Services`,
                     html: `
                                 <div class="tab">
                                     <button class="tablinks active" onclick="openTab(event, 'TotalCost')">Total Cost</button>
@@ -165,7 +164,7 @@ echo "<h1> $status One-Time Products List </h1>";
                                 </div>
 
                                 <div id="TotalCost" class="tabcontent" style="display:block; margin-top: 20px;">
-                                <label for="total-cost"> Total Cost : </label>
+                                <label for="total-cost"> Worker Payment : </label>
                                 <input id="total-cost" class="swal2-input" placeholder="Total Product Cost" value="${cost}">
                                 </div>
                                 
@@ -195,8 +194,8 @@ echo "<h1> $status One-Time Products List </h1>";
                                     <input id="profit" class="swal2-input" placeholder="Profit" value="${profit}" ${OTPEdit ? 'readonly' : 'hidden'}><br><br>
                                 </div>
 
-                                <label for="supplier"> Supplier Name :</label>
-                                <input type="text" id="supplier" placeholder="Supplier Name" class="swal2-input" value="${supplier}">
+                                <label for="supplier"> Worker Name :</label>
+                                <input type="text" disabled id="supplier" placeholder="Supplier Name" class="swal2-input" value="${worker}">
                             `,
                     focusConfirm: false,
                     didOpen: () => {
@@ -231,7 +230,7 @@ echo "<h1> $status One-Time Products List </h1>";
                                     } else {
                                         Swal.fire({
                                             title: 'Solved',
-                                            text: 'One Time Product Solved Successfully',
+                                            text: 'Services Solved Successfully',
                                             icon: 'success',
                                             timer: 2000
                                         });
@@ -311,8 +310,8 @@ echo "<h1> $status One-Time Products List </h1>";
     // Skip Product
     function skipProduct(id) {
         Swal.fire({
-            title: 'Skip One Time Product',
-            text: 'Are you sure you want to skip this One Time Product? Cost=0 and Profit=100%',
+            title: 'Skip Service',
+            text: 'Are you sure you want to skip this Service? Cost=0 and Profit=100%',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, Skip it!',
@@ -327,7 +326,7 @@ echo "<h1> $status One-Time Products List </h1>";
                         } else {
                             Swal.fire({
                                 title: 'Skipped',
-                                text: 'One Time Product Skipped Successfully',
+                                text: 'Service Skipped Successfully',
                                 icon: 'success',
                                 timer: 2000
                             });
@@ -355,7 +354,7 @@ echo "<h1> $status One-Time Products List </h1>";
     //     profit = profit.toFixed(2);
     //     EachCostValue = EachCostValue.toFixed(2);
     //     Swal.fire({
-    //         title: 'Edit One Time Product',
+    //         title: 'Edit Service',
     //         html: `
     //         <div class="tab">
     //             <button class="tablinks active" onclick="openTab(event, 'TotalCost')">Total Cost</button>
@@ -426,7 +425,7 @@ echo "<h1> $status One-Time Products List </h1>";
     //                         } else {
     //                             Swal.fire({
     //                                 title: 'Solved',
-    //                                 text: 'One Time Product Solved Successfully',
+    //                                 text: 'Service Solved Successfully',
     //                                 icon: 'success',
     //                                 timer: 2000
     //                             });

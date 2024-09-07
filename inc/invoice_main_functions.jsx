@@ -270,10 +270,10 @@ function addonetimeproductModal(productName) {
     // check ProductName assigned
 
     Swal.fire({
-        title: 'Add One Time Product',
-        html: `<label for='oneTimeProductName' class='swal2-label'Product Name:</label>` +
-            `<input id="oneTimeProductName" class="swal2-input" value="${productName}" placeholder="Enter Product Name">` +
-            '<label for="oneTimeProductRate" class="swal2-label">Rate (Rs.):</label>' +
+        title: 'Add Service Details',
+        html: `<label for='oneTimeProductName' class='swal2-label'> Service Name:</label>` +
+            `<input id="oneTimeProductName" class="swal2-input" value="${productName}" placeholder="Enter Service Name">` +
+            '<label for="oneTimeProductRate" class="swal2-label">Price (Rs.):</label>' +
             '<input id="oneTimeProductRate" class="swal2-input" placeholder="Enter Rate">' +
             '<label for="oneTimeProductQty" class="swal2-label">Quantity:</label>' +
             '<input id="oneTimeProductQty" class="swal2-input" placeholder="Enter Quantity">',
