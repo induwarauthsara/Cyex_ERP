@@ -8,10 +8,10 @@ $db_user = 'ifix';
 $db_pwd = 'ifix_DP_PW@123';
 $db_name = 'ifix';
 
-$server = 'morgana.webserverlive.com';
-$db_user = 'srijayal_ifix';
-$db_pwd = 'ifix_DP_PW@123';
-$db_name = 'srijayal_ifix';
+// $server = 'morgana.webserverlive.com';
+// $db_user = 'srijayal_ifix';
+// $db_pwd = 'ifix_DP_PW@123';
+// $db_name = 'srijayal_ifix';
 // Connect DB
 $con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
 
