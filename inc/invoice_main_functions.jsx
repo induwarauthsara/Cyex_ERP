@@ -15,8 +15,12 @@ function customer_add() {
         datatype: "text",
         cache: false,
         success: function (html) {
-            document.getElementById('tele').value = html;
             //alert(html);
+            if (html == "customer Not Found") {
+                document.getElementById('tele').value = 7;
+            } else {
+                document.getElementById('tele').value = html;
+            }
         },
     });
 }
