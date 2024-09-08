@@ -4,20 +4,20 @@ include 'nav.php';
 if (isset($_GET['s'])) {
     $status = $_GET['s'];
     if ($status == 'All') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number;";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number;";
     } elseif ($status == 'Uncleared') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared'";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared'";
     } elseif ($status == 'Skipped') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'skip';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'skip';";
     } elseif ($status == 'Cleared') {
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'cleared';";
     } else {
         $status = 'Uncleared';
-        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
+        $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
     }
 } else {
     $status = 'Uncleared';
-    $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description, biller FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
+    $sqlSearch = "SELECT oneTimeProducts_sales.*, invoice.customer_name, invoice_description FROM oneTimeProducts_sales INNER JOIN invoice WHERE oneTimeProducts_sales.invoice_number = invoice.invoice_number AND oneTimeProducts_sales.status = 'uncleared';";
 }
 echo "<h1> $status Services List </h1>";
 
@@ -89,18 +89,15 @@ echo "<h1> $status Services List </h1>";
                         $OTProduct_cost = $oneTimeProducts['cost'];
                         $OTProduct_profit = $oneTimeProducts['profit'];
                         $OTProduct_status = $oneTimeProducts['status'];
-                        $OTProduct_supplier = $oneTimeProducts['supplier'];
-                        $OTProduct_account = $oneTimeProducts['account_name'];
-                        $worker = $oneTimeProducts['biller'];
+                        $worker = $oneTimeProducts['worker'];
                         $action = '';
 
                         if ($oneTimeProducts['status'] == 'uncleared') {
                             $action = "<button onclick='solveProduct(`$OTProduct_id`, `$worker`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`)'>Solve</button> <br>
                             <button onclick='skipProduct(`$OTProduct_id`)'> Skip </button>";
                         } else {
-                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$worker`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`, `$OTProduct_cost`, `$OTProduct_profit`, `$OTProduct_status`, `$OTProduct_supplier`, `$OTProduct_account`)'>Edit</button>";
+                            $action = "<button onclick='solveProduct(`$OTProduct_id`, `$worker`, `$OTProduct_invoice_number`, `$customer_name`, `$OTProduct_invoice_description`, `$OTProduct_product`, `$OTProduct_qty`, `$OTProduct_rate`, `$OTProduct_amount`, `$OTProduct_cost`, `$OTProduct_profit`, `$OTProduct_status`)'>Edit</button>";
                         }
-                        $OTProduct_account = $OTProduct_account == 'cash_in_hand' ? 'Cash in Hand' : $OTProduct_account;
                         echo "<tr>";
                         echo "<td>" . $OTProduct_id . "</td>";
                         echo "<td>" . $OTProduct_invoice_number . "</td>";
@@ -136,7 +133,7 @@ echo "<h1> $status Services List </h1>";
     //         Profit = Amount - (Item Cost x Quantity)
     //     Supplier Name
 
-    function solveProduct(id, worker, invoice_id, customer_name, description, product_name, qty, rate, amount, cost, profit, status, supplier, CashOutAccount) {
+    function solveProduct(id, worker, invoice_id, customer_name, description, product_name, qty, rate, amount, cost, profit, status) {
         if (typeof cost !== 'undefined') {
             // Product Edit
             var OTPEdit = true;
@@ -152,77 +149,53 @@ echo "<h1> $status Services List </h1>";
             var supplier = '';
             var CashOutAccount = '';
         }
-        fetch("/inc/fetch_bank_accounts.php")
+        fetch("/inc/fetch_employees.php")
             .then(response => response.json())
             .then(data => {
                 Swal.fire({
                     title: `${OTPEdit ? 'Edit' : 'Solve'} Services`,
                     html: `
-                                <div class="tab">
-                                    <button class="tablinks active" onclick="openTab(event, 'TotalCost')">Total Cost</button>
-                                    <button class="tablinks" onclick="openTab(event, 'EachItemCost')">Each Item Cost</button>
-                                </div>
-
+                    <h2>${product_name}</h2>
                                 <div id="TotalCost" class="tabcontent" style="display:block; margin-top: 20px;">
-                                <label for="total-cost"> Worker Payment : </label>
-                                <input id="total-cost" class="swal2-input" placeholder="Total Product Cost" value="${cost}">
+                                    <label for="total-cost"> Worker Payment : </label>
+                                    <input id="total-cost" class="swal2-input" placeholder="Payment for Worker" value="${cost}">
                                 </div>
                                 
-                                <div id="EachItemCost" class="tabcontent" style="display:none; margin-top: 20px;">
-                                    <label for="each-cost"> Each Item Cost : </label>
-                                    <input id="each-cost" class="swal2-input" placeholder="Each Item Cost" value="${EachCostValue}">
-                                    <label for="qty"> Quantity : <b>${qty}</b></label>
-                                    <input id="qty" class="swal2-input" placeholder="Quantity" value="${qty}" hidden> <br><br>
-                                </div>
-
-                                    <label for="account"> Cash Out Account : </label>
-                                    <select id="account" class="swal2-input" style="margin: 0;">
-                                    <option value="cash_in_hand" ${OTPEdit ? '' : 'selected'}>Cash in Hand</option>
-                                    ${data.map(account => `<option value="${account}" ${account == CashOutAccount ? 'selected' : ''}>${account}</option>`).join('')}            
+                                    <label for="worker">Worker Name :</label>
+                                    <select id="worker" class="swal2-input" style="margin: 0;">
+                                    ${data.map(employee_name => `<option value="${employee_name}" ${employee_name == worker ? 'selected' : ''}>${employee_name}</option>`).join('')}
+                ${console.log(data)}
+                ${console.log(worker)}
                                     </select><br><br>
                                 
-                                Customer Name : <b>${customer_name}</b> <br>
+                                Customer Name : <b>${customer_name}</b> <br><br>
 
                                 <label for="amount"> Cash In : Rs. <b>${amount}</b> </label><br><br>
                                 <input id="amount" class="swal2-input" value="${amount}" hidden>
 
                                 <label for="description"> Description : <b> ${description} </b> </label><br><br>
+                                <label for="description"> Qty : <b> ${qty} </b> </label><br><br>
                                 
                                 <div id="profit-calculation">
                                 <label for="profit"> Profit : </label>
                                     <p id="calculation-steps"></p>
                                     <input id="profit" class="swal2-input" placeholder="Profit" value="${profit}" ${OTPEdit ? 'readonly' : 'hidden'}><br><br>
                                 </div>
-
-                                <label for="supplier"> Worker Name :</label>
-                                <input type="text" disabled id="supplier" placeholder="Supplier Name" class="swal2-input" value="${worker}">
                             `,
                     focusConfirm: false,
                     didOpen: () => {
                         // Add event listeners to input fields for real-time calculation
                         document.getElementById('total-cost').addEventListener('input', calculateProfit);
-                        document.getElementById('each-cost').addEventListener('input', calculateProfit);
-                        document.getElementById('qty').addEventListener('input', calculateProfit);
                     },
                     preConfirm: () => {
-                        const activeTab = document.querySelector('.tablinks.active').innerText;
-                        const isTotal = activeTab === 'Total Cost';
-                        const isEachItem = activeTab === 'Each Item Cost';
-
-                        const supplier = document.getElementById('supplier').value || 'Unknown';
+                        const worker = document.getElementById('worker').value || 'ifix';
                         const profit = document.getElementById('profit').value || 0;
-                        const account = document.getElementById('account').value;
 
                         var total_cost = parseFloat(document.getElementById('total-cost').value);
 
-                        const each_cost = parseFloat(document.getElementById('each-cost').value);
-                        const quantity = parseInt(document.getElementById('qty').value);
+                        if (!isNaN(total_cost)) {
 
-
-                        if ((isTotal && !isNaN(total_cost)) || isEachItem && !isNaN(each_cost) && !isNaN(quantity)) {
-                            total_cost = isEachItem ? each_cost * quantity : total_cost;
-
-                            return fetch(`/AdminPanel/OneTimeProduct/solve.php?id=${id}&supplier=${supplier}&cost=${total_cost}&profit=${profit}&tab=${activeTab}&account=${account}&invoiceID=${invoice_id}&edit=${OTPEdit}`, {
+                            return fetch(`/AdminPanel/OneTimeProduct/solve.php?id=${id}&worker=${worker}&cost=${total_cost}&profit=${profit}&invoiceID=${invoice_id}&edit=${OTPEdit}&product_name=${product_name}`, {
                                     method: 'Get'
                                 }).then(response => {
                                     if (!response.ok) {
@@ -261,49 +234,15 @@ echo "<h1> $status Services List </h1>";
     }
 
 
-
-    function openTab(evt, tabName) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-        }
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
-
-        // Reset and recalculate profit when switching tabs
-        document.getElementById('profit').value = '';
-        document.getElementById('calculation-steps').textContent = '';
-        calculateProfit();
-    }
-
     function calculateProfit() {
-        // Selected tab
-        const selected_tab = document.querySelector('.tablinks.active').innerText;
-
         const total_cost = document.getElementById('total-cost').value;
-        const each_cost = document.getElementById('each-cost').value;
-        const qty = document.getElementById('qty').value;
         const amount = document.getElementById('amount').value;
 
-        if (selected_tab === 'Total Cost') {
-            if (total_cost !== '' && !isNaN(total_cost)) {
-                var profit = amount - total_cost;
-                var calculationSteps = `Profit = Cash In - Total Product Cost<br><b>Profit </b> = ${amount} - ${total_cost} = <h2 style='display: inline;'>Rs. ${profit}</h2> `;
-                document.getElementById('profit').value = profit.toFixed(2);
-                document.getElementById('calculation-steps').innerHTML = calculationSteps;
-            }
-        } else if (selected_tab === 'Each Item Cost') {
-            if (each_cost !== '' && !isNaN(each_cost) && qty !== '' && !isNaN(qty)) {
-                var profit = amount - (each_cost * qty);
-                var calculationSteps = `Profit = Cash In - (Each Item Cost × Quantity) <br> <b>Profit </b> = ${amount} - (${each_cost} × ${qty}) = <h2 style='display: inline;'>Rs. ${profit}</h2>`;
-                document.getElementById('profit').value = profit.toFixed(2);
-                document.getElementById('calculation-steps').innerHTML = calculationSteps;
-            }
+        if (total_cost !== '' && !isNaN(total_cost)) {
+            var profit = amount - total_cost;
+            var calculationSteps = `Profit = Cash In - Total Product Cost<br><b>Profit </b> = ${amount} - ${total_cost} = <h2 style='display: inline;'>Rs. ${profit}</h2> `;
+            document.getElementById('profit').value = profit.toFixed(2);
+            document.getElementById('calculation-steps').innerHTML = calculationSteps;
         }
     }
 

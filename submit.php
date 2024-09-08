@@ -131,7 +131,7 @@ require_once 'inc/config.php'; ?>
             if (isset($_SESSION['employee_id'])) {
                 $biller_employee_id = $_SESSION['employee_id'];
                 // CREATE TABLE action_log ( id INT AUTO_INCREMENT PRIMARY KEY, employee_id  INT NOT NULL, action VARCHAR(20) NOT NULL, description TEXT, date DATE DEFAULT CURRENT_DATE, time TIME DEFAULT CURRENT_TIME );
-                $sql = "INSERT INTO action_log (employee_id, action, description) VALUES ('$0', '$action', '$msg');";
+                $sql = "INSERT INTO action_log (employee_id, action, description) VALUES ('$biller_employee_id', '$action', '$msg');";
                 insert_query($sql, "$action", "Add New Action Log");
             }
         } else {
@@ -188,9 +188,10 @@ require_once 'inc/config.php'; ?>
                             $selected_product = mysqli_fetch_array($result);
                             if ($selected_product['COUNT(product_name)'] == 0) { // Check is this One-Time-Product
                                 // This is One-Time-Product
-                                $sql = "INSERT INTO `oneTimeProducts_sales`(`invoice_number`, `product`, `qty`, `rate`, `amount`) VALUES 
-                            ('$bill_no','$product','$qty','$rate','$amount')";
+                                $sql = "INSERT INTO `oneTimeProducts_sales`(`invoice_number`, `product`, `qty`, `rate`, `amount`, `Worker`) VALUES 
+                            ('$bill_no','$product','$qty','$rate','$amount', '$default_worker')";
                                 insert_query($sql, "$product", "Sale One-Time-Product");
+                                echo $sql;
 
                                 // Accumulate the amount from One-Time-Product sales
                                 $one_time_product_advance += $amount;
