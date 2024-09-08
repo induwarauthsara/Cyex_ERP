@@ -67,6 +67,7 @@ function insert_query($query, $msg, $action)
     }
 
     global $con;
+    global $result;
     $result = mysqli_query($con, $query);
     if ($result) {
         echo "Record Added : {$msg} <br>";
@@ -104,6 +105,7 @@ function insert_query($query, $msg, $action)
             array_push($error_array, $error_message);
         }
     }
+        return $result;
 
     // Enable Exception Mode for MySQLi
     // mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
