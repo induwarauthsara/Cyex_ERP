@@ -33,11 +33,12 @@ require_once '../inc/header.php'; ?>
                     <label for="image">Product Image</label>
                     <input type="file" name="image" id="image" class="form-control">
                 </div> -->
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     Show in Landing Page : <input type="checkbox" name="showInLandingPage" id="showInLandingPage">
                 </div>
                 <div class="form-group">
-                    Show Cost and Profit : <input type="checkbox" id="showCostProfit">
+                    <label for="showCostProfit">Show Cost and Profit :</label>
+                    <input type="checkbox" id="showCostProfit">
                 </div>
 
             </div>
