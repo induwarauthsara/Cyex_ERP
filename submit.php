@@ -307,50 +307,14 @@ require_once 'inc/config.php'; ?>
         // Profit
         $total_bill_profit = $bill_advance - $total_bill_cost;
 
-        // Calculate the profit from regular products (excluding One-Time-Products)
-        $profit_from_regular_products = $total_bill_profit - $one_time_product_advance;
-
-        // ==================== Profit Distribution ====================
-        // Send Profit to Accounts
-        if ($profit_from_regular_products > 0) {
-            if ($biller == $default_worker) {
-                $for_biller = ($profit_from_regular_products / 100) * 15;
-                $for_worker = 0;
-                $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
-                insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
-
-                $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
-                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description')";
-                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller", "Employee Salary Paid - Update Salary Table");
-            } else { // if Biller is not Worker
-                $for_biller = ($profit_from_regular_products / 100) * 5;
-                $for_worker = ($profit_from_regular_products / 100) * 10;
-                // for Biller
-                $sql = "UPDATE employees SET salary = salary + {$for_biller} WHERE emp_name = '{$biller}'";
-                insert_query($sql, "send biller Profit : {$biller} Rs. {$for_biller}", "Add Biller Profit to Employee Table");
-
-                $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
-                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$biller_employee_id', '$for_biller', '$description')";
-                insert_query($sql, "Employee ID: $biller_employee_id, Rs. $for_biller", "Employee Salary Paid - Update Salary Table");
-
-                // for Worker
-                $sql = "UPDATE employees SET salary = salary + {$for_worker} WHERE emp_name = '{$default_worker}'";
-                insert_query($sql, "send worker Profit : {$default_worker} Rs. {$for_worker}", "Add Worker Profit to Employee Table");
-
-                $description = "Profit from Invoice Number : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a>";
-                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$worker_employee_id', '$for_worker', '$description')";
-                insert_query($sql, "Employee ID: $worker_employee_id, Rs. $for_worker", "Employee Salary Paid - Update Salary Table");
-            }
-
-            // Send Profit to Company Profit Accounts
-            $company_profit = $total_bill_profit - $for_biller - $for_worker;
-            $sql = "UPDATE accounts SET amount = amount + {$company_profit} WHERE account_name = 'Company Profit'";
-            insert_query($sql, "Company Profit : Rs. $company_profit", "Add Company Profit to Company Profit Account");
-            // Add Transaction Log -> type, description, amount
-            $transaction_type = 'Invoice - Company Profit';
-            $transaction_description = "85% Profit to Company. Inv: $bill_no - $customer_name, Profit : Rs. $company_profit";
-            transaction_log($transaction_type, $transaction_description, $company_profit);
-        }
+        // Send Profit to Company Profit Accounts
+        $company_profit = $total_bill_profit;
+        $sql = "UPDATE accounts SET amount = amount + {$company_profit} WHERE account_name = 'Company Profit'";
+        insert_query($sql, "Company Profit : Rs. $company_profit", "Add Company Profit to Company Profit Account");
+        // Add Transaction Log -> type, description, amount
+        $transaction_type = 'Invoice - Company Profit';
+        $transaction_description = "Profit to Company. Inv: $bill_no - $customer_name, Profit : Rs. $company_profit";
+        transaction_log($transaction_type, $transaction_description, $company_profit);
 
 
         // Update Invoice Total Profit And Cost
