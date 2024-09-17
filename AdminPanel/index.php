@@ -40,13 +40,13 @@ include 'nav.php';
 
     <!-- Stock Low Alert -->
     <?php
-    $sql = "SELECT COUNT(*) FROM items WHERE qty <= 20;";
+    $sql = "SELECT COUNT(*) FROM products WHERE stock_qty <= stock_alert_limit;";
     $result = mysqli_query($con, $sql);
     if ($result) {
         $low_stock_count = mysqli_fetch_array($result);
         $low_stock_count = $low_stock_count['COUNT(*)'];
         if ($low_stock_count > 0) {
-            echo "<p><b>Stock Alert :    You have  $low_stock_count  Items with Low Stock (items less than 20). <a href='/comboProduct/RawItemList.php'>Update Stock NOW !</a>  </b></p>";
+            echo "<p><b>Stock Alert :    You have  $low_stock_count  Items with Low Stock. <a href='/comboProduct/LowItemList.php'>Update Stock NOW !</a>  </b></p>";
         }
     } else {
         echo "Database Query Failed. Contact Developer";
