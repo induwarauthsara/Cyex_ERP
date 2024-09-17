@@ -1,28 +1,33 @@
 <?php
 require_once '../inc/config.php';
 
-// Fetch product details
+// Fetch product details from the GET request
 $product_id = $_GET['productId'];
-$productRate = $_GET['productRate'];
-$productProfit = $_GET['productProfit'];
 $productName = $_GET['productName'];
+$productRate = $_GET['productRate'];
+$productCost = $_GET['cost']; // Capturing cost from the request
+$productProfit = $_GET['productProfit']; // Capturing the calculated profit from the request
+$workerCommission = $_GET['commission']; // Capturing worker commission from the request
+$stock_qty = $_GET['stockAvailable']; // Stock Available Count from the request
+$lowStockAlertLimit = $_GET['lowStockAlertLimit']; // Low Stock Alert Limit from the request
 
-// echo $product_id;
-// echo "<br>";
-// echo $productRate;
-// echo "<br>";
-// echo $productProfit;
-// echo "<br>";
-// echo $productName;
-// echo "<br>";
+// Determine if the product is in stock
+$has_stock = $stock_qty > 0 ? 1 : 0;
 
-// Update the product rate and Prodcut Name in the database
-$sql = "UPDATE products SET rate = $productRate, profit = $productProfit, product_name = '$productName' WHERE product_id = $product_id";
-if ($con->query($sql) === TRUE) {
-    echo "Record updated successfully";
-} else {
-    echo "Error updating record: " . $con->error;
-}
+// Create the SQL query to update the product details in the database
+$sql = "UPDATE products 
+        SET 
+            product_name = '$productName', 
+            rate = $productRate, 
+            cost = $productCost, 
+            profit = $productProfit, 
+            stock_qty = $stock_qty, 
+            has_stock = $has_stock, 
+            stock_alert_limit = $lowStockAlertLimit, 
+            worker_commision = $workerCommission 
+        WHERE product_id = $product_id";
 
-// Update the product rate in the database
-// Add your database update logic here
+insert_query($sql, "Edit Updated : $productName", "Edit Product");
+
+// Close the database connection
+$con->close();

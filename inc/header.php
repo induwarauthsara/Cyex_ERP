@@ -21,13 +21,13 @@
 
     <ul id="navbar">
         <li class="dropdown dashboard_icon">
-            <a href="/"><i class="fas fa-file-invoice header_icons"></i></a>
+            <a href="/"><i class="fas fa-file-invoice header_icons"></i> &nbsp; Add New Invoice</a>
             <!-- <div class="dropdown-content">
                 <a href="/invoice">Invoice</a>
             </div> -->
         </li>
 
-        <li class="dropdown dashboard_icon"> <a href="/invoice">Invoices</a>
+        <li class="dropdown dashboard_icon"> <a href="/invoice">Invoices List</a>
             <div class="dropdown-content">
                 <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
             </div>
@@ -35,8 +35,8 @@
         <li class="dropdown dashboard_icon"> <a href="/comboProduct/productsList.php">Products</a>
             <div class="dropdown-content">
                 <a href="/comboProduct/AddNewComboProduct.php">Add New Product</a>
-                <a href="/comboProduct/RawItemList.php">Raw Item List</a>
-                <a href="/comboProduct">Combo Product Breakdown</a>
+                <!-- <a href="/comboProduct/RawItemList.php">Raw Item List</a> -->
+                <!-- <a href="/comboProduct">Combo Product Breakdown</a> -->
                 <!-- <a href="/dashboard/item/list.php">Raw Item List</a> -->
                 <!-- <a href="/dashboard/product">Products List</a> -->
             </div>

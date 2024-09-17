@@ -21,10 +21,6 @@ include '../inc/DataTable_cdn.php';
 
 <body>
     <h1>Product List</h1>
-    <a href="AddNewComboProduct.php">
-        <div id="add_raw_item">Add New Combo Product</div>
-    </a>
-
     <table id='DataTable'>
         <thead>
             <tr>
@@ -34,9 +30,10 @@ include '../inc/DataTable_cdn.php';
                 <th>Rate</th>
                 <th>Cost</th>
                 <th>Profit</th>
+                <th>Low Stock Alert</th>
+                <th>Worker Commission</th>
                 <th>Has Stock</th>
                 <th>Edit</th>
-                <th>Combo Product</th>
                 <th>Delete</th>
             </tr>
         </thead>
@@ -54,6 +51,8 @@ include '../inc/DataTable_cdn.php';
                         $cost = $row['cost'];
                         $profit = $row['profit'];
                         $has_stock = $row['has_stock'];
+                        $worker_commision = $row['worker_commision'];
+                        $stock_alert_limit = $row['stock_alert_limit'];
                         if ($has_stock == 1) {
                             $has_stock = "Yes";
                         } else {
@@ -65,9 +64,10 @@ include '../inc/DataTable_cdn.php';
                         echo "<td> $rate </td>";
                         echo "<td> $cost </td>";
                         echo "<td> $profit </td>";
+                        echo "<td> $stock_alert_limit </td>";
+                        echo "<td> $worker_commision </td>";
                         echo "<td> $has_stock </td>";
-                        echo "<td><button onclick='showEditProductModal( `$product_name`, `$rate`,  `$cost`, `$product_id`)'> Edit </button></td>";
-                        echo "<td> <a href='update_comboProduct.php?p=$product_name'> <button>Combo Product</button> </a> </td>";
+                        echo "<td><button onclick='showEditProductModal( `$product_name`, `$rate`,  `$cost`, `$product_id`, `$stock_qty`, `$stock_alert_limit`, `$worker_commision`)'> Edit </button></td>";
                         echo "<td><button class='btn-danger' onclick='deleteProduct(`$product_id`, `$product_name`)'>Delete</button></td>";
                         echo "</tr>";
                     }
@@ -134,8 +134,7 @@ include '../inc/DataTable_cdn.php';
 
     #addRawItem,
     #submitData,
-    #updateData,
-    #add_raw_item {
+    #updateData {
         margin: 10px;
         padding: 10px 80px;
         font-size: 1.3rem;
@@ -153,22 +152,6 @@ include '../inc/DataTable_cdn.php';
         font-weight: bold;
         padding: 20px 80px;
         margin: 30px;
-    }
-
-
-    #add_raw_item {
-        background: #3edd00;
-        color: black;
-        margin: 5px;
-        padding: 10px;
-        border-radius: 5px;
-        font-weight: bold;
-        font-size: 1.3rem;
-        width: auto;
-        cursor: pointer;
-        top: 80;
-        position: absolute;
-        right: 50;
     }
 
     /* CSS for loading spinner animation */
@@ -235,25 +218,49 @@ include '../inc/DataTable_cdn.php';
 
 <script>
     // Function to initialize SweetAlert2 modal for editing product
-    function showEditProductModal(productName, productRate, productCost, productId) {
+    function showEditProductModal(productName, productRate, productCost, productId, stockAvailable, lowStockAlertLimit, commission = 0) {
         Swal.fire({
             title: 'Edit "' + productName + '" Details',
-            // html: document.getElementById('editProductModal'),
-            html: '<label for="productName">Product Name:</label> ' +
-                '<input type="text" id="productName" value="' + productName + '" > <br>' +
-                '<label for="productRate">Product Rate:</label>' +
-                '<input type="number" id="productRate" value="' + productRate + '"> <br>' +
-                '<input type="hidden" id="productCost" value="' + productCost + '"> <br>',
+            html: '<div class="form-group">' +
+                '<label for="productName">Product Name :</label>' +
+                '<input type="text" name="productName" id="productName" class="form-control" value="' + productName + '" required> <br>' +
+                '<span>Product Name = Brand Name + Product Name + Model + (Warranty Period)</span> <br>' +
+                '</div>' +
+                '<div class="form-group"><br>' +
+                '<label for="price">Selling Price :</label>' +
+                '<input type="number" id="productRate" name="productRate" class="form-control" value="' + productRate + '" placeholder="Enter Selling Price" oninput="updateTotals()" required> <br>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="stockAvailable">Stock Available Count :</label>' +
+                '<input type="number" id="stockAvailable" name="stockAvailable" class="form-control" value="' + stockAvailable + '" placeholder="Enter Stock Available Count" required> <br>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="cost">Cost :</label>' +
+                '<input type="number" id="cost" name="cost" class="form-control" value="' + productCost + '" placeholder="Enter Cost" oninput="updateTotals()" required> <br>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="lowStockAlertLimit">Low Stock Alert Limit :</label>' +
+                '<input type="number" id="lowStockAlertLimit" name="lowStockAlertLimit" class="form-control" value="' + lowStockAlertLimit + '" placeholder="Enter Low Stock Alert Limit" required> <br>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="Commission">Worker Commission :</label>' +
+                '<input type="number" name="Commission" id="Commission" class="form-control" value="' + commission + '" placeholder="Enter Worker Commission" oninput="updateTotals()"> <br>' +
+                '</div>',
             focusConfirm: false,
             preConfirm: () => {
-                // Retrieve updated product rate
+                // Retrieve updated product details
                 const newProductName = document.getElementById('productName').value;
                 const newProductRate = document.getElementById('productRate').value;
-                const ProductCost = document.getElementById('productCost').value;
-                const newProductProfit = newProductRate - ProductCost;
+                const newProductCost = document.getElementById('cost').value;
+                const newStockAvailable = document.getElementById('stockAvailable').value;
+                const newLowStockAlertLimit = document.getElementById('lowStockAlertLimit').value;
+                const newCommission = document.getElementById('Commission').value || 0; // Default to 0 if not entered
+
+                // Calculate product profit
+                const newProductProfit = newProductRate - newProductCost - newCommission;
 
                 // Send the updated data to the server for processing
-                return fetch(`update_product-submit.php?productId=${productId}&productRate=${newProductRate}&productProfit=${newProductProfit}&productName=${newProductName}`)
+                return fetch(`update_product-submit.php?productId=${productId}&productRate=${newProductRate}&cost=${newProductCost}&productProfit=${newProductProfit}&productName=${newProductName}&stockAvailable=${newStockAvailable}&lowStockAlertLimit=${newLowStockAlertLimit}&commission=${newCommission}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Failed to update product details');
@@ -265,22 +272,20 @@ include '../inc/DataTable_cdn.php';
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops...',
-                            // text: 'Failed to update product details!',
                             text: error,
                         });
                     });
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                // alert(result.value);
                 Swal.fire({
                     icon: 'success',
                     title: 'Success',
-                    // text: 'Product updated successfully!',
-                    text: result.value,
-                    timer: 2000, // Close alert after 2 seconds
-                    // timerProgressBar: true
+                    text: 'Product updated successfully!',
+                    timer: 1000, // Close alert after 2 seconds
                 });
+                // refresh the page 
+                location.reload();
             }
         });
     }
