@@ -1,0 +1,16 @@
+Customer Name
+Telephone Number
+Description
+Date
+[ Sales Records ]
+	Total
+	Balance
+	Raw Item Stock 
+	Product Availability
+Discount
+Advance
+	Account Balance
+	Profit
+Payment Method
+	Account Balance
+Todo

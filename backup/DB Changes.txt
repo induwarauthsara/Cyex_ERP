@@ -69,4 +69,5 @@ TRUNCATE TABLE `ifix`.`pettycash`;
 TRUNCATE TABLE `ifix`.`products`;
 TRUNCATE TABLE `ifix`.`purchase`;
 
-
+Add stock_alert_limit & worker_commision to Products Table
+ALTER TABLE `products` ADD `stock_alert_limit` INT(4) NOT NULL DEFAULT '20' AFTER `has_stock`, ADD `worker_commision` DECIMAL(8,2) NOT NULL DEFAULT '0' AFTER `stock_alert_limit`;
