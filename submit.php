@@ -149,6 +149,7 @@ require_once 'inc/config.php'; ?>
 
         // Total Bill Product Cost
         $total_bill_cost = 0;
+        $emoloyee_commission = 0;
 
         $one_time_product_advance = 0; // Declare a variable to track the advance from One-Time-Product
 
@@ -167,6 +168,8 @@ require_once 'inc/config.php'; ?>
                             global $total_bill_cost;
                             global $default_worker;
                             global $one_time_product_advance;
+                            global $emoloyee_commission;
+                            global $worker_employee_id;
 
                             $product = $_POST["{$product}_{$no}"];
                             // $description = $_POST["{$description}_{$no}"];
@@ -199,96 +202,48 @@ require_once 'inc/config.php'; ?>
                                 // This is Regular (Database Saved) Product (Not One-Time-Product) 
 
                                 // Product Cost eka Stock Account eken Adu wenawa (Kalin Thibbe + wenna.)
-                                $cost_sql = "SELECT cost FROM products WHERE product_name = '{$product}'";
+                                $cost_sql = "SELECT cost, worker_commision FROM products WHERE product_name = '{$product}'";
                                 $cost_result = mysqli_query($con, $cost_sql);
                                 $cost_row = mysqli_fetch_assoc($cost_result);
                                 $cost = $cost_row['cost'] * $qty;
-                                $profit = $amount - $cost;
+                                $worker_commission = $cost_row['worker_commision'] * $qty;
+                                $emoloyee_commission += $worker_commission;
+                                $total_cost = $cost + $worker_commission;
+                                $profit = $amount - $total_cost;
+
                                 $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
                                 insert_query($sql, "Rs. $cost", "Add Product Cost to Stock Account");
 
                                 // Total Bill Product Cost and Profit
-                                $total_bill_cost += $cost;
+                                $total_bill_cost += $total_cost;
+
+                                // send Employee Commission to Employee Account Salary
+                                $sql = "UPDATE employees SET salary = salary + {$worker_commission} WHERE employ_id = {$worker_employee_id}";
+                                insert_query($sql, "Employee Commission : Rs. $worker_commission", "Add Employee Commission to Employee Account");
+
+                                // Send Employee Commission to Salary Table
+                                $description = "Commission from Invoice : <a href=\'/invoice/print.php?id=$bill_no\'> $bill_no </a> for $product";
+                                $sql = "INSERT INTO salary (emp_id, amount, description) VALUES ('$worker_employee_id', '$worker_commission', '$description')";
+                                insert_query($sql, "Add Commison to $default_worker Rs. $worker_commission for $product", "Add Commision - Update Salary Table");
 
                                 // Send Sales Data to DB
                                 $sql = "INSERT INTO sales (invoice_number, product, qty, rate, amount, worker, cost, profit)
-                                    VALUES ('{$bill_no}', '{$product}', '{$qty}', '{$rate}', '{$amount}', '{$default_worker}', '{$cost}', '{$profit}')";
+                                    VALUES ('{$bill_no}', '{$product}', '{$qty}', '{$rate}', '{$amount}', '{$default_worker}', '{$total_bill_cost}', '{$profit}')";
+                                    echo $sql;
                                 insert_query($sql, "Add New Sale : $product", "Add New Sale");
 
-                                /*  //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
+                                //Wikunapu Product eka Stock eken adu wenawa. (meka Automated kala yata)
                                 $sql = "UPDATE products SET stock_qty = stock_qty - {$qty} WHERE product_name = '{$product}'";
-                                insert_query($sql, "Fall Sell Product Qty from Stock");
-                                 */
+                                insert_query($sql, "Fall {$qty} of {$product} in Stock", "Fall Sell Product Qty from Stock");
 
-
-                                // ========== Wikunapu Product eka Stock eken adu wenawa. ==========
-                                // -------- Get Product makeProduct to Array --------
-                                $sql = "SELECT item_name FROM makeProduct WHERE product_name='{$product}'";
-                                $result = mysqli_query($con, $sql);
-                                $ingridians_list = array();
-                                if (mysqli_num_rows($result) > 0) {
-                                    while ($recoard = mysqli_fetch_assoc($result)) {
-                                        array_push($ingridians_list, $recoard["item_name"]);
-                                    }
-                                    $thisProductHasRawMaterials = true;
+                                // Update Has_Stock state
+                                $new_stock_qty = mysqli_fetch_assoc(mysqli_query($con, "SELECT stock_qty FROM products WHERE product_name = '{$product}'"))['stock_qty'];
+                                if ($new_stock_qty > 0) {
+                                    $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
+                                    insert_query($sql, "$product is In Stock", "Update Product Has_Stock State");
                                 } else {
-                                    $thisProductHasRawMaterials = false;
-                                }
-
-                                // --------  Fall Product Items from Item List -------
-                                if ($thisProductHasRawMaterials) {
-                                    // Select Item Qty of Product
-                                    for ($i = 0; $i < count($ingridians_list); $i++) {
-                                        $selected_item = $ingridians_list[$i];
-                                        $ingridians_product_item_qty = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
-                                        $result = mysqli_query($con, $ingridians_product_item_qty);
-                                        $product_item_qty = mysqli_fetch_array($result)['qty'] * $qty;
-
-                                        // Fall Item qty
-                                        $fall_item = "UPDATE `items` SET qty= qty - {$product_item_qty} WHERE item_name = '{$selected_item}'";
-                                        insert_query($fall_item, "$selected_item, Qty : $qty items", "fall item from stock");
-                                    }
-
-
-                                    /// ========== Stock eke Product wala QTY eka hadanawa ==========
-
-                                    // -------- Get QTY of ingridians_list to Array --------
-                                    $ingridians_requement_qty_array = array();
-                                    $item_qty_array = array();
-                                    $makeable_product_qty_array = array();
-
-                                    for ($i = 0; $i < count($ingridians_list); $i++) {
-                                        $selected_item = $ingridians_list[$i];
-
-                                        $selected_item_req_qty_sql = "SELECT qty FROM makeProduct WHERE item_name = '{$selected_item}' AND product_name = '{$product}';";
-                                        $result = mysqli_query($con, $selected_item_req_qty_sql);
-                                        $recoard = mysqli_fetch_assoc($result);
-                                        array_push($ingridians_requement_qty_array, $recoard["qty"]);
-
-                                        $selected_item_qty_sql = "SELECT qty FROM items WHERE item_name = '{$selected_item}';";
-                                        $result = mysqli_query($con, $selected_item_qty_sql);
-                                        $recoard = mysqli_fetch_assoc($result);
-                                        array_push($item_qty_array, $recoard["qty"]);
-
-                                        $selected_item_ingridians_requement = $ingridians_requement_qty_array[$i];
-                                        $selected_item_qty = $item_qty_array[$i];
-                                        $makeable_product_qty = $selected_item_qty / $selected_item_ingridians_requement;
-                                        array_push($makeable_product_qty_array, $makeable_product_qty);
-                                    }
-                                    // -------- Select Min QTY of ingridians_qty --------
-                                    $min_ingridians_qty = min($makeable_product_qty_array);
-                                    // -------- Set Product QTY = $min_ingridians_qty --------
-                                    $sql = "UPDATE products SET stock_qty = {$min_ingridians_qty} WHERE product_name = '{$product}'";
-                                    insert_query($sql, "$product Available Qty : $min_ingridians_qty", "Update Product available Qty");
-
-                                    /// ========== update Has_Stock state ==========
-                                    if ($min_ingridians_qty > 0) {
-                                        $sql = "UPDATE products SET has_stock = 1 WHERE product_name = '{$product}'";
-                                        insert_query($sql, "$product is In Stock", "Update Product Has_Stock State");
-                                    } else {
-                                        $sql = "UPDATE products SET has_stock = 0 WHERE product_name = '{$product}'";
-                                        insert_query($sql, "$product is Out of Stock", "Update Product Has_Stock State");
-                                    }
+                                    $sql = "UPDATE products SET has_stock = 0 WHERE product_name = '{$product}'";
+                                    insert_query($sql, "$product is Out of Stock", "Update Product Has_Stock State");
                                 }
                             }
                         }
