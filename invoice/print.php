@@ -7,24 +7,107 @@ if (isset($_GET['invoice'])) {
         $id = $invoice;
     }
 }
-
 ?>
 <style>
+    .bill {
+        width: 70mm;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 10pt;
+        margin: 0 auto;
+        height: auto;
+    }
+
+    .header,
     .details,
     .content {
-        font-family: Helvetica, Arial, Sans-Serif;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .logo-img {
+        margin-bottom: 10px;
+    }
+
+    .topic h1 {
+        margin: 0;
+    }
+
+    .topic h2 {
+        margin: 5px 0;
+        font-size: 12pt;
+    }
+
+    hr {
+        border: 1px dashed black;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        border-bottom: 1px dashed black;
+        padding: 5px;
+        text-align: left;
+    }
+
+    th {
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .price,
+    .bill_sum {
+        text-align: right;
+    }
+
+    .total-summary {
+        margin-top: 10px;
+    }
+
+    .total-summary td {
+        padding: 5px 0;
+    }
+
+    .bill_sum {
+        font-weight: bold;
+    }
+
+    .footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 10pt;
+    }
+
+    @media print {
+        .bill {
+            width: 70mm;
+            height: auto;
+            page-break-after: avoid;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: auto;
+        }
+
+        /* Prevent page breaks inside the table */
+        table {
+            page-break-inside: avoid;
+        }
     }
 </style>
-<link rel="stylesheet" href="../style.css">
+
 <div class="bill">
     <div class="header">
-        <div class="logo-img"> <a href="../index.php"> <img src="../logo.png" alt="LOGO"> </a>
-        </div>
+        <div class="logo-img"> <a href="../index.php"> <img src="../logo.png" alt="LOGO"> </a></div>
         <div class="topic">
             <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
-            <h2><?php echo $ERP_COMPANY_ADDRESS; ?>
-                <br><?php echo $ERP_COMPANY_PHONE; ?>
-            </h2>
+            <h2><?php echo $ERP_COMPANY_ADDRESS; ?><br><?php echo $ERP_COMPANY_PHONE; ?></h2>
         </div>
     </div>
     <hr />
@@ -48,117 +131,29 @@ if (isset($_GET['invoice'])) {
             echo "<h1 style='color:red'> Don't Print !!!. Invalid Invoice Number</h1><!--";
         }
     } else {
-        echo "<h1 style='color:red'> Don't Print !!!. Faild to Load Invoice Data</h1><!--";
+        echo "<h1 style='color:red'> Don't Print !!!. Failed to Load Invoice Data</h1><!--";
     }
     ?>
     <div class="details">
         <div class="customer-details">
             <div class="customer-name">
-                <label for="name">Customer Name : </label>
+                <label for="name">Customer: </label>
                 <?php echo $customer; ?>
             </div>
             <div class="customer-tele">
-                <label for="tele">Customer Telephone : </label>
+                <label for="tele">Phone: </label>
                 <?php echo $tele; ?>
             </div>
         </div>
-
         <div class="bill-details">
-            <div class="bill-no">Bill No. <?php echo $bill_no; ?> </div>
-            <div class="date">Date : <?php echo $date; ?></div>
+            <div class="bill-no">Invoice No: <?php echo $bill_no; ?></div>
+            <div class="date">Date: <?php echo $date; ?></div>
         </div>
     </div>
-
-    <!-- Methana Idala yata tika one nnaaaaaaaaaaa 
-    <?php
-    /* // Sales Arrays
-    $product_array = array();
-    $description_array = array();
-    $worker_array = array();
-    $qty_array = array();
-    $rate_array = array();
-    $amount_array = array();
-
-    $sql = "SELECT * FROM sales WHERE invoice_number = $id";
-    $result = mysqli_query($con, $sql);
-    if ($result) {
-        // qury success
-        if (mysqli_num_rows($result) > 0) {
-            while ($sales = mysqli_fetch_array($result)) {
-                $sale_product = $sales['product'];
-                $sales_description = $sales['description'];
-                $sales_worker = $sales['worker'];
-                $sales_qty = $sales['qty'];
-                $sales_rate = $sales['rate'];
-                $sales_amount = $sales['amount'];
-                //Push Data
-                array_push($product_array, $sale_product);
-                array_push($description_array, $sales_description);
-                array_push($worker_array, $sales_worker);
-                array_push($qty_array, $sales_qty);
-                array_push($rate_array, $sales_rate);
-                array_push($amount_array, $sales_amount);
-            }
-        } else {
-            echo "<h1 style='color:red'> Don't Print !!!. No added any Item in this Bill</h1><!-- ";
-        }
-    } else {
-        echo "<h1 style='color:red'> Don't Print !!!. Database Query Failed</h1><!--";
-    }
-
-    function data_list($row)
-    {
-        for ($i = 0; count($row) > $i; $i++) {
-            $data =  $row[$i];
-            if ($data == "") {
-                $data = "-";
-            }
-            echo $data;
-            echo "<hr>";
-        }
-    }
-    ?>
-
-
-    <div class="content">
-        <div class="container">
-            <div class="Product tabel-head">Product</div>
-            <div class="Disc tabel-head">Description</div>
-            <div class="worker tabel-head">Worker</div>
-            <div class="QTY tabel-head">Qty</div>
-            <div class="Rate tabel-head">Rate</div>
-            <div class="Amount tabel-head">Amount</div>
-            <div class="product_list tabel" id="Product"> <?php data_list($product_array); ?> </div>
-
-            <div class="Disc_list tabel" id="Disc"> <?php data_list($description_array); ?> </div>
-
-            <div class="worker_list tabel" id="worker"> <?php data_list($worker_array); ?> </div>
-
-            <div class="Qty_list tabel" id="qty"> <?php data_list($qty_array); ?> </div>
-
-            <div class="Rate_list tabel" id="rate"> <?php data_list($rate_array); ?> </div>
-
-            <div class="amount_list tabel" style="flex-direction: column;"> <?php data_list($amount_array); ?> </div>
-
-            <div class="Total tabel"> <?php echo $total; ?> </div>
-            <div class="Discount tabel"> <?php echo $discount; ?> </div>
-
-            <div class="Advance tabel"><?php echo $advance; ?></div>
-            <div class="Balance tabel"><?php echo $balance; ?></div>
-            <div class="Total_tag bill-tag">Total</div>
-            <div class="Discount_tag bill-tag">Discount</div>
-            <div class="Advance_tag bill-tag">Advance </div>
-            <div class="Balance_tag bill-tag">Balance</div>
-            <div class="employ_details bill-tag">
-            </div>
-        </div>
-        <?php */ ?>
-       methana idala uda tika oneeeeeeeeeeeeeeee  -->
     <br>
-    <table class="table">
+    <table>
         <tr>
             <th>Product</th>
-            <!-- <th>Description</th> -->
             <th>Qty</th>
             <th>Rate</th>
             <th>Amount</th>
@@ -166,89 +161,44 @@ if (isset($_GET['invoice'])) {
         <?php
         $sql = "SELECT product, qty, rate, amount FROM sales WHERE invoice_number = $id
                 UNION ALL
-                SELECT product, qty, rate, amount  FROM oneTimeProducts_sales WHERE invoice_number = $id;";
+                SELECT product, qty, rate, amount FROM oneTimeProducts_sales WHERE invoice_number = $id;";
         $result = mysqli_query($con, $sql);
         if ($result) {
-            // query success
             if (mysqli_num_rows($result) > 0) {
                 while ($sales = mysqli_fetch_array($result)) {
                     echo '<tr>
-                <td>' . $sales["product"] . '</td>
-                <td>' . $sales["qty"] . '</td>
-                <td class="price">' . $sales["rate"] . '</td>
-                <td class="price">' . $sales["amount"] . '</td>
-                </tr>';
+                            <td>' . $sales["product"] . '</td>
+                            <td>' . $sales["qty"] . '</td>
+                            <td class="price">' . $sales["rate"] . '</td>
+                            <td class="price">' . $sales["amount"] . '</td>
+                        </tr>';
                 }
             }
         }
         ?>
         <tr>
-            <td colspan="3" class="bill_sum" style="border: none">Total</td>
-            <td><?php echo $total; ?></td>
+            <td colspan="3" class="bill_sum">Total</td>
+            <td class="price"><?php echo $total; ?></td>
         </tr>
         <tr>
-            <td colspan="3" class="bill_sum" style="border: none">Discount</td>
-            <td><?php echo $discount; ?></td>
+            <td colspan="3" class="bill_sum">Discount</td>
+            <td class="price"><?php echo $discount; ?></td>
         </tr>
         <tr>
-            <td colspan="3" class="bill_sum" style="border: none">Advance</td>
-            <td><?php echo $advance; ?></td>
+            <td colspan="3" class="bill_sum">Advance</td>
+            <td class="price"><?php echo $advance; ?></td>
         </tr>
         <tr>
-            <td colspan="3" class="bill_sum" style="border: none">Balance</td>
-            <td><?php echo $balance; ?></td>
+            <td colspan="3" class="bill_sum">Balance</td>
+            <td class="price"><?php echo $balance; ?></td>
         </tr>
     </table>
 
-
-
-</div>
-
-<input type=" text" name="no" id="no" value="">
+    <div class="footer">
+        Powered by <b>CyexTech Solutions</b> <br> <b> CyexTech.com</b>
+    </div>
 </div>
 
 <script>
     window.print();
 </script>
-
-<style>
-    .bill {
-        width: 100%;
-    }
-
-    .topic {
-        width: 150% !important;
-    }
-
-    .bill_sum,
-    .price {
-        text-align: right;
-
-    }
-
-    table,
-    th,
-    td {
-        border: 1px solid #b0f25a;
-        border-spacing: 0;
-    }
-
-    th {
-        text-align: center;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th,
-    td {
-        /* border: 1px solid; */
-        padding: 5px;
-    }
-
-    th {
-        background-color: #5da302;
-    }
-</style>
