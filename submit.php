@@ -92,16 +92,20 @@ require_once 'inc/config.php'; ?>
             $paymentMethod = "Cash";
         } elseif ($paymentMethod == "BankTransfer") {
             $paymentMethod = "BankTransfer";
-            $bill_advance = $bill_advance - 30;
+            $BankTransferCharge = 30;
+            $bank_bill_advance = $bill_advance - $BankTransferCharge;
         } elseif ($paymentMethod == "CardPayment") {
             $paymentMethod = "CardPayment";
-            $bill_advance = $bill_advance - ($bill_advance * 0.03);
+            $BankTransferCharge = ($bill_advance * 0.03);
+            $bank_bill_advance = $bill_advance - $BankTransferCharge;
         } elseif ($paymentMethod == "Cheque") {
             $paymentMethod = "Cheque";
-            $bill_advance = $bill_advance - 30;
+            $BankTransferCharge = 30;
+            $bank_bill_advance = $bill_advance - $BankTransferCharge;
         } elseif ($paymentMethod == "QRPayment") {
             $paymentMethod = "QRPayment";
-            $bill_advance = $bill_advance - ($bill_advance * 0.005);
+            $BankTransferCharge = ($bill_advance * 0.005);
+            $bank_bill_advance = $bill_advance - $BankTransferCharge;
         }
         echo "Payment Method after Advance : " . $bill_advance . "<br>";
         // Check Customer is in Database?
@@ -286,11 +290,19 @@ require_once 'inc/config.php'; ?>
             $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'cash_in_hand'";
             insert_query($sql, "Invoice Number : $bill_no, Rs. {$bill_advance}", "Add Invoice Advance Money to Cash in Hand");
         } else if ($paymentMethod == "CardPayment") {
+            $bill_advance = $bank_bill_advance;
             $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'DFCC'";
             insert_query($sql, "Invoice Number : $bill_no, Rs. {$bill_advance}, Payment Mothod : $paymentMethod", "Add Invoice Advance Money to DFCC Account");
         } else if ($paymentMethod == "BankTransfer" || $paymentMethod == "Cheque" || $paymentMethod == "QRPayment") {
+            $bill_advance = $bank_bill_advance;
             $sql = "UPDATE accounts SET amount = amount + {$bill_advance} WHERE account_name = 'BOC'";
             insert_query($sql, "Invoice Number : $bill_no, Rs. {$bill_advance}, Payment Mothod : $paymentMethod", "Add Invoice Advance Money to BOC Account");
+        }
+
+        // Fall Bank Transfer Charge from Profit Account (If Bank Transfer)
+        if (isset($BankTransferCharge)) {
+            $sql = "UPDATE accounts SET amount = amount - {$BankTransferCharge} WHERE account_name = 'Company Profit'";
+            insert_query($sql, "Invoice Number : $bill_no, Transfer Charge : Rs. {$BankTransferCharge}, Payment Mothod : $paymentMethod", "Fall Bank Transfer Charge from Company Profit Account");
         }
 
         // Add Transaction Log -> type, description, amount
