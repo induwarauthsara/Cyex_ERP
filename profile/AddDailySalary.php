@@ -67,7 +67,7 @@
     } elseif ($emp_worked_hours < $WorkingDayHours) {
         // echo 'Error: Working Hours Less Than 8 Hours'; // for debugging
         $pay_amount = $emp_worked_hours * $HourSalary;
-        $pay_amount = number_format($pay_amount, 2);
+        // $pay_amount = number_format($pay_amount, 2);
         
         // convert $emp_worked_hours to 2 decimal places
         $emp_worked_hours = number_format($emp_worked_hours, 2);
