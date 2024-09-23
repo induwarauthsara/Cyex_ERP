@@ -70,6 +70,7 @@ if ($result) {
                     $row = mysqli_fetch_assoc($result_clock_out);
                     $last_clock_out_time = $row['time'];
                     $last_clock_out_date = $row['date'];
+<<<<<<< HEAD
 
                     // Calculate the working hours
                     $clock_in = strtotime($last_clock_in_time);
@@ -104,6 +105,59 @@ if ($result) {
                         $sql = "UPDATE accounts SET amount = amount - '{$DaySalary}' WHERE account_name = 'Company Profit'";
                         insert_query($sql, "Fall $employee_name's Day Salary from Company Profit : Rs. $DaySalary", "Fall Employee Day Salary from Company Profit Account");
                     }
+=======
+                    // echo "<br>Last Clock Out Time: $last_clock_out_time <br>"; // for debugging
+                } else {
+                    die('Error: ' . mysqli_error($con));
+                }
+
+                // Calculate the working hours
+                $clock_in = strtotime($last_clock_in_time);
+                $clock_out = strtotime($last_clock_out_time);
+                $emp_worked_hours = ($clock_out - $clock_in) / 3600;
+                // echo "<br>Working Hours: $emp_worked_hours <br>"; // for debugging
+
+                // Working Time > $WorkingDayHours && Working Time < 15 Hours 
+                if ($emp_worked_hours > $WorkingDayHours && $emp_worked_hours < $WorkingDayMaxHours) {
+                    $sql = "INSERT INTO salary (emp_id, date, amount, description) VALUES ('$employee_id', '$today', '$DaySalary', 'Day Salary - $today (Auto Added by Cronjob)')";
+                    // echo $sql . "<br>"; // for debugging
+                    // echo "pay_amount Rs. $DaySalary"; // for debugging
+                    // echo $sql; // for debugging
+                    insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today", "Auto Add Day Salary by Cronjob"); // for production
+
+                    // Update the employee's salary in the employees table
+                    $sql = "UPDATE employees SET salary = salary + '$DaySalary' WHERE employ_id = '$employee_id'";
+                    // echo $sql; // for debugging
+                    insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today", "Auto Update Employee Day Salary by Cronjob"); // for production
+                } elseif ($emp_worked_hours < $WorkingDayHours) {
+                    // echo 'Error: Working Hours Less Than 8 Hours'; // for debugging
+                    $pay_amount = $emp_worked_hours * $HourSalary;
+                    // $pay_amount = number_format($pay_amount, 2);
+
+                    // convert $emp_worked_hours to 2 decimal places
+                    $emp_worked_hours = number_format($emp_worked_hours, 2);
+
+                    $sql = "INSERT INTO salary (emp_id, date, amount, description) VALUES ('$employee_id', '$today', '$pay_amount', 'Day Salary - $today ($emp_worked_hours Hours) (Auto Added by Cronjob)')";
+                    // echo $sql . "<br>"; // for debugging
+                    insert_query($sql, "Employee Name : $employee_name , Salary : $pay_amount , Day : $today, Worked Hours : $emp_worked_hours", "Auto Add Day Salary by Cronjob"); // for production
+                    // echo "Pay Amount: $pay_amount <br>"; // for debugging
+
+                    // Update the employee's salary in the employees table
+                    $sql = "UPDATE employees SET salary = salary + '$pay_amount' WHERE employ_id = '$employee_id'";
+                    // echo $sql; // for debugging
+                    insert_query($sql, "Employee Name : $employee_name , Salary : $pay_amount , Day : $today, Worked Hours : $emp_worked_hours", "Auto Update Employee Day Salary by Cronjob"); // for production
+                    $DaySalary = $pay_amount;
+                } elseif ($emp_worked_hours > $WorkingDayMaxHours) {
+                    echo "Error: Working Hours More Than $WorkingDayMaxHours Hours";  // for debugging
+                } else {
+                    echo 'Error: Unknown Error'; // for debugging
+                }
+
+                if ($DaySalary && $DaySalary > 0 ) {
+                    // Fall Day Salary From Company Profit
+                    $sql = "UPDATE accounts SET amount = amount - '{$DaySalary}' WHERE account_name = 'Company Profit'";
+                    insert_query($sql, "Fall $employee_name's Day Salary from Company Profit : Rs. $company_profit", "Fall Employee Day Salary from Company Profit Account");
+>>>>>>> ec67b91 ([All] Bug Fix - Comment out number_format() for pay_amount to prevent data truncation in SQL insert)
                 }
             } else {
                 error_log('Error: Invalid action for employee ' . $employee_name);
