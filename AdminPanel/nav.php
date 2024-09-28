@@ -67,6 +67,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Services",
             icon: "fas fa-tools"
         },
+        "/AdminPanel/hrm/viewPayrolls.php": {
+            name: "Salary Payrolls",
+            icon: "fas fa-receipt"
+        },
         "/AdminPanel/hrm": {
             name: "HRM",
             icon: "fas fa-user-friends"
