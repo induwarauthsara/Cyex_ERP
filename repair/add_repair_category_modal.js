@@ -28,6 +28,16 @@ document.querySelector('#add_new_category').addEventListener('click', function()
                 });
         }
     }).then((result) => {
+        // check appendNewCategoryToDatalist function availabil
+        // if (typeof appendNewCategoryToDatalist === 'function') {
+        //     appendNewCategoryToDatalist(categoryName.value);
+        // } else {
+        //     alert('Function is not available');
+        //     // refresh the page
+        //     location.reload();
+
+        // }
+
         if (result.isConfirmed) {
             Swal.fire({
                 icon: 'success',
@@ -36,6 +46,7 @@ document.querySelector('#add_new_category').addEventListener('click', function()
                 timer: 2000,
                 showConfirmButton: false
             });
+            location.reload();
         }
     });
 });

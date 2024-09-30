@@ -21,9 +21,7 @@ include '../inc/DataTable_cdn.php';
 
 <body>
     <h1>Repair Category List</h1>
-    <a href="addNewRepair.php">
-        <div id="add_raw_item">Add New Repair</div>
-    </a>
+    <div id="add_new_category">New Repair Category</div>
 
     <table id='DataTable'>
         <thead>
@@ -61,6 +59,10 @@ include '../inc/DataTable_cdn.php';
 </body>
 
 </html>
+
+
+<!-- Add Repair Category -->
+<script src="add_repair_category_modal.js"></script>
 
 <style>
     h1 {
@@ -111,7 +113,7 @@ include '../inc/DataTable_cdn.php';
     #addRawItem,
     #submitData,
     #updateData,
-    #add_raw_item {
+    #add_new_category {
         margin: 10px;
         padding: 10px 80px;
         font-size: 1.3rem;
@@ -132,7 +134,7 @@ include '../inc/DataTable_cdn.php';
     }
 
 
-    #add_raw_item {
+    #add_new_category {
         background: #3edd00;
         color: black;
         margin: 5px;

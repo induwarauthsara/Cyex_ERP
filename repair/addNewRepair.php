@@ -25,26 +25,34 @@ require_once '../inc/header.php'; ?>
                 <h2>Repair Details</h2>
                 <div class="form-group">
                     <label for="name">Repair Name</label>
-                    <input type="text" name="productName" id="productName" class="form-control">
+                    <input type="text" name="productName" id="productName" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="category">Repair Category</label>
                     <select name="category" id="category" class="form-control">
-                        <option value='{$category}'>{$category}</option>
+                        <?php
+                        $categories = "SELECT id, category_name FROM repair_categories";
+                        $result = mysqli_query($con, $categories);
+                        if ($result) {
+                            while ($record = mysqli_fetch_assoc($result)) {
+                                $category_id = $record['id'];
+                                $category_name = $record['category_name'];
+                                echo "<option value='{$category_id}'>{$category_name}</option>";
+                            }
+                        } else {
+                            echo "<option value='Result 404'>No Categories Found</option>";
+                        }
+                        ?>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="price">Selling Price</label>
-                    <input type="number" id="productRate" name="productRate" placeholder="Enter rate" class="form-control">
+                    <input type="number" id="productRate" name="productRate" placeholder="Enter rate" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="commission">Worker Commission</label>
-                    <input type="number" id="commission" name="commission" placeholder="Enter commission" class="form-control">
+                    <input type="number" id="commission" name="commission" placeholder="Enter commission" class="form-control" oninput="updateTotals()" required>
                 </div>
-                <div class="form-group">
-                    Show Cost and Profit : <input type="checkbox" id="showCostProfit">
-                </div>
-
             </div>
             <!-- Product Details Section End -->
 
@@ -96,6 +104,7 @@ require_once '../inc/header.php'; ?>
                         var productRate = parseFloat(document.getElementById("productRate").value);
                         document.getElementById("productRateDisplay").textContent = productRate.toFixed(2);
 
+                        var commission = parseFloat(document.getElementById("commission").value);
 
                         // Calculate final cost
                         // Final cost is the sum of all qty x cost
@@ -113,6 +122,7 @@ require_once '../inc/header.php'; ?>
                             finalCost += subtotal;
                         }
                         document.getElementById("finalCost").textContent = finalCost.toFixed(2);
+                        finalCost += commission;
 
                         // Calculate profit
                         var productRate = parseFloat(document.getElementById("productRate").value);
@@ -221,9 +231,6 @@ require_once '../inc/header.php'; ?>
 
 <!-- // Add Repair Stock Item -->
 <script src="add_repair_stock_item_modal.js"></script>
-
-<!-- Add Repair Category -->
-<script src="add_repair_category_modal.js"></script>
 
 </html>
 
@@ -362,16 +369,15 @@ require_once '../inc/header.php'; ?>
     // ====================== Submit All Data to Database for Create New Repair ======================
     // Get product name, rate, image, showInLandingPage, total cost, and profit
     document.getElementById("submitData").addEventListener("click", function() {
-
         var productName = document.getElementById("productName").value;
         var productRate = document.getElementById("productRate").value;
-        // var image = document.getElementById("image").value;
-        var showInLandingPage = document.getElementById("showInLandingPage").checked;
+        var category = document.getElementById("category").value; // Get selected category
+        var commission = document.getElementById("commission").value; // Get worker commission
         var finalCost = document.getElementById("finalCost").textContent;
         var profit = document.getElementById("profit").textContent;
 
         // Validate inputs
-        if (!productName || !productRate) {
+        if (!productName || !productRate || !category || !commission) {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
@@ -383,7 +389,7 @@ require_once '../inc/header.php'; ?>
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: 'Please enter a valid numbers!',
+                text: 'Please enter valid numbers!',
             });
             return;
         }
@@ -413,8 +419,8 @@ require_once '../inc/header.php'; ?>
         var jsonData = JSON.stringify({
             productName: productName,
             productRate: productRate,
-            // image: image,
-            showInLandingPage: showInLandingPage,
+            category: category, // Include category
+            commission: commission, // Include commission
             finalCost: finalCost,
             profit: profit,
             rawData: rawData
@@ -423,7 +429,7 @@ require_once '../inc/header.php'; ?>
         console.log(jsonData);
 
         // Send the data to the server using AJAX
-        fetch("AddNewComboProduct-submit.php", {
+        fetch("addNewRepair-submit.php", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -433,11 +439,6 @@ require_once '../inc/header.php'; ?>
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to submit data');
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Something went wrong!',
-                    });
                 }
                 return response.text();
             })
@@ -450,14 +451,29 @@ require_once '../inc/header.php'; ?>
                     showConfirmButton: false,
                     timer: 2000 // Close alert after 2 seconds
                 });
+                // redirect to /repair/repair-list.php
+                setTimeout(() => {
+                    window.location.href = "/repair/repair-list.php";
+                }, 100);
             })
             .catch(error => {
                 console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Error:' + error,
+                    text: 'Error: ' + error,
                 });
             });
     });
+
+    // function appendNewCategoryToDatalist(categoryName) {
+    //     var option = document.createElement("option");
+    //     option.innerHTML = categoryName;
+    //     option.selected = true;
+    //     document.getElementById("category").appendChild(option);
+
+    // }
 </script>
+
+<!-- Add Repair Category -->
+<script src="add_repair_category_modal.js"></script>

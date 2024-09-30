@@ -29,37 +29,41 @@ include '../inc/DataTable_cdn.php';
         <thead>
             <tr>
                 <th>id</th>
+                <th>Category</th>
                 <th>Repair Name</th>
-                <th>Available Qty</th>
                 <th>selling_price</th>
                 <th>Cost</th>
+                <th>Commission </th>
                 <th>Profit</th>
-                <th>Edit</th>
-                <th>Edit Details</th>
-                <th>Delete</th>
+                <!-- <th>Edit</th> -->
+                <!-- <th>Edit Details</th> -->
+                <!-- <th>Delete</th> -->
             </tr>
         </thead>
         <tbody>
             <?php
-            $sql = "SELECT * FROM `repair_items`";
+            $sql = "SELECT repair_items.*,category_name FROM `repair_items`,`repair_categories` WHERE repair_items.category_id = repair_categories.id";
             if ($result = mysqli_query($con, $sql)) {
                 if (mysqli_num_rows($result) > 0) {
                     while ($row = mysqli_fetch_array($result)) {
                         echo "<tr>";
                         $repair_id = $row['id'];
-                        $repair_name = $row['repair_items'];
+                        $repair_name = $row['repair_name'];
+                        $category = $row['category_name'];
                         $rate = $row['selling_price'];
                         $cost = $row['cost'];
                         $profit = $row['profit'];
+                        $commission = $row['commission'];
                         echo "<td> $repair_id </td>";
+                        echo "<td> $category </td>";
                         echo "<td> $repair_name </td>";
-                        echo "<td> $stock_qty </td>";
                         echo "<td> $rate </td>";
                         echo "<td> $cost </td>";
+                        echo "<td> $commission </td>";
                         echo "<td> $profit </td>";
-                        echo "<td><button onclick='showEditProductModal( `$repair_name`, `$rate`,  `$cost`, `$repair_id`)'> Edit </button></td>";
-                        echo "<td> <a href='update_comboProduct.php?p=$repair_name'> <button>Combo Product</button> </a> </td>";
-                        echo "<td><button class='btn-danger' onclick='deleteProduct(`$repair_id`, `$repair_name`)'>Delete</button></td>";
+                        // echo "<td><button onclick='showEditProductModal( `$repair_name`, `$rate`,  `$cost`, `$repair_id`)'> Edit </button></td>";
+                        // echo "<td> <a href='update_comboProduct.php?p=$repair_name'> <button>Combo Product</button> </a> </td>";
+                        // echo "<td><button class='btn-danger' onclick='deleteProduct(`$repair_id`, `$repair_name`)'>Delete</button></td>";
                         echo "</tr>";
                     }
                 } else {
