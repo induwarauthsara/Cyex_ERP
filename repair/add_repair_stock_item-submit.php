@@ -1,6 +1,6 @@
 <?php
 // Include your database connection file or function here
-require_once 'config.php';
+require_once '../inc/config.php';
 session_start();
 
 // Check if the required parameters are received and validate them
@@ -23,18 +23,19 @@ if (isset($_GET['itemName']) && isset($_GET['itemPrice']) && isset($_GET['itemQt
 
     // Perform any additional validation or processing if needed
 
-    // Insert the new raw item into the database
-    $sql = "INSERT INTO items (item_name, cost, qty) VALUES ('$itemName', $itemPrice, $itemQty)";
-    insert_query($sql, "Name : $itemName, Price : $itemPrice, Qty : $itemQty", "Add Raw Item");
+    // Insert the new Repair Stock item into the database
+    $sql = "INSERT INTO repair_stock (stock_item_name, stock_cost, stock_qty) VALUES ('$itemName', $itemPrice, $itemQty)";
+    echo $sql;
+    insert_query($sql, "Name : $itemName, Price : $itemPrice, Qty : $itemQty", "Add Repair Stock Item");
 
     // fall cash in hand account when item buy
     $buy_cost = $itemQty * $itemPrice;
     $account_name = "cash_in_hand";
     $sql = "UPDATE `accounts` SET `amount`= amount - {$buy_cost} WHERE account_name = '{$account_name}'";
-    insert_query($sql,"Name : $itemName, Price : $itemPrice, Qty : $itemQty", "Fall Cash-In-Hand Account for Raw Item Purchase");
+    insert_query($sql,"Name : $itemName, Price : $itemPrice, Qty : $itemQty", "Fall Cash-In-Hand Account for Repair Stock Item Purchase");
 
     // Add Transaction Log -> type, description, amount
-    $transaction_type = 'Raw Item Purchase';
+    $transaction_type = 'Repair Stock Item Purchase';
     $description = "$itemName";
     transaction_log($transaction_type, $description, -$buy_cost);
 } else {

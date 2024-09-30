@@ -27,6 +27,16 @@
             </div> -->
         </li>
 
+        <li class="dropdown dashboard_icon">
+            <a href="/repair/"><i class="fas fa-tools header_icons"></i> &nbsp; Repair</a>
+            <div class="dropdown-content">
+                <a href="/repair/repair-list.php">Repair List</a>
+                <a href="/repair/addNewRepair.php">Add New Repair </a>
+                <a href="/repair/repairCategoryList.php">Repair Category List</a>
+                <a href="/repair/repairStockList.php">Repair Stock</a>
+            </div>
+        </li>
+
         <li class="dropdown dashboard_icon"> <a href="/invoice">Invoices List</a>
             <div class="dropdown-content">
                 <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
