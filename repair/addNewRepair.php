@@ -363,9 +363,55 @@ require_once '../inc/header.php'; ?>
     p {
         font-weight: bold;
     }
+
+    #submitData.disabled {
+        background-color: gray;
+        cursor: not-allowed;
+        pointer-events: none;
+        opacity: 0.6;
+    }
 </style>
 
 <script>
+    // Event Listener for Checking Repair Name is already exists or not
+    $(document).ready(function() {
+        // Event listener for repair name input field
+        $('#productName').on('blur', function() {
+            var repairName = $(this).val();
+
+            // Check if the repair name is not empty
+            if (repairName !== "") {
+                $.ajax({
+                    url: 'checkRepairNameAlreadyexists.php', // PHP file for checking if the repair name exists
+                    method: 'POST',
+                    data: {
+                        repairName: repairName
+                    },
+                    success: function(response) {
+                        if (response === 'exists') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Repair Name Already Exists',
+                                text: 'A repair with this name already exists. Please choose a different name.',
+                            });
+                            $('#submitData').addClass('disabled'); // Add the disabled class to the div
+                        } else {
+                            $('#submitData').removeClass('disabled'); // Remove the disabled class from the div
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong with the AJAX request!',
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+
     // ====================== Submit All Data to Database for Create New Repair ======================
     // Get product name, rate, image, showInLandingPage, total cost, and profit
     document.getElementById("submitData").addEventListener("click", function() {
