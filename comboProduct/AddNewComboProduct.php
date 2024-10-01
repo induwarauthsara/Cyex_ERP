@@ -8,13 +8,12 @@ require_once '../inc/header.php'; ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
     <title>Add New Product</title>
 </head>
 
 <body>
     <h1>Add New Product</h1>
-    <form method="post" action="AddNewComboProduct-submit.php">
+    <form id="productForm" method="post" action="AddNewComboProduct-submit.php">
         <div class="container">
             <!-- Product Details Section  -->
             <div class="productDetails">
@@ -47,25 +46,50 @@ require_once '../inc/header.php'; ?>
             </div>
             <!-- Product Details Section End -->
             <script>
-                // Function to calculate and update final cost, profit, and display
-                function updateTotals() {
-                    // Get Product Rate
-                    var productRate = parseFloat(document.getElementById("productRate").value) || 0;
-                    document.getElementById("productRateDisplay").textContent = productRate.toFixed(2);
+                $(document).ready(function() {
+                    // Check product name when user leaves the product name input field
+                    $('#productName').on('blur', function() {
+                        var productName = $(this).val();
 
+                        // Check if the product name is not empty
+                        if (productName !== "") {
+                            $.ajax({
+                                url: 'checkProductNameAvailble.php', // This PHP file will check if the product name exists
+                                method: 'POST',
+                                data: {
+                                    productName: productName
+                                },
+                                success: function(response) {
+                                    if (response === 'exists') {
+                                        Swal.fire({
+                                            icon: 'warning',
+                                            title: 'Product Already Exists',
+                                            text: 'A product with this name already exists. Please use a different name.',
+                                        });
+                                        $('#submitData').prop('disabled', true); // Disable submit button
+                                    } else {
+                                        $('#submitData').prop('disabled', false); // Enable submit button
+                                    }
+                                }
+                            });
+                        }
+                    });
 
-                    // Calculate final cost
-                    var ProductCost = parseFloat(document.getElementById("cost").value) || 0;
-                    var WorkerCommission = parseFloat(document.getElementById("Commission").value) || 0;
-                    var TotalCost = ProductCost + WorkerCommission;
-                    document.getElementById("finalCost").textContent = TotalCost.toFixed(2);
+                    // Function to calculate and update final cost, profit, and display
+                    function updateTotals() {
+                        var productRate = parseFloat(document.getElementById("productRate").value) || 0;
+                        document.getElementById("productRateDisplay").textContent = productRate.toFixed(2);
 
-                    // Calculate profit
-                    var profit = productRate - TotalCost;
-                    document.getElementById("profit").textContent = profit.toFixed(2);
-                }
+                        var ProductCost = parseFloat(document.getElementById("cost").value) || 0;
+                        var WorkerCommission = parseFloat(document.getElementById("Commission").value) || 0;
+                        var TotalCost = ProductCost + WorkerCommission;
+                        document.getElementById("finalCost").textContent = TotalCost.toFixed(2);
+
+                        var profit = productRate - TotalCost;
+                        document.getElementById("profit").textContent = profit.toFixed(2);
+                    }
+                });
             </script>
-
         </div>
         <div id="totals">
             <p>Product Selling Price : &nbsp<span id="productRateDisplay" class="Rate">0.00</span></p>
@@ -83,6 +107,18 @@ require_once '../inc/header.php'; ?>
     background: #000;
     color: white;
     } */
+
+    #submitData:disabled {
+        background-color: #cccccc;
+        /* Set a gray background color for the disabled button */
+        color: #666666;
+        /* Optional: Change text color to indicate it's disabled */
+        border: 1px solid #999999;
+        /* Optional: Set a border for the disabled button */
+        cursor: not-allowed;
+        /* Show a not-allowed cursor when hovering over the disabled button */
+    }
+
 
     h1 {
         text-align: center;
