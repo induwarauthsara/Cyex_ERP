@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
     // Insert product data into product table
-    $productQuery = "INSERT INTO products (product_name, rate, cost, profit, stock_qty, has_stock, stock_alert_limit, worker_commision) 
+    $productQuery = "INSERT IGNORE INTO products (product_name, rate, cost, profit, stock_qty, has_stock, stock_alert_limit, worker_commision) 
                      VALUES ('$productName', '$productRate', '$productCost', '$profit','$stock_qty', '$has_stock', '$lowStockAlertLimit', '$workerCommission')";
     // echo $productQuery;
     insert_query($productQuery, "Add New Combo Product : $productName", "Add Combo Product");
