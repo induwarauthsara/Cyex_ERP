@@ -6,8 +6,8 @@
             echo "<thead>";
             echo "<tr>";
             echo "<th>Invoice No</th>";
+            echo "<th>Type</th>";
             echo "<th>Date</th>";
-
             echo "<th>Customer Name</th>";
             echo "<th>Tele</th>";
             echo "<th>Time</th>";
@@ -29,6 +29,7 @@
             while ($row = mysqli_fetch_array($result)) {
                 $invoice_date = $row['invoice_date'];
                 $invoice_number = $row['invoice_number'];
+                $invoice_type = $row['invoice_type'];
                 $customer_name = $row['customer_name'];
                 $customer_mobile = $row['customer_mobile'];
                 $time = $row['time'];
@@ -44,6 +45,7 @@
                 $paymentMethod = $row['paymentMethod'];
                 echo "<tr>";
                 echo "<td>" . $invoice_number . "</td>";
+                echo "<td>" . $invoice_type . "</td>";
                 echo "<td>" . $invoice_date . "</td>";
                 echo "<td>" . $customer_name . "</td>";
                 echo "<td>" . $customer_mobile . "</td>";
