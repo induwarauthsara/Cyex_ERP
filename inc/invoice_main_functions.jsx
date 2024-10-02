@@ -267,7 +267,7 @@ function addRepair() {
 
         // Fetch cost, commission, and selling price using AJAX
         $.ajax({
-            url: "./get_repair_data.php",
+            url: "/repair/get_repair_data.php",
             method: "POST",
             data: { product: product_name },
             dataType: "json",
