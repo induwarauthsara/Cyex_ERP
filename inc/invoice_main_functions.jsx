@@ -158,6 +158,185 @@ function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, o
     document.getElementById('addproduct').value = "";
 }
 
+function addRepair() {
+    const product_list = document.getElementById('list');
+    const disc_list = document.getElementById('Disc');
+    const worker_list = document.getElementById('emoloyee_list'); // Ensure correct spelling in the HTML
+    const qty_list = document.getElementById('qty');
+    const rate_list = document.getElementById('rate');
+    const amount_list = document.getElementById('amount_list');
+    const remove_button_list = document.getElementById('remove_button_list');
+
+    let product_name = document.getElementById('addproduct').value;
+
+    function add_row(no) {
+
+        // Check this product available in #products datalist
+        var dataList = document.getElementById('products');
+        var options = dataList.getElementsByTagName('option');
+        var productList = [];
+
+        for (var i = 0; i < options.length; i++) {
+            productList.push(options[i].value);
+        }
+
+        var available = productList.includes(product_name);
+
+        if (!available) {
+            // show error
+            Swal.fire({
+                icon: 'error',
+                title: 'Repair Not Found',
+                text: 'This Repair Item not Found.'
+            });
+            // Stop programme
+            return
+        }
+
+        // Create Repair Name in row
+        let product = document.createElement("input");
+        product.value = product_name;
+        product.id = "product_" + no;
+        product.className = `${no} bill-row-gap`;
+        product.setAttribute("list", "products");
+        product.setAttribute("name", product.id);
+        product.setAttribute("onchange", "change('product', className, id)");
+        product.setAttribute("readonly", "readonly");
+
+        // Create a Cost in row
+        let qty = document.createElement("input");
+        qty.id = "qty_" + no;
+        qty.className = `${no} bill-row-gap`;
+        qty.type = "number";
+        qty.setAttribute("oninput", "change('qty', className, id)");
+        qty.setAttribute("step", "any")
+        qty.setAttribute("name", qty.id);
+
+        // Create a select input for Employee Name
+        let worker = document.createElement("select");
+        worker.id = "worker_" + no;
+        worker.className = no;
+        worker.setAttribute("name", worker.id);
+
+        // Fetch and populate employee list via AJAX
+        $.ajax({
+            url: "../inc/get_employees.php",
+            method: "POST",
+            dataType: "json",
+            cache: false,
+            success: function (response) {
+                if (response.success) {
+                    response.employees.forEach(employee => {
+                        let option = document.createElement('option');
+                        option.value = employee;
+                        option.text = employee;
+                        worker.appendChild(option);
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Employee Fetch Error',
+                        text: 'Failed to fetch employee data. Please try again.'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Request Error',
+                    text: 'Unable to retrieve employee data from the server.'
+                });
+            }
+        });
+
+        // Create a Commission input for the selected employee
+        let rate = document.createElement("input");
+        rate.id = "rate_" + no;
+        rate.className = `${no} bill-row-gap-commission`;
+        rate.type = "number";
+        rate.setAttribute("oninput", "change('rate', className, id)");
+        rate.setAttribute("step", "any")
+        rate.setAttribute("name", rate.id);
+
+        // Create a Selling Price in row
+        let amount = document.createElement("input");
+        amount.id = "amount_" + no;
+        amount.className = `${no} bill-row-gap`;
+        amount.setAttribute("oninput", "change('amount', className, id)");
+        amount.setAttribute("name", amount.id);
+
+        // Fetch cost, commission, and selling price using AJAX
+        $.ajax({
+            url: "./get_repair_data.php",
+            method: "POST",
+            data: { product: product_name },
+            dataType: "json",
+            cache: false,
+            success: function (response) {
+                if (response.success) {
+                    qty.value = Number(response.cost).toFixed(2); // Set cost
+                    rate.value = Number(response.commission).toFixed(2); // Set employee commission
+                    amount.value = Number(response.selling_price).toFixed(2); // Set selling price
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Fetch Error',
+                        text: 'Failed to fetch product data. Please try again.'
+                    });
+                }
+                add_total(no + 1); // Recalculate total after data is fetched
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Request Error',
+                    text: 'Unable to retrieve data from the server.'
+                });
+            }
+        });
+
+        // Create a Close Button in row
+        let x = document.createElement("button");
+        x.id = "_" + no;
+        x.className = "x"
+        x.innerText = "[x]"
+        x.setAttribute("onclick", 'remove_row(id, className);');
+
+        // Append elements to the respective lists
+        // Create a function to generate the new row gap
+        // function createNewRowGap() {
+        //     globalThis.no = no; // Set the global 'no' variable to the current 'no' value
+        //     let gapDiv = document.createElement("div");
+        //     gapDiv.id = "gapDiv_" + no; // Set the ID based on the 'no' variable
+        //     gapDiv.innerHTML = "<br><br>"; // Add the innerHTML content
+        //     return gapDiv;
+        // }
+
+
+        // Append elements to the respective lists
+        product_list.appendChild(product);
+        // product_list.appendChild(createNewRowGap()); // Create a new row gap for each append
+        qty_list.appendChild(qty);
+        // qty_list.appendChild(createNewRowGap()); // New row gap for quantity list
+        rate_list.appendChild(worker);
+        rate_list.appendChild(rate);
+        // rate_list.appendChild(document.createElement("br"));
+        amount_list.appendChild(amount);
+        // amount_list.appendChild(createNewRowGap());
+        remove_button_list.appendChild(x);
+        // amount_list.appendChild(createNewRowGap()); // New row gap for amount list
+    }
+
+    // Adding the row
+    add_row(no);
+    document.getElementById('no').value = no;
+    no++;
+    add_total(no);
+
+    // Clear Product Input field
+    document.getElementById('addproduct').value = "";
+}
+
 function change(row, cls, id) {
 
     var changed_desc = document.getElementById("product_" + cls).value;
@@ -240,11 +419,12 @@ function remove_row(number, className) {
     let product_remove = document.getElementById("product" + number);
     let qty_remove = document.getElementById("qty" + number);
     let rate_remove = document.getElementById("rate" + number);
+    let worker_remove = document.getElementById("worker" + number);
     let amount_remove = document.getElementById("amount" + number);
     let x_remove = document.getElementById(number);
 
     // Remove Row
-    let remove = [product_remove, qty_remove, rate_remove, amount_remove, x_remove]
+    let remove = [product_remove, qty_remove, rate_remove, worker_remove, amount_remove, x_remove]
 
     // Check Saved Sales Record Id is available
     if (document.getElementById("rowID" + number)) {

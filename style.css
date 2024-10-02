@@ -128,12 +128,25 @@ hr {
     line-height: 2rem;
 }
 
+.bill-row-gap-commission {
+    margin-bottom: 20px !important;
+}
+
+.bill-row-gap {
+    margin-bottom: 49px !important;
+}
+
 .bill .container .tabel {
     border: 1px solid black;
     padding: 5px;
 }
 
-.bill .container .tabel input {
+.bill .container .tabel select {
+    padding: 0 !important;
+}
+
+.bill .container .tabel input,
+.bill .container .tabel select {
     width: 100%;
     display: block;
     height: 1.5rem;
@@ -272,7 +285,7 @@ hr {
     color: red;
     border: none;
     height: 1.5rem;
-    margin: 5px 2px 0px -2px;
+    margin: 5px 2px 49px -2px;
 }
 
 .bill .container .Discount {
