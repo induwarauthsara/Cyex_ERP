@@ -46,7 +46,7 @@ document.querySelector('#add_raw_item').addEventListener('click', function() {
 
                     const newRow = `<tr>
                         <td>${itemName}</td>
-                        <td>${itemQty}</td>
+                        <td>1</td>
                         <td>${parseFloat(itemPrice).toFixed(2)}</td>
                         <td><button class='deleteRawItem'>X</button></td>
                     </tr>`;
