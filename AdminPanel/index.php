@@ -22,7 +22,7 @@ include 'nav.php';
         echo "Database Query Failed. Contact Developer";
     }
     ?>
-    
+
     <!-- One-Time-Products -->
     <?php
     $sql = "SELECT COUNT(*) FROM `oneTimeProducts_sales` WHERE `status` = 'uncleared';";
@@ -78,23 +78,26 @@ include 'nav.php';
             <h2> <?php
                     // Get each Item Full Cost (Cost x qty)
                     $item_capital = array();
+                    // Product Capital
                     $sql = "SELECT * FROM products";
                     $result = mysqli_query($con, $sql);
-                    if ($result) {
-                        // qury success
-                        if (mysqli_num_rows($result) > 0) {
-                            while ($item_capital_sql = mysqli_fetch_array($result)) {
-                                $item_cost = $item_capital_sql['cost'] ?? 0;
-                                $item_qty = $item_capital_sql['stock_qty'] ?? 0;
-                                $item_fullcost = $item_cost * $item_qty;
-                                // echo $item_fullcost;
-                                array_push($item_capital, $item_fullcost);
-                            }
-                        } else {
-                            echo "No any Item";
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        while ($item_capital_sql = mysqli_fetch_array($result)) {
+                            $item_capital[] = ($item_capital_sql['cost'] ?? 0) * ($item_capital_sql['stock_qty'] ?? 0);
                         }
                     } else {
-                        echo "Database Query Failed";
+                        echo $result ? "No any Item" : "Database Query Failed";
+                    }
+
+                    // Repair Stock Capital
+                    $sql = "SELECT * FROM repair_stock";
+                    $result = mysqli_query($con, $sql);
+                    if ($result && mysqli_num_rows($result) > 0) {
+                        while ($item_capital_sql = mysqli_fetch_array($result)) {
+                            $item_capital[] = ($item_capital_sql['stock_qty'] ?? 0) * ($item_capital_sql['stock_cost'] ?? 0);
+                        }
+                    } else {
+                        echo $result ? "No any Item" : "Database Query Failed";
                     }
 
                     $capital_currency = array_sum($item_capital);
