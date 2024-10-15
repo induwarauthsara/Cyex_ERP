@@ -128,7 +128,7 @@ include 'nav.php';
                     ?></h2>
         </div>
     </div>
-    <a href="/AdminPanel/hrm/index.php">
+    <!-- <a href="/AdminPanel/hrm/index.php">
         <div class="card">
             <i class="fas fa-user-friends"></i>
             <div class="info">
@@ -140,7 +140,7 @@ include 'nav.php';
                         ?></h2>
             </div>
         </div>
-    </a>
+    </a> -->
     <div class="card">
         <i class="fas fa-right-to-bracket"></i>
         <div class="info">
