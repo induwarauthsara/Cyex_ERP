@@ -255,6 +255,7 @@ function addRepair() {
         rate.className = `${no} bill-row-gap-commission`;
         rate.type = "number";
         rate.setAttribute("oninput", "change('rate', className, id)");
+        rate.setAttribute("oninput", "change_endline()");
         rate.setAttribute("step", "any")
         rate.setAttribute("name", rate.id);
 
@@ -263,6 +264,7 @@ function addRepair() {
         amount.id = "amount_" + no;
         amount.className = `${no} bill-row-gap`;
         amount.setAttribute("oninput", "change('amount', className, id)");
+        amount.setAttribute("oninput", "change_endline()");
         amount.setAttribute("name", amount.id);
 
         // Fetch cost, commission, and selling price using AJAX
@@ -339,7 +341,7 @@ function addRepair() {
 
 function change(row, cls, id) {
 
-    var changed_desc = document.getElementById("product_" + cls).value;
+    // var changed_desc = document.getElementById("product_" + cls).value;
     var changed_qty = document.getElementById("qty_" + cls).value;
     var changed_rate = document.getElementById("rate_" + cls).value;
     var changed_amount = document.getElementById("amount_" + cls).value;
