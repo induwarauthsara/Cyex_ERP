@@ -7,7 +7,8 @@ if (isset($_POST['employee_id']) && isset($_POST['amount'])) {
 
     // 1. Add Record to Salary Table
     // 2. Update Employee Salary
-    // 3. Fall Money in Cash in Hand
+    // 3. Fall Money in Relevant Account
+    // 4. Add Transaction Log
 
     // 1. Add Record to Salary Table
     $description = "Salary Paid";
@@ -19,6 +20,11 @@ if (isset($_POST['employee_id']) && isset($_POST['amount'])) {
     insert_query($sql, "Employee ID: $employee_id, Rs. $amount", "Salary Paid - Update Employee Table");
 
     // 3. Fall Money in Cash in Hand
-    $sql = "UPDATE accounts SET amount = amount - '$amount' WHERE account_name = 'cash_in_hand'";
-    insert_query($sql, "Employee ID: $employee_id, Rs. $amount", "Salary Paid - Update Cash in Hand");
+    $sql = "UPDATE accounts SET amount = amount - '$amount' WHERE account_name = '$account'";
+    insert_query($sql, "Employee ID: $employee_id, Rs. $amount from $account table", "Salary Paid from $account table");
+
+    // 4. Add Transaction Log
+    $action = "Salary Payment";
+    $msg = "Salary Pay to Employee ID: $employee_id, Rs. $amount from $account table";
+    transaction_log($action, $msg, -$amount);
 }
