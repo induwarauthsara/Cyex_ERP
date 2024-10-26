@@ -39,30 +39,30 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Invoices",
             icon: "fas fa-file-invoice-dollar"
         },
-        // "/AdminPanel/quotation.php": {
-        //     name: "Quotation",
-        //     icon: "fas fa-file-invoice"
-        // },
-        // "/AdminPanel/charts.php": {
-        //     name: "Charts",
-        //     icon: "fas fa-chart-pie"
-        // },
-        // "/AdminPanel/reports.php": {
-        //     name: "Reports",
-        //     icon: "fas fa-table-list"
-        // },
-        // "/AdminPanel/suppliers.php": {
-        //     name: "Suppliers",
-        //     icon: "fas fa-truck"
-        // },
-        // "/AdminPanel/due_payments.php": {
-        //     name: "Due Payments",
-        //     icon: "fas fa-credit-card"
-        // },
-        // "/AdminPanel/utility_payments.php": {
-        //     name: "Utility Payments",
-        //     icon: "fas fa-file-invoice"
-        // },
+        "/AdminPanel/quotation.php": {
+            name: "Quotation",
+            icon: "fas fa-file-invoice"
+        },
+        "/AdminPanel/charts.php": {
+            name: "Charts",
+            icon: "fas fa-chart-pie"
+        },
+        "/AdminPanel/reports/index.php": {
+            name: "Reports",
+            icon: "fas fa-table-list"
+        },
+        "/AdminPanel/suppliers.php": {
+            name: "Suppliers",
+            icon: "fas fa-truck"
+        },
+        "/AdminPanel/due_payments.php": {
+            name: "Due Payments",
+            icon: "fas fa-credit-card"
+        },
+        "/AdminPanel/utility_payments.php": {
+            name: "Utility Payments",
+            icon: "fas fa-file-invoice"
+        },
         "/AdminPanel/one_time_products.php": {
             name: "Services",
             icon: "fas fa-tools"
