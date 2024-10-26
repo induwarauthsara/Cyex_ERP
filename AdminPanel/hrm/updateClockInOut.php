@@ -26,8 +26,6 @@ if (
     }
     // echo $sql;
     insert_query($sql, "Employee Name : $employee_name , Action : $action by ACP ($admin_name)", "Attendance Updated in Employee Profile");
-<<<<<<< HEAD
-=======
 
     // Pay Day Salary When Clock Out
     if ($action == 'Clock Out') {
@@ -131,7 +129,6 @@ if (
             }
         }
     }
->>>>>>> ec67b91 ([All] Bug Fix - Comment out number_format() for pay_amount to prevent data truncation in SQL insert)
 } else {
     echo 'Error2';
 }
