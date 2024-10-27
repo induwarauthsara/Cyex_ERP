@@ -4,9 +4,9 @@
 // $db_pwd = '';
 // $db_name = 'srijaya';
 $server = '68.183.191.157';
-$db_user = 'ifix';
-$db_pwd = 'ifix_DP_PW@123';
-$db_name = 'ifix';
+$db_user = 'globalmart_user';
+$db_pwd = 'globalmart@1011';
+$db_name = 'globalMartERP';
 
 // $server = 'morgana.webserverlive.com';
 // $db_user = 'srijayal_ifix';
@@ -29,9 +29,9 @@ function end_db_con()
 ?>
 <?php
 
-$ERP_COMPANY_NAME = "iFix Mobile";
-$ERP_COMPANY_ADDRESS = "GF19, Megacity, Athurugiriya.";
-$ERP_COMPANY_PHONE = "071 836 6077";
+$ERP_COMPANY_NAME = "Global Mart";
+$ERP_COMPANY_ADDRESS = "(Address Here)";
+$ERP_COMPANY_PHONE = "(Phone Number Here)";
 // Start Session if not started
 if (session_status() === PHP_SESSION_ACTIVE) {
     //echo "Session Active";
