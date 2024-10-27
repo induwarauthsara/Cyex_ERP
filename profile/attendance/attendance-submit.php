@@ -40,16 +40,6 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
         $today = date('Y-m-d'); //for production
         // $today = '2024-08-06'; // for debugging
 
-<<<<<<< HEAD
-        // Get the employee's clock in time
-        $sql = "SELECT date, time FROM attendance WHERE employee_id = '$employee_id' AND date = '$today' AND action = 'Clock In' ORDER BY id DESC LIMIT 1;";
-        // echo $sql;
-        $result = mysqli_query($con, $sql);
-        if ($result) {
-            $row_count = mysqli_num_rows($result);
-            if ($row_count == 0) {
-                die('Error: No Clock In Record Found');
-=======
             // Today
             $today = date('Y-m-d'); //for production
             // $today = '2024-08-06'; // for debugging
@@ -134,7 +124,6 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
                 // Fall Day Salary From Company Profit
                 $sql = "UPDATE accounts SET amount = amount - '{$DaySalary}' WHERE account_name = 'Company Profit'";
                 insert_query($sql, "Fall $employee_name's Day Salary from Company Profit : Rs. $company_profit", "Fall Employee Day Salary from Company Profit Account");                
->>>>>>> f4d0d81 ([All] Bug Fix - Comment out number_format() for pay_amount to prevent data truncation in SQL insert)
             }
             $row = mysqli_fetch_assoc($result);
             $last_clock_in_time = $row['time'];
@@ -200,7 +189,7 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) || $_GET['action']
             echo "Error: Working Hours More Than $WorkingDayMaxHours Hours";  // for debugging
         } else {
             echo 'Error: Unknown Error'; // for debugging
-        }    }
+        }    
      }
 } else {
     echo 'Error2';
