@@ -1,3 +1,9 @@
+// Function to check Local Storage and set customer data on page load
+$(document).ready(function() {
+    $('#name').val(localStorage.getItem('customerName') || '');
+    $('#tele').val(localStorage.getItem('customerPhone') || '');
+});
+
 $(document).on('keydown', function(event) {
     if (event.key === "+") {
         event.preventDefault(); // Prevent the default behavior of typing "+"
@@ -156,6 +162,10 @@ function searchCustomer() {
     function selectCustomer(customer) {
         $('#name').val(customer.name);
         $('#tele').val(customer.phone);
+
+        // Save or update customer data in Local Storage
+        localStorage.setItem('customerName', customer.name);
+        localStorage.setItem('customerPhone', customer.phone);
     }
 
     // Function to handle adding a new customer with JSON response handling
