@@ -5,19 +5,18 @@ $(document).on('keydown', function(event) {
     }
 });
 
-
 function searchCustomer() {
     Swal.fire({
         title: 'Select Customer',
         html: `
-                <label for="swal-customer-phone">Customer Phone Number :</label>
-                <input id="swal-customer-phone" class="swal2-input" autofocus autocomplete="off" maxlength="10">
-                <label for="swal-customer-name">Customer Name:</label>
-                <input id="swal-customer-name" class="swal2-input" autocomplete="off">
-                <div div id = "customerContainer"
-                class = "w-100 position-absolute text-white overflow-auto"
-                style = "max-height: 200px; background: #fff; border-radius: 3px; display: none; max-height: 400px; background: #fff; overflow-y: auto; width:100%; z-index:1000;"></div>
-            `,
+            <label for="swal-customer-phone">Customer Phone Number :</label>
+            <input id="swal-customer-phone" class="swal2-input" autofocus autocomplete="off" maxlength="10">
+            <label for="swal-customer-name">Customer Name:</label>
+            <input id="swal-customer-name" class="swal2-input" autocomplete="off">
+            <div id="customerContainer"
+                 class="w-100 position-absolute text-white overflow-auto"
+                 style="max-height: 400px; background: #fff; border-radius: 3px; display: none; overflow-y: auto; width:100%; z-index:1000;"></div>
+        `,
         focusConfirm: false,
         showConfirmButton: false,
         showCancelButton: false,
@@ -39,8 +38,17 @@ function searchCustomer() {
 
     let highlightedIndex = -1;
 
-    // Handle input event on phone and name fields
-    $('#swal-customer-phone, #swal-customer-name').on('input', function() {
+    // Debounce function to limit the rate of AJAX calls
+    function debounce(func, delay) {
+        let timer;
+        return function(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    // Handle input event on phone and name fields with debounce
+    const debouncedSearch = debounce(function() {
         const phone = $('#swal-customer-phone').val();
         const name = $('#swal-customer-name').val();
 
@@ -49,7 +57,7 @@ function searchCustomer() {
             $('#swal-customer-name').focus();
         }
 
-        // Trigger AJAX search on any input change
+        // Trigger AJAX search with debounced function
         $.ajax({
             url: '/inc/search_customers.php',
             type: 'GET',
@@ -87,7 +95,10 @@ function searchCustomer() {
                 highlightedIndex = -1; // Reset highlight index
             }
         });
-    });
+    }, 600); // 500ms debounce delay
+
+    // Attach the debounced function to the input event
+    $('#swal-customer-phone, #swal-customer-name').on('input', debouncedSearch);
 
     // Handle keyboard navigation and selection
     $('#swal-customer-phone, #swal-customer-name').on('keydown', function(e) {
@@ -160,14 +171,35 @@ function searchCustomer() {
                 if (response.status === 'success') {
                     $('#name').val(response.customer.name);
                     $('#tele').val(response.customer.phone);
-                    Swal.fire('New Customer Added', response.message, 'success');
+                    showNotification(response.message, 'success'); // Show success notification
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    showNotification(response.message, 'error'); // Show error notification
                 }
             },
             error: function() {
-                Swal.fire('Error', 'There was an issue adding the new customer.', 'error');
+                showNotification('There was an issue adding the new customer.', 'error'); // Show error notification
             }
         });
     }
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.classList.add('notification', type);
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Fade-in effect
+    setTimeout(() => {
+        notification.style.opacity = 1;
+        notification.style.transform = 'translateY(0)';
+    }, 10);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = 0;
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
