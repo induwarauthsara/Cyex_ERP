@@ -16,7 +16,6 @@
 
 <style>
     body {
-        font-family: Arial, sans-serif;
         background-color: #f5f5f5;
     }
 
@@ -37,6 +36,24 @@
         justify-content: space-between;
     }
 
+    .product-container {
+        display: flex;
+        gap: 10px;
+    }
+
+    .product-list .product-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .product-item input {
+        width: 60px;
+        padding: 5px;
+    }
+
     .modal {
         display: none;
         position: fixed;
@@ -49,22 +66,14 @@
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
     }
 
-    .modal.active {
-        display: block;
+    .shortcut-button {
+        margin-left: 10px;
     }
 
     #product-input {
         width: 100%;
         padding: 10px;
         font-size: 16px;
-    }
-
-    .product-list .product-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #ccc;
     }
 </style>
 
@@ -76,6 +85,7 @@
                 <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
                 <h2><?php echo $ERP_COMPANY_ADDRESS; ?><br><?php echo $ERP_COMPANY_PHONE; ?></h2>
             </div>
+            <button class="shortcut-button" onclick="showShortcuts()"><i class="fas fa-keyboard"></i> &nbsp; Shortcuts</button>
         </div>
         <hr>
         <div class="content">
@@ -89,8 +99,8 @@
                     </div>
                 </div>
                 <div class="product-container">
-                    <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off">
-                    <button id="add-product">Add Product</button>
+                    <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off" autofocus>
+                    <button id="add-product" style="display: none;">Add Product</button>
                 </div>
                 <div class="product-list" id="product-list"></div>
             </form>
@@ -99,13 +109,6 @@
             <button id="pay-btn">Pay</button>
             <button id="credit-btn">Credit</button>
         </div>
-    </div>
-
-    <!-- Modal for Batch Selection -->
-    <div class="modal" id="batch-modal">
-        <h3>Select Batch</h3>
-        <div id="batch-list"></div>
-        <button id="close-modal">Close</button>
     </div>
 
     <script>
@@ -141,6 +144,14 @@
                 $('#batch-modal').removeClass('active');
             });
         });
+
+        function showShortcuts() {
+            Swal.fire({
+                title: 'Keyboard Shortcuts',
+                html: `<p><strong>Insert:</strong> Focus on product input</p>`,
+                icon: 'info'
+            });
+        }
 
         function fetchProduct(product) {
             if (productsCache[product]) {
@@ -181,18 +192,84 @@
         }
 
         function displayBatchModal(product, batches) {
-            let batchList = batches.map(batch => `
-                <div class="batch-item">
-                    <span>Batch: ${batch.batch_number}</span>
-                    <span>Price: ${batch.selling_price}</span>
-                    <span>Expiry: ${batch.expiry_date || 'N/A'}</span>
-                    <span>Quantity: ${batch.batch_quantity}</span>
-                    <button class="select-batch" data-product='${JSON.stringify(product)}' data-batch='${JSON.stringify(batch)}'>Select</button>
-                </div>
-            `).join('');
-            $('#batch-list').html(batchList);
-            $('#batch-modal').addClass('active');
+            let batchList = `
+        <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
+            <thead>
+                <tr style="background-color: #f5f5f5; border: 2px solid #4800ff;">
+                    <th style="padding: 10px; border: 2px solid #4800ff;">Batch</th>
+                    <th style="padding: 10px; border: 2px solid #4800ff;">Price</th>
+                    <th style="padding: 10px; border: 2px solid #4800ff;">Expiry</th>
+                    <th style="padding: 10px; border: 2px solid #4800ff;">Quantity</th>
+                    <th style="padding: 10px; border: 2px solid #4800ff;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${batches.map(batch => `
+                    <tr style="border: 2px solid #4800ff;">
+                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.batch_number}</b></td>
+                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.selling_price}</b></td>
+                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.expiry_date || 'N/A'}</b></td>
+                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.batch_quantity}</b></td>
+                        <td style="padding: 10px; border: 2px solid #4800ff;">
+                            <button class="select-batch" data-product='${JSON.stringify(product)}' data-batch='${JSON.stringify(batch)}' style="margin-top: 10px;">Select</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+
+            Swal.fire({
+                title: 'Select Batch',
+                html: batchList,
+                showConfirmButton: false,
+                didOpen: () => {
+                    let previouslyFocusedRow = null;
+
+                    // Attach event listeners to each Select button after modal opens
+                    const selectButtons = document.querySelectorAll('.select-batch');
+
+                    // If there are any batch items, style the first one
+                    if (selectButtons.length > 0) {
+                        const firstRow = selectButtons[0].closest('tr');
+                        firstRow.style.background = '#0087ff54';
+                        firstRow.style.color = 'black';
+                        previouslyFocusedRow = firstRow;
+                    }
+
+                    selectButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            // Close the modal
+                            Swal.close();
+                        });
+
+                        button.addEventListener('focus', () => {
+                            const currentRow = button.closest('tr');
+
+                            // Reset the style of the previously focused row
+                            if (previouslyFocusedRow) {
+                                previouslyFocusedRow.style.background = '';
+                                previouslyFocusedRow.style.color = '';
+                            }
+
+                            // Apply new styles to the currently focused button's row
+                            currentRow.style.background = '#0087ff54';
+                            currentRow.style.color = 'black';
+
+                            // Update the reference to the currently focused row
+                            previouslyFocusedRow = currentRow;
+                        });
+
+                        // Optional: Reset the style on blur if needed
+                        button.addEventListener('blur', () => {
+                            button.closest('tr').style.background = '';
+                            button.closest('tr').style.color = '';
+                        });
+                    });
+                }
+            });
         }
+
 
         function addToCart(product, batch = null) {
             let existingProduct = productList.find(p =>
@@ -221,16 +298,30 @@
         function renderProductList() {
             $('#product-list').empty();
             productList.forEach((product, index) => {
-                $('#product-list').append(`
-                    <div class="product-item">
+                $('#product-list').append(
+                    `<div class="product-item">
                         <span>${product.name}</span>
-                        <span>Qty: ${product.quantity}</span>
-                        <span>Price: ${product.price}</span>
-                        <span>Subtotal: ${product.subtotal}</span>
-                        <button class="remove-product" onclick="removeProduct(${index})">Remove</button>
-                    </div>
-                `);
+                        <input type="number" min="1" value="${product.quantity}" onchange="updateQuantity(${index}, this.value)">
+                        <input type="number" step="0.01" min="0" value="${product.price}" onchange="updatePrice(${index}, this.value)">
+                        <span>Subtotal: Rs.${(product.quantity * product.price).toFixed(2)}</span>
+                        <button class="remove-product" onclick="removeProduct(${index})"><i class="fas fa-trash-alt"></i></button>
+                    </div>`
+                );
             });
+        }
+
+        function updateQuantity(index, value) {
+            productList[index].quantity = parseInt(value);
+            productList[index].subtotal = productList[index].quantity * productList[index].price;
+            localStorage.setItem('productList', JSON.stringify(productList));
+            renderProductList();
+        }
+
+        function updatePrice(index, value) {
+            productList[index].price = parseFloat(value);
+            productList[index].subtotal = productList[index].quantity * productList[index].price;
+            localStorage.setItem('productList', JSON.stringify(productList));
+            renderProductList();
         }
 
         function removeProduct(index) {
