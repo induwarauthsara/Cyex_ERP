@@ -404,7 +404,7 @@ button:focus,
 .radio:focus,
 .checkbox:focus {
     outline: none;
-    border: 3px solid #007bff;
+    border: 2px solid #007bff;
     box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
     background-color: #e6f0ff;
     transition: all 0.2s ease-in-out;
@@ -444,4 +444,71 @@ select:hover {
 
 button:hover {
     background-color: #0036e7;
+}
+
+.invoice-summary {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    margin-top: 10px;
+}
+
+.invoice-summary p {
+    margin: 5px 0;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+.button-group button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.view-held-invoices {
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+#discount-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.discount-options button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+
+/* Shortcut Key UI */
+
+kbd {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+    color: #292929;
+    background-color: #d98b8b;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    letter-spacing: 1;
+    margin-bottom: 5px;
 }
