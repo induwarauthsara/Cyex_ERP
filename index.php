@@ -102,7 +102,20 @@
                     <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off" autofocus>
                     <button id="add-product" style="display: none;">Add Product</button>
                 </div>
-                <div class="product-list" id="product-list"></div>
+                <div class="product-list" id="product-list">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5;">
+                                <th style="padding: 10px; border: 1px solid #ccc;">Product Name</th>
+                                <th style="padding: 10px; border: 1px solid #ccc;">Quantity</th>
+                                <th style="padding: 10px; border: 1px solid #ccc;">Price</th>
+                                <th style="padding: 10px; border: 1px solid #ccc;">Subtotal</th>
+                                <th style="padding: 10px; border: 1px solid #ccc;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body"></tbody>
+                    </table>
+                </div>
             </form>
         </div>
         <div class="button">
@@ -296,19 +309,27 @@
         }
 
         function renderProductList() {
-            $('#product-list').empty();
+            $('#product-table-body').empty(); // Clear existing rows
+
             productList.forEach((product, index) => {
-                $('#product-list').append(
-                    `<div class="product-item">
-                        <span>${product.name}</span>
-                        <input type="number" min="1" value="${product.quantity}" onchange="updateQuantity(${index}, this.value)">
-                        <input type="number" step="0.01" min="0" value="${product.price}" onchange="updatePrice(${index}, this.value)">
-                        <span>Subtotal: Rs.${(product.quantity * product.price).toFixed(2)}</span>
-                        <button class="remove-product" onclick="removeProduct(${index})"><i class="fas fa-trash-alt"></i></button>
-                    </div>`
+                $('#product-table-body').append(
+                    `<tr>
+                <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">
+                    <input type="number" min="1" value="${product.quantity}" onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
+                </td>
+                <td style="padding: 10px; border: 1px solid #ccc;">
+                    <input type="number" step="0.01" min="0" value="${product.price}" onchange="updatePrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                </td>
+                <td style="padding: 10px; border: 1px solid #ccc;">Rs.${(product.quantity * product.price).toFixed(2)}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">
+                    <button class="remove-product" onclick="removeProduct(${index})"> <i class="fas fa-trash-alt"></i> </button>
+                </td>
+            </tr>`
                 );
             });
         }
+
 
         function updateQuantity(index, value) {
             productList[index].quantity = parseInt(value);
