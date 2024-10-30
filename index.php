@@ -102,8 +102,9 @@
                     </div>
                 </div>
                 <div class="product-container">
-                    <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off" autofocus>
+                    <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off">
                     <button id="add-product" style="display: none;">Add Product</button>
+                    <div id="search-results" style="position: absolute; background-color: white; border: 1px solid #ccc; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; display: none; transform: translateY(40px);"> </div>
                 </div>
                 <div class="product-list" id="product-list">
                     <table style="width: 100%; border-collapse: collapse;">
@@ -142,6 +143,14 @@
         let discountType = localStorage.getItem('discountType') || 'flat'; // Load discount type from localStorage
         let discountValue = parseFloat(localStorage.getItem('discountValue')) || 0; // Load discount value from localStorage
 
+        // Debounce function to limit the rate of search requests
+        function debounce(func, delay) {
+            let debounceTimer;
+            return function(...args) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
 
         $(document).ready(function() {
             renderProductList();
@@ -156,6 +165,20 @@
                 $('#product-input').val('');
             });
 
+            // Keydown event for Enter on the barcode or product input field
+            $('#product-input').on('keydown', function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    let query = $(this).val().trim();
+                    if (query) {
+                        fetchProduct(query, true);
+                        // clear input field
+                        $('#product-input').val('');
+                    }
+                }
+            });
+
+            //Shortcut Key Listeners
             $(document).on('keydown', function(event) {
                 if (event.key === "Insert") {
                     $('#product-input').focus();
@@ -168,16 +191,34 @@
             // Apply discount from localStorage on load
             applyDiscount();
 
-            // $('#close-modal').click(function() {
-            //     $('#batch-modal').removeClass('active');
-            // });
+            // Trigger search with debouncing
+            $('#product-input').off('input').on('input', debounce(function() {
+                const query = $(this).val().trim();
+                // if search result has only one, fetch it
+                if (query.length > 0 && $('#search-results').find('.search-result-item').length === 1) {
+                    // fetch result product name                   
+                    let productData = $('.search-result-item').data('product');
+                    let productName = productData.product_name;
+                    fetchProduct(productName, true); // Fetch with product name to match the full data
+                }
 
-            // $(document).on('click', '.select-batch', function() {
-            //     let product = JSON.parse($(this).attr('data-product'));
-            //     let batch = JSON.parse($(this).attr('data-batch'));
-            //     addToCart(product, batch);
-            //     $('#batch-modal').removeClass('active');
-            // });
+                if (query.length > 0) {
+                    fetchProduct(query, false); // Pass false for regular typing
+                } else if (query.length === 0 || query === '') {
+                    $('#search-results').hide();
+                } else {
+                    // $('#search-results').hide();
+                    // show as no product found
+                    $('#search-results').html(`<div style="padding: 10px; border-bottom: 1px solid #ddd;">No product found</div>`).show();
+                }
+            }, 500));
+
+            // Hide search results on outside click
+            $(document).on('click', function(event) {
+                if (!$(event.target).closest('#product-input, #search-results').length) {
+                    $('#search-results').hide();
+                }
+            });
         });
 
         function showShortcuts() {
@@ -194,71 +235,137 @@
             });
         }
 
-        function fetchProduct(product) {
-            if (productsCache[product]) {
-                handleProductResponse(productsCache[product]);
+        function fetchProduct(query, selectFirstMatch = false) {
+            console.log('Fetching product for query:', query, 'selectFirstMatch', selectFirstMatch);
+            if (productsCache[query]) {
+                // If product is in cache, use it directly
+                handleProductResponse(productsCache[query], selectFirstMatch);
             } else {
+                // Make AJAX request to fetch product
                 $.ajax({
                     url: '/inc/fetch_product.php',
                     method: 'GET',
                     data: {
-                        search: product
+                        search: query
                     },
                     success: function(data) {
                         let response = typeof data === "object" ? data : JSON.parse(data);
-                        productsCache[product] = response;
+                        // Cache the response for future use
+                        productsCache[query] = response;
                         localStorage.setItem('productsCache', JSON.stringify(productsCache));
-                        handleProductResponse(response);
+                        // Handle the response to add product to cart or show batch modal
+                        handleProductResponse(response, selectFirstMatch);
                     },
-                    error: function(xhr) {
+                    error: function() {
                         alert("Failed to fetch product data.");
                     }
                 });
             }
         }
 
-        function handleProductResponse(response) {
+        // Fetch product based on search query
+        function handleProductResponse(response, selectFirstMatch) {
+            console.log('Handling product response:', response, 'selectFirstMatch', selectFirstMatch, "response : ", response);
             if (response.products.length === 1) {
                 let product = response.products[0];
                 if (response.batches.length === 1) {
+                    // Add single batch to cart directly if only one batch exists
                     addToCart(product, response.batches[0]);
                 } else if (response.batches.length > 1) {
+                    // Show modal for selecting batch if multiple batches exist
                     displayBatchModal(product, response.batches);
                 } else {
-                    addToCart(product);
+                    // show error
+                    Swal.fire({
+                        title: 'No batch found for this product',
+                        text: 'Add Batches for this Product',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 }
+                $('#search-results').hide();
+                $('#product-input').val('');
+            } else if (response.products.length > 1) {
+                // Show search results if multiple products match
+                displaySearchResults(response.products);
+            } else if (response.products.length === 0) {
+                // Show single product if only one product matches
+                $('#search-results').hide();
+                Swal.fire({
+                    title: 'No Product Found',
+                    text: 'Add This Product',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             } else {
-                alert("Multiple or no products found.");
+                $('#search-results').hide();
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error from handleProductResponse',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
+        }
+
+        // Display search results in dropdown
+        function displaySearchResults(products) {
+            let resultsHtml = products.map(product => `
+                <div class="search-result-item" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd;" data-product='${JSON.stringify(product)}'>
+                    ${product.product_name} - ${product.sku || ''} (${product.barcode || 'No Barcode'})
+                </div> `).join('');
+            $('#search-results').html(resultsHtml).show();
+        }
+
+        // Handle click on search result item
+        $(document).on('click', '.search-result-item', function() {
+            let product = JSON.parse($(this).attr('data-product'));
+            let productName = product.product_name;
+            fetchProduct(productName, true);
+            $('#search-results').hide();
+            $('#product-input').val('');
+        });
+
+        function formatNumber(input) {
+            // Convert the input to a number
+            let number = parseFloat(input);
+            // Check if the input is a valid number
+            if (isNaN(number)) {
+                // return "Invalid input";
+                return "0.00";
+            }
+            // Format the number with commas and two decimal places
+            return number.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
 
         function displayBatchModal(product, batches) {
             let batchList = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
-            <thead>
-                <tr style="background-color: #f5f5f5; border: 2px solid #4800ff;">
-                    <th style="padding: 10px; border: 2px solid #4800ff;">Batch</th>
-                    <th style="padding: 10px; border: 2px solid #4800ff;">Price</th>
-                    <th style="padding: 10px; border: 2px solid #4800ff;">Expiry</th>
-                    <th style="padding: 10px; border: 2px solid #4800ff;">Quantity</th>
-                    <th style="padding: 10px; border: 2px solid #4800ff;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${batches.map(batch => `
-                    <tr style="border: 2px solid #4800ff;">
-                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.batch_number}</b></td>
-                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.selling_price}</b></td>
-                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.expiry_date || 'N/A'}</b></td>
-                        <td style="padding: 10px; border: 2px solid #4800ff;"><b>${batch.batch_quantity}</b></td>
-                        <td style="padding: 10px; border: 2px solid #4800ff;">
-                            <button class="select-batch" data-product='${JSON.stringify(product)}' data-batch='${JSON.stringify(batch)}' style="margin-top: 10px;">Select</button>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
+            <h3>${product.product_name} - ${product.sku || ''} (${product.barcode || 'No Barcode'})</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5;">
+                                <th>Batch</th>
+                                <th>Price</th>
+                                <th>Expiry</th>
+                                <th>Quantity</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${batches.map(batch => `
+                                <tr>
+                                    <td>${batch.batch_number}</td>
+                                    <td>${batch.selling_price}</td>
+                                    <td>${batch.expiry_date || 'N/A'}</td>
+                                    <td>${batch.batch_quantity}</td>
+                                    <td><button class="select-batch" data-product='${JSON.stringify(product)}' data-batch='${JSON.stringify(batch)}'>Select</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>`;
 
             Swal.fire({
                 title: 'Select Batch',
@@ -311,32 +418,55 @@
             });
         }
 
+        // Attach click event handler outside the displayBatchModal function
+        $(document).off('click', '.select-batch').on('click', '.select-batch', function() {
+            let product = JSON.parse($(this).attr('data-product'));
+            let batch = JSON.parse($(this).attr('data-batch'));
 
-        function addToCart(product, batch = null) {
-            let existingProduct = productList.find(p =>
-                p.product_id === product.product_id &&
-                (!batch || p.batch_id === batch.batch_id)
-            );
+            addToCart(product, batch); // Add selected batch to cart with correct product name
+            Swal.close();
+        });
 
-            if (existingProduct) {
-                existingProduct.quantity++;
-                existingProduct.subtotal = existingProduct.quantity * existingProduct.price;
+
+        // Add product to cart with batch details
+        function addToCart(product, batch) {
+            // Check if product and batch exist in the product list by batch ID
+            let existingBatch = productList.find(p => p.product_id === batch.product_id && p.batch_id === batch.batch_id);
+
+            let productIndex; // Store the index of the product to focus on later
+            if (existingBatch) {
+                // Increment the quantity if the batch already exists in the cart
+                existingBatch.quantity++;
+                existingBatch.subtotal = existingBatch.quantity * existingBatch.price;
+                productIndex = productList.indexOf(existingBatch); // Get index of the existing product in the list
             } else {
+                // Add new entry if batch doesn't exist in cart
                 productList.push({
-                    product_id: product.product_id,
-                    batch_id: batch ? batch.batch_id : null,
-                    name: product.product_name,
-                    price: batch ? batch.selling_price : product.rate,
-                    quantity: 1,
+                    product_id: batch.product_id,
+                    batch_id: batch.batch_id,
+                    name: batch.product_name || product.product_name, // Use batch name if available, fallback to product name
+                    price: batch.selling_price,
+                    quantity: 1, // Initialize with a quantity of 1
                     discount: 0,
-                    subtotal: batch ? batch.selling_price : product.rate
+                    subtotal: batch.selling_price // Set initial subtotal
                 });
+                productIndex = productList.length - 1; // New product is at the last index
             }
+
+            // Update local storage and re-render
             localStorage.setItem('productList', JSON.stringify(productList));
             renderProductList();
             calculateInvoiceTotal();
+
+            // Focus on the quantity input field of the added/updated product
+            setTimeout(() => {
+                const quantityInput = $(`#quantity-${productIndex}`);
+                quantityInput.focus();
+                quantityInput.select(); // Automatically selects the quantity number for easy replacement   
+            }, 400); // Short delay to ensure rendering completes before focusing
         }
 
+        // Render product list in cart
         function renderProductList() {
             $('#product-table-body').empty(); // Clear existing rows
 
@@ -345,12 +475,14 @@
                     `<tr>
                 <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
                 <td style="padding: 10px; border: 1px solid #ccc;">
-                    <input type="text" min="1" value="${product.quantity}" onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
+                    <input id="quantity-${index}" type="text" min="1" value="${product.quantity}" 
+                        onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
                 </td>
                 <td style="padding: 10px; border: 1px solid #ccc;">
-                    <input type="number" step="0.01" min="0" value="${product.price}" onchange="updatePrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                    <input type="number" step="0.01" min="0" value="${product.price}" 
+                        onchange="updatePrice(${index}, this.value)" style="width: 80px; padding: 5px;">
                 </td>
-                <td style="padding: 10px; border: 1px solid #ccc;">Rs.${(product.quantity * product.price).toFixed(2)}</td>
+                <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.price).toFixed(2))}</td>
                 <td style="padding: 10px; border: 1px solid #ccc;">
                     <button class="remove-product" onclick="removeProduct(${index})"> <i class="fas fa-trash-alt"></i> </button>
                 </td>
@@ -445,26 +577,14 @@
         }
 
         function calculateInvoiceTotal() {
-            // Calculate the subtotal of all products without any discount
             let totalWithoutDiscount = productList.reduce((acc, product) => acc + product.quantity * product.price, 0);
-
-            // Calculate the discount amount based on the selected discount type (flat or percentage)
             let discount = discountType === 'percentage' ? (totalWithoutDiscount * discountValue / 100) : discountValue;
             let totalAfterDiscount = totalWithoutDiscount - discount;
-
-            // Update the UI elements with the calculated values
-            $('#product-count').text(productList.length); // Number of unique products
-            $('#item-count').text(productList.reduce((acc, product) => acc + product.quantity, 0)); // Total quantity of items
-            $('#total-without-discount').text(totalWithoutDiscount.toFixed(2)); // Display total without discount
-
-            // Display discount amount with both numeric and percentage value if applicable
-            if (discountType === 'percentage') {
-                $('#discount-amount').html(`${discount.toFixed(2)} ( ${discountValue}% )`);
-            } else {
-                $('#discount-amount').text(discount.toFixed(2));
-            }
-
-            $('#total-payable').text(totalAfterDiscount.toFixed(2)); // Display total after discount
+            $('#product-count').text(productList.length);
+            $('#item-count').text(productList.reduce((acc, product) => acc + product.quantity, 0));
+            $('#total-without-discount').text(formatNumber(totalWithoutDiscount.toFixed(2)));
+            $('#discount-amount').text(formatNumber(discount.toFixed(2)));
+            $('#total-payable').text(formatNumber(totalAfterDiscount.toFixed(2)));
         }
 
         function viewHeldInvoices() {
