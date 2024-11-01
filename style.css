@@ -1,5 +1,3 @@
-        /* Reset and Global Styles */
-    
     * {
         -webkit-box-sizing: border-box;
         box-sizing: border-box;
@@ -47,7 +45,7 @@
     .main {
         max-width: 1200px;
         margin: auto;
-        padding: 20px;
+        padding: 15px;
         background-color: #fff;
         border-radius: 10px;
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
@@ -56,8 +54,34 @@
     }
     
     #cart-leftSide {
-        flex: 2;
+        flex: 3;
         padding: 20px;
+        max-width: 80%;
+        min-width: 70%;
+    }
+    
+    #cart-left-header {
+        display: flex;
+    }
+    
+    #cart-left-header img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-right: 20px;
+        flex: 1;
+    }
+    
+    .company-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 2;
+    }
+    
+    #cart-left-top-bottons {
+        display: flex;
+        flex: 3;
     }
     
     #cart-rightSide {
@@ -66,11 +90,25 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        min-width: 20%;
+        max-width: 30%;
+        justify-content: flex-start;
+    }
+    
+    .discount-edit {
+        display: flex;
+        margin-bottom: 5px;
     }
     /* Customer Details */
     
+    .customer-details {
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly
+    }
+    
     .customer-details input {
-        width: 100%;
         padding: 8px;
         margin-top: 5px;
         margin-bottom: 10px;
@@ -127,16 +165,27 @@
     .invoice-summary p {
         font-size: 1.2em;
         margin: 5px 0;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
     }
     
     .invoice-summary p span {
-        font-weight: bold;
+        font-size: larger;
+    }
+    
+    .summery-count {
+        display: flex;
+        justify-content: space-between;
+        justify-content: space-around
     }
     
     .total-payable {
-        font-size: 2em;
-        color: #d9534f;
-        font-weight: bold;
+        font-size: xx-large !important;
+        color: #d80303;
+        font-weight: 800 !important;
         text-align: center;
     }
     /* Buttons Section */
@@ -144,7 +193,6 @@
     .button-group {
         display: flex;
         flex-direction: column;
-        gap: 15px;
     }
     
     .button-group button {
@@ -154,16 +202,54 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        font-weight: bold;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    
+    .total-without-discount,
+    .discount-amount,
+    #product-count,
+    #item-count {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    
+    #payment-buttons {
+        display: flex;
+    }
+    
+    #payment-buttons button {
+        width: 100%;
+        margin: 5px !important;
+        display: flex;
+        align-items: center;
+    }
+    
+    #cart-action-buttons {
+        display: flex;
     }
     
     #pay-btn {
         background-color: #5cb85c;
         color: #fff;
         font-size: 1.5em;
+        flex: 2;
     }
     
     #pay-btn:hover {
         background-color: #4cae4c;
+    }
+    
+    #card-btn {
+        background-color: #f0ad4e;
+        color: #fff;
+        flex: 1;
+    }
+    
+    #card-btn:hover {
+        background-color: #ec971f;
     }
     
     #cancel-btn {
@@ -184,15 +270,6 @@
         background-color: #46b8da;
     }
     
-    #card-btn {
-        background-color: #f0ad4e;
-        color: #fff;
-    }
-    
-    #card-btn:hover {
-        background-color: #ec971f;
-    }
-    
     input-field {
         display: flex;
         align-items: center;
@@ -209,6 +286,16 @@
     
     #AddTodoFieldSet {
         grid-area: AddTodoFieldSet;
+    }
+    
+    .shortcut-button {
+        cursor: pointer;
+    }
+    
+    #product-input {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
     }
     /* Add Todo Button */
     /* Errors */
@@ -494,14 +581,7 @@
         margin-top: 15px;
     }
     
-    .button-group button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    
     .view-held-invoices {
-        margin-bottom: 10px;
         cursor: pointer;
     }
     
@@ -523,16 +603,18 @@
         padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
-        /* Shortcut Key UI */
-        kbd {
-            display: inline-block;
-            padding: 5px 10px;
-            font-size: 16px;
-            font-family: 'Courier New', Courier, monospace;
-            color: #292929;
-            background-color: #d98b8b;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
-            font-weight: bold;
-        }
+    }
+    /* Shortcut Key UI */
+    
+    kbd {
+        display: inline-block;
+        padding: 5px 10px;
+        font-size: 16px;
+        font-family: 'Courier New', Courier, monospace;
+        color: #292929;
+        background-color: #d98b8b;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        font-weight: bold;
+    }
