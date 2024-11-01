@@ -17,6 +17,9 @@
 <style>
     body {
         background-color: #f5f5f5;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
     }
 
     .main {
@@ -26,113 +29,184 @@
         background-color: #fff;
         border-radius: 10px;
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .header,
-    .content,
-    .button {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-direction: row;
     }
 
-    .product-container {
-        display: flex;
-        gap: 10px;
-    }
-
-    .product-list .product-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #ccc;
-    }
-
-    .product-item input {
-        width: 60px;
-        padding: 5px;
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #fff;
-        border-radius: 8px;
+    #cart-leftSide {
+        flex: 2;
         padding: 20px;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
     }
 
-    .shortcut-button {
-        margin-left: 10px;
+    #cart-rightSide {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-    #product-input {
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .customer-details {
+        margin-bottom: 10px;
+    }
+
+    .customer-details input {
         width: 100%;
-        padding: 10px;
-        font-size: 16px;
+        padding: 8px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .product-list table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .product-list th,
+    .product-list td {
+        padding: 12px;
+        border: 1px solid #ccc;
+        text-align: left;
+    }
+
+    .product-list th {
+        background-color: #f5f5f5;
+    }
+
+    .invoice-summary {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .invoice-summary p {
+        font-size: 1.2em;
+        margin: 10px 0;
+    }
+
+    .invoice-summary p span {
+        font-weight: bold;
+    }
+
+    .total-payable {
+        font-size: 2em;
+        color: #d9534f;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .button-group button {
+        padding: 15px;
+        font-size: 1.1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #pay-btn {
+        background-color: #5cb85c;
+        color: #fff;
+        font-size: 1.5em;
+    }
+
+    #pay-btn:hover {
+        background-color: #4cae4c;
+    }
+
+    #cancel-btn {
+        background-color: #d9534f;
+        color: #fff;
+    }
+
+    #cancel-btn:hover {
+        background-color: #c9302c;
+    }
+
+    #credit-btn {
+        background-color: #5bc0de;
+        color: #fff;
+    }
+
+    #credit-btn:hover {
+        background-color: #46b8da;
+    }
+
+    #card-btn {
+        background-color: #f0ad4e;
+        color: #fff;
+    }
+
+    #card-btn:hover {
+        background-color: #ec971f;
     }
 </style>
 
 <body>
     <div class="main">
-        <div class="header">
-            <a href="/index.php"><img src="logo.png" alt="LOGO"></a>
-            <div class="company-details">
-                <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
-                <h2><?php echo $ERP_COMPANY_ADDRESS; ?><br><?php echo $ERP_COMPANY_PHONE; ?></h2>
+        <!-- Cart Left Side -->
+        <div id="cart-leftSide">
+            <!-- Customer Details -->
+            <div class="customer-details">
+                <label for="name">Customer Name:</label>
+                <input type="text" name="name" id="name" placeholder="Walk-in Customer" readonly>
+
+                <label for="tele">Customer Number:</label>
+                <input type="text" name="tele" id="tele" placeholder="0" readonly>
             </div>
-            <button class="shortcut-button" onclick="showShortcuts()"><i class="fas fa-keyboard"></i> &nbsp; Shortcuts</button>
-            <button class="view-held-invoices" onclick="viewHeldInvoices()"><svg style="width: 20px; color: #fff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75H15a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z" clip-rule="evenodd"></path>
-                </svg> Held Invoices</button>
+            <!-- Product List Table -->
+            <div class="product-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body">
+                        <!-- Dynamic rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <hr>
-        <div class="content">
-            <form>
-                <div class="details">
-                    <div class="customer-details">
-                        <label for="name">Customer Name: </label>
-                        <input type="text" name="name" id="name" autocomplete="off" readonly placeholder="Walk-in Customer" onclick="searchCustomer()">
-                        <label for="tele">Customer Number: </label>
-                        <input type="text" name="tele" id="tele" autocomplete="off" readonly placeholder="0" onclick="searchCustomer()">
-                    </div>
-                </div>
-                <div class="product-container">
-                    <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off">
-                    <button id="add-product" style="display: none;">Add Product</button>
-                    <div id="search-results" style="position: absolute; background-color: white; border: 1px solid #ccc; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; display: none; transform: translateY(40px);"> </div>
-                </div>
-                <div class="product-list" id="product-list">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5;">
-                                <th style="padding: 10px; border: 1px solid #ccc;">Product Name</th>
-                                <th style="padding: 10px; border: 1px solid #ccc;">Quantity</th>
-                                <th style="padding: 10px; border: 1px solid #ccc;">Price</th>
-                                <th style="padding: 10px; border: 1px solid #ccc;">Subtotal</th>
-                                <th style="padding: 10px; border: 1px solid #ccc;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="product-table-body"></tbody>
-                    </table>
-                </div>
-            </form>
+
+        <!-- Cart Right Side -->
+        <div id="cart-rightSide">
+            <!-- Invoice Summary -->
             <div class="invoice-summary">
                 <p>Products: <span id="product-count">0</span></p>
                 <p>Items: <span id="item-count">0</span></p>
-                <p>Total (Without Discount): Rs.<span id="total-without-discount">0.00</span></p>
-                <p>Discount: Rs.<span id="discount-amount">0.00</span> <button onclick="openDiscountModal()"><i class="fa fa-edit"></i> </button></p>
-                <p>Total Payable: Rs.<span id="total-payable">0.00</span></p>
+                <p>Total (Without Discount): Rs. <span id="total-without-discount">0.00</span></p>
+                <p>Discount: Rs. <span id="discount-amount">0.00</span> <button onclick="openDiscountModal()">Edit</button></p>
+                <p class="total-payable">Total Payable: Rs. <span id="total-payable">0.00</span></p>
             </div>
 
+            <!-- Button Group -->
             <div class="button-group">
-                <button id="pay-btn">Pay</button>
+                <button id="pay-btn">Payment</button>
+                <button id="cancel-btn">Cancel</button>
                 <button id="credit-btn">Credit</button>
-                <button id="hold-btn">Hold</button>
+                <button id="card-btn">Card</button>
             </div>
         </div>
     </div>

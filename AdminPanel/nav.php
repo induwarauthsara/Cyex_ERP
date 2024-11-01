@@ -87,7 +87,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Pettycash",
             icon: "fas fa-money-bill-wave"
         },
-        "/AdminPanel/transactionLog": { // After Developing "Report" page move this to "Report" page
+        "/AdminPanel/logs/transactionLog.php": { // After Developing "Report" page move this to "Report" page
             name: "Transaction Log",
             icon: "fas fa-file-invoice-dollar"
         },

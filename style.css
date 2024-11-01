@@ -1,514 +1,538 @@
-* {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    color: black;
-}
-
-body .add_pettycash {
-    background: #0e5e0e;
-    color: blanchedalmond;
-    padding: 10px;
-    border-radius: 5px;
-    height: fit-content;
-}
-
-hr {
-    color: red;
-    margin: 5px;
-}
-
-#changeInvoiceOptions-stock,
-#changeInvoiceOptions-account {
-    border: 3px solid #a71212;
-    color: #a71212;
-    font-weight: bolder;
-    width: 80%;
-    margin: -2px 0;
-}
-
-input[type="checkbox"] {
-    accent-color: green;
-}
-
-select,
-input {
-    padding: 5px;
-    border-radius: 5px;
-}
-
-#errors p {
-    background-color: #dc3545;
-    color: black;
-    padding: 15px;
-    margin: 5px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
-    text-align: center;
-    width: 100%;
-    font-weight: bold;
-}
-
-
-/* TO-DOLIST */
-
-.todo {
-    width: 250px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-body .add_todo {
-    background: #7aebff;
-    color: black;
-    margin: 5px;
-    padding: 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 1.3rem;
-    width: 100%;
-    cursor: pointer;
-}
-
-.todoList {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    height: 80vh;
-    max-width: 100%;
-    width: 100%;
-}
-
-.todoCard {
-    padding: 20px;
-    margin: 10px;
-    border-radius: 5px;
-    background: #f0f0f0;
-}
-
-.todoComplete {
-    color: white;
-    background-color: green;
-    font-weight: bold;
-    margin: 10px;
-    padding: 5px;
-    cursor: pointer;
-    border: 3px solid green;
-    border-radius: 5px;
-    display: flex;
-    justify-content: center;
-}
-
-.todo .billNo {
-    text-align: right;
-}
-
-input-field {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-}
-
-input-field#changeInvoiceOptions-stock {
-    grid-area: changeInvoiceOptions_stock;
-}
-
-input-field#changeInvoiceOptions-account {
-    grid-area: changeInvoiceOptions_account;
-}
-
-#AddTodoFieldSet {
-    grid-area: AddTodoFieldSet;
-}
-
-
-/* Data Table Style */
-
-.dt-button,
-.dtsb-add {
-    background-color: green !important;
-    color: white !important;
-}
-
-.dataTables_wrapper {
-    margin: 15px;
-}
-
-.dt-buttons {
-    margin-left: 30px;
-}
-
-.dtsb-searchBuilder {
-    margin-top: 50px;
-}
-
-th {
-    text-align: center !important;
-}
-
-table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-}
-
-td,
-th {
-    border: 1px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-}
-
-tr:nth-child(even) {
-    background-color: #dddddd;
-}
-
-.billHeadButtons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-
-/* disabled buttons */
-
-button:disabled {
-    background-color: #cccccc !important;
-    color: #666666 !important;
-    cursor: not-allowed !important;
-}
-
-
-/* Tab */
-
-.tab {
-    display: flex;
-    justify-content: center;
-}
-
-#InvoiceDescription {
-    width: 100%;
-    margin: 10px;
-    padding: 15px;
-}
-
-
-/* Select first child of .tab */
-
-.tablinks:first-child {
-    /* Your styles here */
-    border-radius: 1rem 0 0 1rem;
-}
-
-
-/* Select last child of .tab */
-
-.tablinks:last-child {
-    /* Your styles here */
-    border-radius: 0 1rem 1rem 0;
-}
-
-.tablinks {
-    margin: 0;
-    padding: 10px 20px;
-    border-radius: unset;
-    background-color: white;
-    border: 2px solid #2778c4;
-    color: #2778c4;
-    cursor: pointer;
-}
-
-.tablinks.active {
-    background-color: #2778c4;
-    color: white;
-}
-
-
-/* tr:hover {
-    background-color: lawngreen;
-} */
-
-
-/* Mobile Responsive */
-
-@media only screen and (max-width: 700px) {
-    .todo {
-        display: none;
+        /* Reset and Global Styles */
+    
+    * {
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
     }
-}
-
-button {
-    padding: 5px 10px;
-    font-size: 1rem;
-    background-color: green;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: auto;
-    display: flex;
-}
-
-a {
-    text-decoration: none;
-}
-
-
-/* Style the modal */
-
-.swal2-popup {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: auto;
-}
-
-
-/* Style the form elements */
-
-.swal2-popup label {
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #333;
-}
-
-.swal2-popup input[type="number"],
-.swal2-popup input[type="text"],
-.swal2-popup input[type="date"],
-.swal2-popup input[list],
-.swal2-popup select {
-    width: calc(100% - 20px);
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-}
-
-.swal2-popup input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-.swal2-popup input[type="number"]:disabled,
-.swal2-popup input[type="text"]:disabled,
-.swal2-popup input[type="date"]:disabled {
-    background-color: #e9ecef;
-}
-
-.swal2-popup #total,
-.swal2-popup #balancePayment {
-    font-weight: bold;
-    color: #ff5733;
-    display: block;
-    margin-top: 5px;
-}
-
-.swal2-popup button {
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.swal2-popup button:hover {
-    background-color: #0056b3;
-    color: white;
-}
-
-
-/* Adjust the spacing and alignment */
-
-.swal2-popup .checkbox-group {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.swal2-popup .checkbox-group label {
-    margin-bottom: 0;
-}
-
-.swal2-popup .input-group {
-    margin-bottom: 15px;
-}
-
-.swal2-popup .input-group label {
-    margin-bottom: 5px;
-    display: inline-block;
-}
-
-.swal2-popup .input-group input {
-    width: calc(100% - 20px);
-}
-
-
-/* Responsive design */
-
-@media (max-width: 480px) {
-    .swal2-popup {
+    
+    body {
+        color: black;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+    }
+    
+    a {
+        text-decoration: none;
+    }
+    
+    hr {
+        color: red;
+        margin: 5px;
+    }
+    
+    #changeInvoiceOptions-stock,
+    #changeInvoiceOptions-account {
+        border: 3px solid #a71212;
+        color: #a71212;
+        font-weight: bolder;
+        width: 80%;
+        margin: -2px 0;
+    }
+    
+    button {
+        padding: 5px 10px;
+        font-size: 1rem;
+        background-color: green;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: auto;
+        display: flex;
+    }
+    /* Layout Containers */
+    
+    .main {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: row;
+    }
+    
+    #cart-leftSide {
+        flex: 2;
+        padding: 20px;
+    }
+    
+    #cart-rightSide {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    /* Customer Details */
+    
+    .customer-details input {
         width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    
+    #errors p {
+        background-color: #dc3545;
+        color: black;
+        padding: 15px;
+        margin: 5px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        text-align: center;
+        width: 100%;
+        font-weight: bold;
+    }
+    /* Product List Table */
+    
+    .product-list table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    
+    .product-list th,
+    .product-list td {
+        padding: 12px;
+        border: 1px solid #ccc;
+        text-align: left;
+    }
+    
+    .product-list th {
+        background-color: #f5f5f5;
+    }
+    
+    .product-list tbody tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+    /* Invoice Summary */
+    
+    .invoice-summary {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .invoice-summary p {
+        font-size: 1.2em;
+        margin: 5px 0;
+    }
+    
+    .invoice-summary p span {
+        font-weight: bold;
+    }
+    
+    .total-payable {
+        font-size: 2em;
+        color: #d9534f;
+        font-weight: bold;
+        text-align: center;
+    }
+    /* Buttons Section */
+    
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .button-group button {
+        padding: 15px;
+        font-size: 1.1em;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    
+    #pay-btn {
+        background-color: #5cb85c;
+        color: #fff;
+        font-size: 1.5em;
+    }
+    
+    #pay-btn:hover {
+        background-color: #4cae4c;
+    }
+    
+    #cancel-btn {
+        background-color: #d9534f;
+        color: #fff;
+    }
+    
+    #cancel-btn:hover {
+        background-color: #c9302c;
+    }
+    
+    #credit-btn {
+        background-color: #5bc0de;
+        color: #fff;
+    }
+    
+    #credit-btn:hover {
+        background-color: #46b8da;
+    }
+    
+    #card-btn {
+        background-color: #f0ad4e;
+        color: #fff;
+    }
+    
+    #card-btn:hover {
+        background-color: #ec971f;
+    }
+    
+    input-field {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+    }
+    
+    input-field#changeInvoiceOptions-stock {
+        grid-area: changeInvoiceOptions_stock;
+    }
+    
+    input-field#changeInvoiceOptions-account {
+        grid-area: changeInvoiceOptions_account;
+    }
+    
+    #AddTodoFieldSet {
+        grid-area: AddTodoFieldSet;
+    }
+    /* Add Todo Button */
+    /* Errors */
+    
+    #errors p {
+        background-color: #dc3545;
+        color: black;
+        padding: 15px;
+        margin: 5px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        text-align: center;
+        font-weight: bold;
+    }
+    /* Data Table Style */
+    
+    .dt-button,
+    .dtsb-add {
+        background-color: green !important;
+        color: white !important;
+    }
+    
+    .dataTables_wrapper {
+        margin: 15px;
+    }
+    
+    .dt-buttons {
+        margin-left: 30px;
+    }
+    
+    .dtsb-searchBuilder {
+        margin-top: 50px;
+    }
+    
+    th {
+        text-align: center !important;
+    }
+    
+    table {
+        font-family: Arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    td,
+    th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    /* Disabled Buttons */
+    
+    button:disabled {
+        background-color: #cccccc !important;
+        color: #666666 !important;
+        cursor: not-allowed !important;
+    }
+    /* Tab Styles */
+    
+    .tab {
+        display: flex;
+        justify-content: center;
+    }
+    
+    #InvoiceDescription {
+        width: 100%;
+        margin: 10px;
         padding: 15px;
     }
+    
+    .tablinks:first-child {
+        border-radius: 1rem 0 0 1rem;
+    }
+    
+    .tablinks:last-child {
+        border-radius: 0 1rem 1rem 0;
+    }
+    
+    .tablinks {
+        margin: 0;
+        padding: 10px 20px;
+        border-radius: unset;
+        background-color: white;
+        border: 2px solid #2778c4;
+        color: #2778c4;
+        cursor: pointer;
+    }
+    
+    .tablinks.active {
+        background-color: #2778c4;
+        color: white;
+    }
+    /* Modals and SweetAlert2 Popups */
+    
+    .swal2-popup {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: auto;
+    }
+    
+    .swal2-popup label {
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+    }
+    
     .swal2-popup input[type="number"],
     .swal2-popup input[type="text"],
     .swal2-popup input[type="date"],
-    .swal2-popup input[list] {
-        width: 100%;
+    .swal2-popup input[list],
+    .swal2-popup select {
+        width: calc(100% - 20px);
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 14px;
     }
-}
-
-.highlighted {
-    background-color: #f9ff00;
-    cursor: pointer;
-}
-
-
-/* Top Right Notification */
-
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    padding: 15px 20px;
-    border-radius: 5px;
-    color: #fff;
-    font-size: 16px;
-    opacity: 0;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.notification.success {
-    background-color: #4CAF50;
-}
-
-.notification.error {
-    background-color: #f44336;
-}
-
-
-/* General highlight effect for all focusable elements */
-
-input:focus,
-textarea:focus,
-select:focus,
-button:focus,
-.radio:focus,
-.checkbox:focus {
-    outline: none;
-    border: 2px solid #007bff;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
-    background-color: #e6f0ff;
-    transition: all 0.2s ease-in-out;
-}
-
-input:focus,
-textarea:focus {
-    border-radius: 4px;
-}
-
-button:focus {
-    background-color: #007bff;
-    color: #ffffff;
-    font-weight: bold;
-}
-
-select:focus {
-    border-radius: 4px;
-    background-color: #e6f0ff;
-}
-
-input[type="radio"]:focus {
-    outline: 2px solid #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-input[type="checkbox"]:focus {
-    outline: 2px solid #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-input:hover,
-textarea:hover,
-select:hover {
-    background-color: #e0eaff;
-}
-
-button:hover {
-    background-color: #0036e7;
-}
-
-.invoice-summary {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-top: 1px solid #ccc;
-    margin-top: 10px;
-}
-
-.invoice-summary p {
-    margin: 5px 0;
-}
-
-.button-group {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 15px;
-}
-
-.button-group button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.view-held-invoices {
-    margin-bottom: 10px;
-    cursor: pointer;
-}
-
-#discount-modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-}
-
-.discount-options button {
-    margin: 0 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-
-/* Shortcut Key UI */
-
-kbd {
-    display: inline-block;
-    padding: 5px 10px;
-    font-size: 16px;
-    font-family: 'Courier New', Courier, monospace;
-    color: #292929;
-    background-color: #d98b8b;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
-    font-weight: bold;
-    letter-spacing: 1;
-    margin-bottom: 5px;
-}
+    
+    .swal2-popup input[type="checkbox"] {
+        margin-right: 10px;
+    }
+    
+    .swal2-popup input[type="number"]:disabled,
+    .swal2-popup input[type="text"]:disabled,
+    .swal2-popup input[type="date"]:disabled {
+        background-color: #e9ecef;
+    }
+    
+    .swal2-popup #total,
+    .swal2-popup #balancePayment {
+        font-weight: bold;
+        color: #ff5733;
+        display: block;
+        margin-top: 5px;
+    }
+    
+    .swal2-popup button {
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    .swal2-popup button:hover {
+        background-color: #0056b3;
+        color: white;
+    }
+    /* Adjust the spacing and alignment */
+    
+    .swal2-popup .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .swal2-popup .checkbox-group label {
+        margin-bottom: 0;
+    }
+    
+    .swal2-popup .input-group {
+        margin-bottom: 15px;
+    }
+    
+    .swal2-popup .input-group label {
+        margin-bottom: 5px;
+        display: inline-block;
+    }
+    
+    .swal2-popup .input-group input {
+        width: calc(100% - 20px);
+    }
+    
+    @media (max-width: 480px) {
+        .swal2-popup {
+            width: 100%;
+            padding: 15px;
+        }
+        .swal2-popup input[type="number"],
+        .swal2-popup input[type="text"],
+        .swal2-popup input[type="date"],
+        .swal2-popup input[list] {
+            width: 100%;
+        }
+    }
+    
+    .highlighted {
+        background-color: #f9ff00;
+        cursor: pointer;
+    }
+    
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: #fff;
+        font-size: 16px;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .notification.success {
+        background-color: #4CAF50;
+    }
+    
+    .notification.error {
+        background-color: #f44336;
+    }
+    /* General highlight effect for all focusable elements */
+    
+    input:focus,
+    textarea:focus,
+    select:focus,
+    button:focus,
+    .radio:focus,
+    .checkbox:focus {
+        outline: none;
+        border: 2px solid #007bff;
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+        background-color: #e6f0ff;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    input:focus,
+    textarea:focus {
+        border-radius: 4px;
+    }
+    
+    button:focus {
+        background-color: #007bff;
+        color: #ffffff;
+        font-weight: bold;
+    }
+    
+    select:focus {
+        border-radius: 4px;
+        background-color: #e6f0ff;
+    }
+    
+    input[type="radio"]:focus {
+        outline: 2px solid #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+    
+    input[type="checkbox"]:focus {
+        outline: 2px solid #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+    
+    input:hover,
+    textarea:hover,
+    select:hover {
+        background-color: #e0eaff;
+    }
+    
+    button:hover {
+        background-color: #0036e7;
+    }
+    
+    .invoice-summary {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-top: 1px solid #ccc;
+        margin-top: 10px;
+    }
+    
+    .invoice-summary p {
+        margin: 5px 0;
+    }
+    
+    .button-group {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 15px;
+    }
+    
+    .button-group button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    
+    .view-held-invoices {
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+    
+    #discount-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+    }
+    
+    .discount-options button {
+        margin: 0 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        /* Shortcut Key UI */
+        kbd {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #292929;
+            background-color: #d98b8b;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
