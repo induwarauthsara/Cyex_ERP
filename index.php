@@ -28,7 +28,7 @@
                 </div>
                 <div id="cart-left-top-bottons">
                     <button class="shortcut-button" onclick="showShortcuts()"><i class="fas fa-keyboard"></i> &nbsp; Shortcuts</button>
-                    <button class="view-held-invoices" onclick="viewHeldInvoices()"><svg style="width: 20px; color: #fff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <button class="view-held-invoices" onclick="loadHeldInvoices()"><svg style="width: 20px; color: #fff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                             <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75H15a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z" clip-rule="evenodd"></path>
                         </svg> &nbsp; Held Invoices List</button>
                 </div>
@@ -92,9 +92,9 @@
                     <button id="card-btn">Card Payment</button>
                 </div>
                 <div id="cart-action-buttons">
-                    <button id="hold-btn">Hold</button>
+                    <button id="hold-btn" onclick="holdInvoice()">Hold</button>
                     <button id="credit-btn">Credit</button>
-                    <button id="cancel-btn">Cancel</button>
+                    <button id="cancel-btn" onclick="cancelBill()">Cancel</button>
                 </div>
             </div>
         </div>
@@ -149,6 +149,20 @@
                 if (event.shiftKey && event.key === 'D') {
                     openDiscountModal();
                 }
+                if (event.shiftKey && event.key === 'H') {
+                    holdInvoice();
+                }
+                if (event.ctrlKey && event.key === 'h') {
+                    event.preventDefault();
+                    loadHeldInvoices();
+                }
+                if (event.shiftKey && event.key === 'H') {
+                    holdInvoice();
+                }
+                if (event.shiftKey && event.key === 'C') {
+                    event.preventDefault(); // Prevent any default action for Shift + C
+                    cancelBill(); // Call the cancel bill function
+                }
             });
 
             // Apply discount from localStorage on load
@@ -192,6 +206,8 @@
                             <tr> <td><kbd>+</kbd></td> <td>Select Customer</td> </tr>
                             <tr> <td><kbd>Shift</kbd> + <kbd>D</kbd></td> <td>Open Discount</td> </tr>
                             <tr> <td><kbd>Shift</kbd> + <kbd>H</kbd></td> <td>Hold Bill</td> </tr>
+                            <tr> <td><kbd>Ctrl</kbd> + <kbd>H</kbd></td> <td>Show Held Bill List</td> </tr>
+                            <tr> <td><kbd>Shift</kbd> + <kbd>C</kbd></td> <td>Cancel and Clear Bill</td> </tr>
                          </tbody> </table> `,
                 icon: 'info',
                 showConfirmButton: false
@@ -551,11 +567,21 @@
             $('#total-payable').text(formatNumber(totalAfterDiscount.toFixed(2)));
         }
 
-        function viewHeldInvoices() {
+        // Cancel and clear the bill
+        function cancelBill() {
             Swal.fire({
-                title: 'Held Invoices',
-                text: 'List all held invoices here...',
-                icon: 'info'
+                title: 'Cancel Bill',
+                text: 'Are you sure you want to cancel the current bill?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Cancel It',
+                cancelButtonText: 'No, Keep It'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // If confirmed, clear the cart and close the modal
+                    clearCart();
+                    Swal.close();
+                }
             });
         }
     </script>
@@ -565,3 +591,6 @@
 </html>
 
 <script src="inc/searchCustomer function.js"></script>
+
+<!-- JS Functions for Hold Invoice -->
+<script src="inc/hold_invoices/hold_invoices_logics.js"></script>
