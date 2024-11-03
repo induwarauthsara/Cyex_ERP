@@ -78,7 +78,7 @@
                     <p>Items <span id="item-count">0</span></p>
                 </div>
                 <hr />
-                <p>Total (Without Discount) <span class="total-without-discount"> Rs. <span id="total-without-discount">0.00</span></span></p>
+                <p>Subtotal<span class="total-without-discount"> Rs. <span id="total-without-discount">0.00</span></span></p>
                 <hr />
                 <p> <span class="discount-edit">Discount &nbsp; <button onclick="openDiscountModal()"><i class="fas fa-edit"></i> </button></span> <span class="discount-amount"> Rs. <span id="discount-amount">0.00</span> </span></p>
                 <hr />
@@ -88,12 +88,12 @@
             <!-- Button Group -->
             <div class="button-group">
                 <div id="payment-buttons">
-                    <button id="pay-btn">Cash Payment</button>
-                    <button id="card-btn">Card Payment</button>
+                    <button id="pay-btn" onclick="openConfirmPaymentModal('Cash')">Cash Payment</button>
+                    <button id="card-btn" onclick="openConfirmPaymentModal('Card')">Card Payment</button>
                 </div>
                 <div id="cart-action-buttons">
                     <button id="hold-btn" onclick="holdInvoice()">Hold</button>
-                    <button id="credit-btn">Credit</button>
+                    <button id="credit-btn" onclick="openConfirmPaymentModal('Credit')">Credit</button>
                     <button id="cancel-btn" onclick="cancelBill()">Cancel</button>
                 </div>
             </div>
@@ -207,8 +207,14 @@
                             <tr> <td><kbd>Shift</kbd> + <kbd>D</kbd></td> <td>Open Discount</td> </tr>
                             <tr> <td><kbd>Shift</kbd> + <kbd>H</kbd></td> <td>Hold Bill</td> </tr>
                             <tr> <td><kbd>Ctrl</kbd> + <kbd>H</kbd></td> <td>Show Held Bill List</td> </tr>
+                            <!-- Additional Shortcuts from the Invoice Confirm -->
+                            <tr> <td><kbd>F1</kbd></td> <td><b>Cash Payment </b> </td> </tr>
+                            <tr> <td><kbd>F2</kbd></td> <td><b>Card Payment</b> </td> </tr>
+                            <tr> <td><kbd>F3</kbd>&nbsp;to&nbsp;<kbd>F9</kbd></td> <td> Add Notes to Quick Cash </td> </tr>
+                            <tr> <td><kbd>F10</kbd></td> <td>Clear Quick Cash</td> </tr>
+                            <tr> <td><kbd>Enter</kbd>+<kbd>Enter</kbd><br> (Double Press)</td> <td>Finalize Payment Confirm</td> </tr>
                             <tr> <td><kbd>Shift</kbd> + <kbd>C</kbd></td> <td>Cancel and Clear Bill</td> </tr>
-                         </tbody> </table> `,
+                            </tbody> </table> `,
                 icon: 'info',
                 showConfirmButton: false
             });
@@ -594,3 +600,6 @@
 
 <!-- JS Functions for Hold Invoice -->
 <script src="inc/hold_invoices/hold_invoices_logics.js"></script>
+
+<!-- JavaScript Code for Confirm Payment Feature -->
+<script src="inc/confirm_payment_feature/confirm_payment_feature.js"></script>
