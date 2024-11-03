@@ -171,21 +171,47 @@ function handleKeyShortcuts(event) {
 // Function to handle Quick Cash key shortcuts
 function handleKeyShortcuts(event) {
     if (event.key === 'F1') {
+        event.preventDefault();
         document.getElementById('payment-method').value = 'Cash';
         toggleCashSections();
     }
     if (event.key === 'F2') {
+        event.preventDefault();
         document.getElementById('payment-method').value = 'Card';
         toggleCashSections();
     }
-    if (event.key === 'F3') incrementQuickCash(10);
-    if (event.key === 'F4') incrementQuickCash(20);
-    if (event.key === 'F5') incrementQuickCash(50);
-    if (event.key === 'F6') incrementQuickCash(100);
-    if (event.key === 'F7') incrementQuickCash(500);
-    if (event.key === 'F8') incrementQuickCash(1000);
-    if (event.key === 'F9') incrementQuickCash(5000);
-    if (event.key === 'F10') clearQuickCash();
+    if (event.key === 'F3') {
+        event.preventDefault();
+        incrementQuickCash(10);
+    }
+    if (event.key === 'F4') {
+        event.preventDefault();
+        incrementQuickCash(20);
+    }
+    if (event.key === 'F5') {
+        event.preventDefault();
+        incrementQuickCash(50);
+    }
+    if (event.key === 'F6') {
+        event.preventDefault();
+        incrementQuickCash(100);
+    }
+    if (event.key === 'F7') {
+        event.preventDefault();
+        incrementQuickCash(500);
+    }
+    if (event.key === 'F8') {
+        event.preventDefault();
+        incrementQuickCash(1000);
+    }
+    if (event.key === 'F9') {
+        event.preventDefault();
+        incrementQuickCash(5000);
+    }
+    if (event.key === 'F10') {
+        event.preventDefault();
+        clearQuickCash();
+    }
 }
 
 // Function to show/hide Cash sections based on payment method
