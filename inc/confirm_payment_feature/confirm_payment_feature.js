@@ -87,7 +87,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             <p><strong>Balance:</strong> <span id="balance-amount" style="color: #28a745; font-size: 1.5em; font-weight: bold;">Rs. 0.00</span></p>
 
              <!-- Extra Paid Checkbox Container -->
-            <div id="extra-paid-checkbox-container" style="display: none; margin-top: 10px;"></div>
+            <div id="extra-paid-checkbox-container" style="display: none; margin-top: 10px;"></div> <br>
 
             <label>
                 <input type="checkbox" id="print-receipt" style="margin-right: 10px;" checked>
@@ -110,7 +110,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             confirmButton: 'swal2-confirm-button-custom',
             cancelButton: 'swal2-cancel-button-custom'
         },
-        preConfirm: () => {
+        preConfirm: async () => {
             const cashAmount = parseFloat(document.getElementById('cash-amount-received').value || '0');
             const cardAmount = parseFloat(document.getElementById('card-amount').value || '0');
             const bankAmount = parseFloat(document.getElementById('bank-amount').value || '0');
@@ -123,17 +123,80 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 return false;
             }
 
-            clearCart();
-            clearQuickCash();
+            // Determine the active payment method based on the active tab
+            let paymentMethod = 'Cash';
+            if (document.getElementById('card-tab').classList.contains('active')) {
+                paymentMethod = 'Card';
+            } else if (document.getElementById('bank-tab').classList.contains('active')) {
+                paymentMethod = 'Online Transfer';
+            }
 
-            return {
+            // Check if the "Customer Extra Paid" checkbox is checked
+            const extraPaidAddToCustomerFund = balance < 0 && document.getElementById('extra-paid-checkbox')?.checked || false;
+            const extraPaidAmount = balance < 0 ? Math.abs(balance) : 0;
+
+            // Prepare data to send to the backend
+            const invoiceData = {
+                customerName: document.getElementById('name').value || 'Walk-in Customer',
+                customerNumber: document.getElementById('tele').value || '0',
+                subtotal: parseFloat($('#total-without-discount').text().replace(/,/g, '')),
+                discount: discountType === 'percentage' ? subtotal * discountValue / 100 : discountValue,
+                discountType: discountType, // Include discount type (flat or percentage)
+                discountValue: discountType === 'percentage' ? discountValue : null, // Include percentage value if applicable
+                totalPayable,
                 cashAmount,
                 cardAmount,
                 bankAmount,
                 totalReceived,
                 balance,
-                printReceipt
+                printReceipt,
+                quickCashCounts,  // Include quick cash counts for each denomination
+                productList,      // Include product list if you have it in scope
+                paymentMethod,    // Send the payment method used
+                extraPaidAddToCustomerFund,        // Whether the customer paid extra and opted to add to their account
+                extraPaidAmount   // The amount of extra funds paid
             };
+
+            // Send data to submit-invoice.php
+            try {
+                const response = await fetch('submit-invoice.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(invoiceData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Invoice submission was successful
+                    clearCart();
+                    clearQuickCash();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Invoice Submitted',
+                        text: 'The invoice has been successfully submitted.',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    // Handle errors from the backend
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission Failed',
+                        text: result.message || 'An error occurred while submitting the invoice.'
+                    });
+                    return false;
+                }
+            } catch (error) {
+                // Handle network or unexpected errors
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Error',
+                    text: 'Could not connect to the server. Please try again later.'
+                });
+                return false;
+            }
         },
         didOpen: () => {
             modalOpen = true;
