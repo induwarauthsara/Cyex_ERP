@@ -28,66 +28,73 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
     }
 
     const subtotal = parseFloat($('#total-without-discount').text().replace(/,/g, ''));
-    const discount = discountType === 'percentage' ?
-        subtotal * discountValue / 100 :
-        discountValue;
+    const discount = discountType === 'percentage' ? subtotal * discountValue / 100 : discountValue;
     const totalPayable = parseFloat($('#total-payable').text().replace(/,/g, ''));
     const customerName = $('#name').val() || 'Walk-in Customer';
     const customerNumber = $('#tele').val() || '0';
 
-    // Display discount with percentage if applicable
     const discountText = discountType === 'percentage' ?
         `Rs. ${formatCurrency(discount)} (${discountValue}%)` :
         `Rs. ${formatCurrency(discount)}`;
 
-    // Modal content HTML with Quick Cash integration
     const modalContent = `
-        <div style="display: flex; flex-direction: row; max-width: 800px;">
-            <div style="flex: 2; text-align: left;">
-                <p><strong>Customer:</strong> ${customerName}</p>
-                <p><strong>Customer Number:</strong> ${customerNumber}</p>
-                <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
-                
-                <p><strong>Subtotal:</strong> Rs. ${formatCurrency(subtotal)}</p>
-                <p><strong>Discount:</strong> ${discountText}</p>
-                <p><strong>Total Payable:</strong> 
-                    <span id="total-payable" style="color: #d9534f; font-size: 1.5em; font-weight: bold;">
-                        Rs. ${formatCurrency(totalPayable)}
-                    </span>
-                </p>
-                <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
-                
-                <p><strong>Payment Method:</strong>
-                    <select id="payment-method" style="font-weight: 600; color: #28a745;" onchange="toggleCashSections()">
-                        <option value="Cash" ${paymentMethod === 'Cash' ? 'selected' : ''}>Cash</option>
-                        <option value="Card" ${paymentMethod === 'Card' ? 'selected' : ''}>Card</option>
-                        <option value="Credit" ${paymentMethod === 'Credit' ? 'selected' : ''}>Credit</option>
-                    </select>
-                </p>
+        <div style="display: flex; flex-direction: column; max-width: 800px;">
+            <p><strong>Customer:</strong> ${customerName}</p>
+            <p><strong>Customer Number:</strong> ${customerNumber}</p>
+            <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
 
-                <div id="cash-section">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
-                        <label for="amount-received" style="font-weight: bold;">Amount Received:</label>
-                        <input type="number" id="amount-received" class="swal2-input" style="width: 150px;" placeholder="Enter cash received" autofocus>
+            <p><strong>Subtotal:</strong> Rs. ${formatCurrency(subtotal)}</p>
+            <p><strong>Discount:</strong> ${discountText}</p>
+            <p><strong>Total Payable:</strong> 
+                <span id="total-payable" style="color: #d9534f; font-size: 1.5em; font-weight: bold;">
+                    Rs. ${formatCurrency(totalPayable)}
+                </span>
+            </p>
+            <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
+
+            <!-- Payment Tabs -->
+            <div class="payment-tabs" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button onclick="showPaymentTab('cash-tab')" class="tab-button active" id="tab-cash">Cash</button>
+                <button onclick="showPaymentTab('card-tab')" class="tab-button" id="tab-card">Card</button>
+                <button onclick="showPaymentTab('bank-tab')" class="tab-button" id="tab-bank">Online Trans.</button>
+            </div>
+            
+            <!-- Tab Contents -->
+            <div id="cash-tab" class="tab-content active">
+                <div id="quick-cash-container">
+                    <h3>Quick Cash</h3>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        ${generateQuickCashButtons()}
                     </div>
-                    <p><strong>Change to Return:</strong> <span id="change-amount" style="color: #dc3545;">Rs. 0.00</span></p>
                 </div>
-
-                <div style="margin-top: 15px;">
-                    <label>
-                        <input type="checkbox" id="print-receipt" style="margin-right: 10px;" checked>
-                        Print Bill
-                    </label>
-                </div>
+                <label><strong>Amount Received:</strong></label>
+                <input type="number" id="cash-amount-received" oninput="calculateBalance()" class="swal2-input" placeholder="Enter cash received" autofocus>
+                <p><strong>Change to Return:</strong> <span id="change-amount" style="color: #dc3545;">Rs. 0.00</span></p>
             </div>
 
-            <div id="quick-cash-container" style="flex: 1; padding-left: 20px;">
-                <h3 style="text-align: center; margin-bottom: 10px;">Quick Cash</h3>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    ${generateQuickCashButtons()}
-                </div>
+            <div id="card-tab" class="tab-content">
+                <label><strong>Card Payment Amount:</strong></label>
+                <input type="number" id="card-amount" oninput="calculateBalance()" class="swal2-input" placeholder="Enter card amount">
             </div>
+
+            <div id="bank-tab" class="tab-content">
+                <label><strong>Online Transfer Amount:</strong></label>
+                <input type="number" id="bank-amount" oninput="calculateBalance()" class="swal2-input" placeholder="Enter bank transfer amount">
+            </div>
+
+            <!-- Balance and Print Option -->
+            <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
+            <p><strong>Balance:</strong> <span id="balance-amount" style="color: #28a745; font-size: 1.5em; font-weight: bold;">Rs. 0.00</span></p>
+
+             <!-- Extra Paid Checkbox Container -->
+            <div id="extra-paid-checkbox-container" style="display: none; margin-top: 10px;"></div>
+
+            <label>
+                <input type="checkbox" id="print-receipt" style="margin-right: 10px;" checked>
+                Print Bill
+            </label>
         </div>
+        
     `;
 
     Swal.fire({
@@ -104,13 +111,15 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             cancelButton: 'swal2-cancel-button-custom'
         },
         preConfirm: () => {
-            const amountReceived = parseFloat((document.getElementById('amount-received') && document.getElementById('amount-received').value) || '0');
-            const paymentMethod = document.getElementById('payment-method').value;
-            const changeToReturn = (amountReceived - totalPayable).toFixed(2);
+            const cashAmount = parseFloat(document.getElementById('cash-amount-received').value || '0');
+            const cardAmount = parseFloat(document.getElementById('card-amount').value || '0');
+            const bankAmount = parseFloat(document.getElementById('bank-amount').value || '0');
+            const totalReceived = cashAmount + cardAmount + bankAmount;
+            const balance = totalPayable - totalReceived;
             const printReceipt = document.getElementById('print-receipt').checked;
 
-            if (amountReceived < totalPayable && paymentMethod === 'Cash') {
-                Swal.showValidationMessage('Received amount is less than total payable.');
+            if (balance > 0) {
+                Swal.showValidationMessage('Insufficient amount received.');
                 return false;
             }
 
@@ -118,167 +127,152 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             clearQuickCash();
 
             return {
-                paymentMethod,
-                amountReceived,
-                changeToReturn,
+                cashAmount,
+                cardAmount,
+                bankAmount,
+                totalReceived,
+                balance,
                 printReceipt
             };
         },
         didOpen: () => {
-            modalOpen = true; // Set modal as open
-            toggleCashSections(); // Adjust visibility based on selected payment method
-
-            const amountInput = document.getElementById('amount-received');
-            const changeDisplay = document.getElementById('change-amount');
-
-            if (amountInput) {
-                amountInput.addEventListener('input', () => {
-                    const amountReceived = parseFloat(amountInput.value || '0');
-                    const change = amountReceived - totalPayable;
-                    changeDisplay.innerText = `Rs. ${formatCurrency(change >= 0 ? change : 0)}`;
-                });
+            modalOpen = true;
+            // Show the specified tab on modal open
+            if (paymentMethod === 'Card') {
+                showPaymentTab('card-tab');
+            } else {
+                showPaymentTab('cash-tab');
             }
-
-            // Attach keydown listener for shortcuts
-            $(document).on('keydown.quickCashShortcuts', handleKeyShortcuts);
         },
         willClose: () => {
-            modalOpen = false; // Set modal as closed
-            $(document).off('keydown.quickCashShortcuts'); // Remove shortcut listener when modal closes
+            modalOpen = false;
         }
     });
 }
 
-function handleKeyShortcuts(event) {
-    if (event.key === 'F1') {
-        document.getElementById('payment-method').value = 'Cash';
-        toggleCashSections();
-    }
-    if (event.key === 'F2') {
-        document.getElementById('payment-method').value = 'Card';
-        toggleCashSections();
-    }
-    if (event.key === 'F3') incrementQuickCash(10);
-    if (event.key === 'F4') incrementQuickCash(20);
-    if (event.key === 'F5') incrementQuickCash(50);
-    if (event.key === 'F6') incrementQuickCash(100);
-    if (event.key === 'F7') incrementQuickCash(500);
-    if (event.key === 'F8') incrementQuickCash(1000);
-    if (event.key === 'F9') incrementQuickCash(5000);
-    if (event.key === 'F10') clearQuickCash();
+
+function showPaymentTab(tabId) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const buttons = document.querySelectorAll('.tab-button');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    buttons.forEach(button => button.classList.remove('active'));
+
+    document.getElementById(tabId).classList.add('active');
+    document.querySelector(`button[onclick="showPaymentTab('${tabId}')"]`).classList.add('active');
 }
 
-// Function to handle Quick Cash key shortcuts
-function handleKeyShortcuts(event) {
-    if (event.key === 'F1') {
-        event.preventDefault();
-        document.getElementById('payment-method').value = 'Cash';
-        toggleCashSections();
-    }
-    if (event.key === 'F2') {
-        event.preventDefault();
-        document.getElementById('payment-method').value = 'Card';
-        toggleCashSections();
-    }
-    if (event.key === 'F3') {
-        event.preventDefault();
-        incrementQuickCash(10);
-    }
-    if (event.key === 'F4') {
-        event.preventDefault();
-        incrementQuickCash(20);
-    }
-    if (event.key === 'F5') {
-        event.preventDefault();
-        incrementQuickCash(50);
-    }
-    if (event.key === 'F6') {
-        event.preventDefault();
-        incrementQuickCash(100);
-    }
-    if (event.key === 'F7') {
-        event.preventDefault();
-        incrementQuickCash(500);
-    }
-    if (event.key === 'F8') {
-        event.preventDefault();
-        incrementQuickCash(1000);
-    }
-    if (event.key === 'F9') {
-        event.preventDefault();
-        incrementQuickCash(5000);
-    }
-    if (event.key === 'F10') {
-        event.preventDefault();
-        clearQuickCash();
-    }
-}
+function calculateBalance() {
+    const totalPayable = parseFloat($('#total-payable').text().replace(/,/g, ''));
+    const cashAmount = parseFloat(document.getElementById('cash-amount-received').value || '0');
+    const cardAmount = parseFloat(document.getElementById('card-amount').value || '0');
+    const bankAmount = parseFloat(document.getElementById('bank-amount').value || '0');
+    const totalPaid = cashAmount + cardAmount + bankAmount;
 
-// Function to show/hide Cash sections based on payment method
-function toggleCashSections() {
-    const paymentMethod = document.getElementById('payment-method').value;
-    const cashSection = document.getElementById('cash-section');
-    const quickCashContainer = document.getElementById('quick-cash-container');
+    const balance = totalPayable - totalPaid;
+    document.getElementById('balance-amount').innerText = `Rs. ${formatCurrency(balance)}`;
 
-    if (paymentMethod === 'Cash') {
-        cashSection.style.display = 'block';
-        quickCashContainer.style.display = 'block';
+    if (balance < 0) {
+        // Customer paid extra, show the "Customer Extra Paid" checkbox
+        const extraPaidAmount = Math.abs(balance).toFixed(2);
+        document.getElementById('extra-paid-checkbox-container').innerHTML = `
+            <label>
+                <input type="checkbox" id="extra-paid-checkbox">
+                Customer Extra Paid. Add Rs. ${extraPaidAmount} Fund to Customer Account
+            </label>
+        `;
+        document.getElementById('extra-paid-checkbox-container').style.display = 'block';
     } else {
-        cashSection.style.display = 'none';
-        quickCashContainer.style.display = 'none';
+        // Balance is zero or positive, hide the checkbox
+        document.getElementById('extra-paid-checkbox-container').style.display = 'none';
+    }
+
+    if (balance <= 0) {
+        document.getElementById('change-amount').innerText = `Rs. ${formatCurrency(-balance)}`;
+    } else {
+        document.getElementById('change-amount').innerText = '0.00';
     }
 }
 
-// Generate Quick Cash buttons with denomination, count, and shortcut displays
-function generateQuickCashButtons() {
-    const denominations = [{
-            value: 10,
-            shortcut: 'F3'
-        },
-        {
-            value: 20,
-            shortcut: 'F4'
-        },
-        {
-            value: 50,
-            shortcut: 'F5'
-        },
-        {
-            value: 100,
-            shortcut: 'F6'
-        },
-        {
-            value: 500,
-            shortcut: 'F7'
-        },
-        {
-            value: 1000,
-            shortcut: 'F8'
-        },
-        {
-            value: 5000,
-            shortcut: 'F9'
+function handleKeyShortcuts(event) {
+    if (modalOpen) {
+        if (event.key === 'F1') {
+            event.preventDefault();
+            showPaymentTab('cash-tab');
         }
+        if (event.key === 'F2') {
+            event.preventDefault();
+            showPaymentTab('card-tab');
+        }
+        if (event.key === 'F3') {
+            event.preventDefault();
+            incrementQuickCash(10);
+        }
+        if (event.key === 'F4') {
+            event.preventDefault();
+            incrementQuickCash(20);
+        }
+        if (event.key === 'F5') {
+            event.preventDefault();
+            incrementQuickCash(50);
+        }
+        if (event.key === 'F6') {
+            event.preventDefault();
+            incrementQuickCash(100);
+        }
+        if (event.key === 'F7') {
+            event.preventDefault();
+            incrementQuickCash(500);
+        }
+        if (event.key === 'F8') {
+            event.preventDefault();
+            incrementQuickCash(1000);
+        }
+        if (event.key === 'F9') {
+            event.preventDefault();
+            incrementQuickCash(5000);
+        }
+        if (event.key === 'F10') {
+            event.preventDefault();
+            clearQuickCash();
+        }
+    }
+}
+
+function generateQuickCashButtons() {
+    const denominations = [
+        { value: 10, shortcut: 'F3' },
+        { value: 20, shortcut: 'F4' },
+        { value: 50, shortcut: 'F5' },
+        { value: 100, shortcut: 'F6' },
+        { value: 500, shortcut: 'F7' },
+        { value: 1000, shortcut: 'F8' },
+        { value: 5000, shortcut: 'F9' }
     ];
 
-    return denominations.map(({
-        value,
-        shortcut
-    }) => `
-        <button onclick="incrementQuickCash(${value})" 
-                style="position: relative; background-color: #ffa726; border: none; width: 100%; padding: 10px; color: white; font-weight: bold;">
-            Rs. ${formatCurrency(value)}
-            <span id="count-${value}" style="position: absolute; top: 5px; right: 36px; font-size: 0.8em; background: #333; color: #fff; border-radius: 50%; padding: 2px 6px;">
-                ${quickCashCounts[value] || ''}
-            </span>
-            <span style="position: absolute; top: 5px; right: 10px; font-size: 0.8em; color: #555;">
-                ${shortcut}
-            </span>
-        </button>
-    `).join('') + `<button onclick="clearQuickCash()" style="position: relative; background-color: #e57373; border: none; width: 100%; padding: 10px; color: white; font-weight: bold;">
-                    Clear <span style="position: absolute; top: 5px; right: 10px; font-size: 0.8em; color: #555;">F10</span>
-                   </button>`;
+    let buttonsHtml = `
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+            ${denominations.map(({ value, shortcut }) => `
+                <button onclick="incrementQuickCash(${value})" style="position: relative; width:100%; background-color: #ffa726; border: none; padding: 10px; color: white; font-weight: bold;">
+                    Rs. ${formatCurrency(value)}
+                    <span id="count-${value}" style="position: absolute; top: 5px; right: 36px; font-size: 0.8em; background: #333; color: #fff; border-radius: 50%; padding: 2px 6px;">
+                        ${quickCashCounts[value] || ''}
+                    </span>
+                    <span style="position: absolute; top: 5px; right: 10px; font-size: 0.8em; color: #555;">
+                        ${shortcut}
+                    </span>
+                </button>
+            `).join('')}
+            
+            <button onclick="clearQuickCash()" style="grid-column: span 2; width:100%; background-color: #e57373; border: none; padding: 10px; color: white; font-weight: bold; display: flex; align-items: flex-start; justify-content: center; }">
+                Clear <span style="position: relative; right: -130px; font-size: 0.8em; color: #555;">F10</span>
+            </button>
+        </div>
+    `;
+
+    return buttonsHtml;
 }
+
+
 
 
 // Function to increment Quick Cash by denomination
@@ -295,7 +289,7 @@ function calculateQuickCashTotal() {
 
     // Check if the modal is open and update the Amount Received field if it is
     if (modalOpen) {
-        const amountReceivedInput = document.getElementById('amount-received');
+        const amountReceivedInput = document.getElementById('cash-amount-received'); // Corrected ID
         if (amountReceivedInput) {
             amountReceivedInput.value = totalQuickCash.toFixed(2);
         }
@@ -308,6 +302,9 @@ function calculateQuickCashTotal() {
         const change = totalQuickCash - totalPayable;
         changeDisplay.innerText = change >= 0 ? formatCurrency(change.toFixed(2)) : '0.00';
     }
+
+    // Recalculate balance
+    calculateBalance();
 }
 
 // Function to update Quick Cash button counters
@@ -323,10 +320,27 @@ function updateQuickCashDisplay() {
 
 // Function to clear Quick Cash counts and reset Amount Received
 function clearQuickCash() {
-    quickCashCounts = { 10: 0, 20: 0, 50: 0, 100: 0, 500: 0, 1000: 0, 5000: 0 };
+    quickCashCounts = {
+        10: 0,
+        20: 0,
+        50: 0,
+        100: 0,
+        500: 0,
+        1000: 0,
+        5000: 0
+    };
     updateQuickCashDisplay();
-    document.getElementById('amount-received').value = '';
-    document.getElementById('change-amount').innerText = '0.00';
+    const amountReceivedInput = document.getElementById('cash-amount-received'); // Corrected ID
+    if (amountReceivedInput) {
+        amountReceivedInput.value = '';
+    }
+    const changeDisplay = document.getElementById('change-amount');
+    if (changeDisplay) {
+        changeDisplay.innerText = '0.00';
+    }
+
+    // Recalculate balance
+    calculateBalance();
 }
 
 // Function to handle Quick Cash key shortcuts
@@ -334,32 +348,18 @@ let enterPressCount = 0; // Counter for tracking consecutive Enter presses
 
 $(document).on('keydown', function(event) {
     if (modalOpen) {
-        // If modal is open, change payment method with F1 or F2
-        if (event.key === 'F1') {
-            event.preventDefault();
-            document.getElementById('payment-method').value = 'Cash';
-        }
-        if (event.key === 'F2') {
-            event.preventDefault();
-            document.getElementById('payment-method').value = 'Card';
-        }
-
-        // Check for double Enter press to confirm payment
+        handleKeyShortcuts(event);
         if (event.key === 'Enter') {
-            event.preventDefault();
             enterPressCount++;
             if (enterPressCount === 2) {
-                // Trigger the Confirm Payment button click
-                $('.swal2-confirm').click(); // Simulate clicking the Confirm Payment button
-                enterPressCount = 0; // Reset counter after confirmation
+                $('.swal2-confirm').click();
+                enterPressCount = 0;
             }
-            // Reset the counter if the second Enter is not pressed within 500ms
             setTimeout(() => {
                 enterPressCount = 0;
             }, 500);
         }
     } else {
-        // If modal is not open, open with selected payment method
         if (event.key === 'F1') {
             event.preventDefault();
             openConfirmPaymentModal('Cash');
@@ -367,6 +367,16 @@ $(document).on('keydown', function(event) {
         if (event.key === 'F2') {
             event.preventDefault();
             openConfirmPaymentModal('Card');
+        }
+        if (event.key === 'Enter') {
+            enterPressCount++;
+            if (enterPressCount === 2) {
+                openConfirmPaymentModal('Cash');
+                enterPressCount = 0;
+            }
+            setTimeout(() => {
+                enterPressCount = 0;
+            }, 500);
         }
     }
 });
