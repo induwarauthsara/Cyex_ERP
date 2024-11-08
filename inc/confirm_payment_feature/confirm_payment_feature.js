@@ -135,14 +135,26 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             const extraPaidAddToCustomerFund = balance < 0 && document.getElementById('extra-paid-checkbox')?.checked || false;
             const extraPaidAmount = balance < 0 ? Math.abs(balance) : 0;
 
-            // Prepare data to send to the backend
+            // Step 1: Fetch cashier name from get_cashier_name.php
+            let cashierName = 'Unknown Cashier';
+            try {
+                const cashierResponse = await fetch('/inc/confirm_payment_feature/get_cashier_name.php');
+                if (cashierResponse.ok) {
+                    const cashierData = await cashierResponse.json();
+                    cashierName = cashierData.name;
+                }
+            } catch (error) {
+                console.error("Error fetching cashier name:", error);
+            }
+
+            // Step 2: Prepare data to send to the backend
             const invoiceData = {
+                cashierName,
                 customerName: document.getElementById('name').value || 'Walk-in Customer',
                 customerNumber: document.getElementById('tele').value || '0',
-                subtotal: parseFloat($('#total-without-discount').text().replace(/,/g, '')),
-                discount: discountType === 'percentage' ? subtotal * discountValue / 100 : discountValue,
-                discountType: discountType, // Include discount type (flat or percentage)
-                discountValue: discountType === 'percentage' ? discountValue : null, // Include percentage value if applicable
+                subtotal: parseFloat(document.getElementById('total-without-discount').innerText.replace(/,/g, '')),
+                discountValue,
+                discountType,
                 totalPayable,
                 cashAmount,
                 cardAmount,
@@ -150,14 +162,14 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 totalReceived,
                 balance,
                 printReceipt,
-                quickCashCounts,  // Include quick cash counts for each denomination
-                productList,      // Include product list if you have it in scope
-                paymentMethod,    // Send the payment method used
-                extraPaidAddToCustomerFund,        // Whether the customer paid extra and opted to add to their account
-                extraPaidAmount   // The amount of extra funds paid
+                quickCashCounts,
+                productList,
+                paymentMethod,
+                extraPaidAddToCustomerFund,
+                extraPaidAmount
             };
 
-            // Send data to submit-invoice.php
+            // Step 3: Send data to submit-invoice.php
             try {
                 const response = await fetch('submit-invoice.php', {
                     method: 'POST',
@@ -169,8 +181,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
 
                 const result = await response.json();
 
-                if (response.ok) {
-                    // Invoice submission was successful
+                if (response.ok && result.success) {
                     clearCart();
                     clearQuickCash();
                     Swal.fire({
@@ -180,7 +191,6 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                         confirmButtonText: 'OK'
                     });
                 } else {
-                    // Handle errors from the backend
                     Swal.fire({
                         icon: 'error',
                         title: 'Submission Failed',
@@ -189,7 +199,6 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                     return false;
                 }
             } catch (error) {
-                // Handle network or unexpected errors
                 Swal.fire({
                     icon: 'error',
                     title: 'Submission Error',

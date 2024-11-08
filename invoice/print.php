@@ -85,6 +85,12 @@ if (isset($_GET['invoice'])) {
         font-size: 10pt;
     }
 
+    .Innerdetails {
+        display: flex;
+        justify-content: space-between;
+        margin: 3px 0px;
+    }
+
     @media print {
         .bill {
             width: 70mm;
@@ -125,7 +131,6 @@ if (isset($_GET['invoice'])) {
             $bill_no = $invoice['invoice_number'];
             $date = $invoice['invoice_date'];
             $biller = $invoice['biller'];
-            $primary_worker = $invoice['primary_worker'];
             $total = $invoice['total'];
             $discount = $invoice['discount'];
             $advance = $invoice['advance'];
@@ -139,20 +144,18 @@ if (isset($_GET['invoice'])) {
     }
     ?>
     <div class="details">
-        <div class="customer-details">
+        <div class="bill-no">Invoice No: <b><?php echo $bill_no; ?></b></div>
+        <div class="bill-details Innerdetails">
+            <div class="date">Date: <b><?php echo $date; ?></b></div>
+            <div class="biller">Cashier : <b><?php echo $biller; ?></b></div>
+        </div>
+        <div class="customer-details Innerdetails">
             <div class="customer-name">
-                <label for="name">Customer: </label>
-                <?php echo $customer; ?>
-            </div>
+                <label for="name">Customer: <b></label> <?php echo $customer; ?> </b> </div>
             <div class="customer-tele">
-                <label for="tele">Phone: </label>
-                <?php echo $tele; ?>
-            </div>
+                <label for="tele">Phone: <b></label> <?php echo $tele; ?> </b> </div>
         </div>
-        <div class="bill-details">
-            <div class="bill-no">Invoice No: <?php echo $bill_no; ?></div>
-            <div class="date">Date: <?php echo $date; ?></div>
-        </div>
+
     </div>
     <br>
     <table>
@@ -163,9 +166,7 @@ if (isset($_GET['invoice'])) {
             <th>Amount</th>
         </tr>
         <?php
-        $sql = "SELECT product, qty, rate, amount FROM sales WHERE invoice_number = $id
-                UNION ALL
-                SELECT product, qty, rate, amount FROM oneTimeProducts_sales WHERE invoice_number = $id;";
+        $sql = "SELECT product, qty, rate, amount FROM sales WHERE invoice_number = $id";
         $result = mysqli_query($con, $sql);
         if ($result) {
             if (mysqli_num_rows($result) > 0) {

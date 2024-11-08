@@ -3,6 +3,10 @@ stock iwaranm php eken fetch karanna epa
 
 Extra Fund Invoice එකයි Finalize Payment වලියි පෙන්නන්න.
 
+Our Price and Market Price add to the product table and Print Invoice
+
+Batch Select Modal එක එන්න යන වෙලාව අඩු කරන්න.+
+
 
 Cart eka finalize karanakota
     Credit Payment Manage කරන්න.
