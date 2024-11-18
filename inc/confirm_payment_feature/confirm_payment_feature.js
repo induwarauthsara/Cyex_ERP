@@ -188,7 +188,9 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                         icon: 'success',
                         title: 'Invoice Submitted',
                         text: 'The invoice has been successfully submitted.',
-                        confirmButtonText: 'OK'
+                        confirmButtonText: 'OK',
+                        timer: 1000,
+                        timerProgressBar: true                        
                     });
                 } else {
                     Swal.fire({
