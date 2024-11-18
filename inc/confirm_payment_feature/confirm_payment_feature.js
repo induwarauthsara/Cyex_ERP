@@ -1,3 +1,47 @@
+// onload, fetch customer customer_extra_fund.php it's number. (ex: 520.00) if it's not '0.00', get it to the 'extraPaidAmount' variable.
+let useCustomerExtraFundAmount = 0;
+
+function customerSavedExtraFund() {
+    // window.addEventListener('load', () => {
+    // Check if "customerPhone" exists in localStorage
+    const customerPhone = localStorage.getItem('customerPhone');
+
+    if (customerPhone) {
+        // Send request with customerPhone value
+        fetch('/inc/confirm_payment_feature/customer_extra_fund.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ customerPhone }),
+        })
+            .then(response => response.text())
+            .then(data => {
+                const parsedAmount = parseFloat(data);
+                const useCustomerExtraFundElement = document.getElementById('useCustomerExtraFundElement');
+                if (!isNaN(parsedAmount) && parsedAmount > 0) {
+                    useCustomerExtraFundAmount = parsedAmount;
+                    useCustomerExtraFundElement.innerHTML = `<label for="useCustomerExtraFund"><strong>Customer Extra Fund:</strong> Rs. ${formatCurrency(useCustomerExtraFundAmount)}</label> <input type="checkbox" id="useCustomerExtraFund" name="useCustomerExtraFund" onchange="handleUseCustomerExtraFund()">`;
+                } else {
+                    useCustomerExtraFundAmount = 0.00;
+                    console.log('No extra funds or invalid data received.');
+                    useCustomerExtraFundElement.innerHTML = ''
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching customer extra fund:', error);
+            });
+    } else {
+        useCustomerExtraFundAmount = 0.00;
+        console.log('No customerPhone found in localStorage.');
+    }
+    // });
+}
+
+$(document).ready(function () {
+    customerSavedExtraFund();
+});
+
 // Updated Quick Cash counts with shortcuts and CSS adjustments for uniform width and non-overlapping counts
 let quickCashCounts = {
     10: 0,
@@ -18,6 +62,7 @@ function formatCurrency(amount) {
 
 // Function to open Confirm Payment modal with selectable payment methods
 function openConfirmPaymentModal(paymentMethod = 'Cash') {
+    customerSavedExtraFund();
     if (productList.length === 0) {
         Swal.fire({
             icon: 'warning',
@@ -29,7 +74,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
 
     const subtotal = parseFloat($('#total-without-discount').text().replace(/,/g, ''));
     const discount = discountType === 'percentage' ? subtotal * discountValue / 100 : discountValue;
-    const totalPayable = parseFloat($('#total-payable').text().replace(/,/g, ''));
+    var totalPayable = parseFloat($('#total-payable').text().replace(/,/g, ''));
     const customerName = $('#name').val() || 'Walk-in Customer';
     const customerNumber = $('#tele').val() || '0';
 
@@ -37,17 +82,22 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
         `Rs. ${formatCurrency(discount)} (${discountValue}%)` :
         `Rs. ${formatCurrency(discount)}`;
 
-    const modalContent = `
+    let modalContent = `
         <div style="display: flex; flex-direction: column; max-width: 800px;">
             <p><strong>Customer:</strong> ${customerName}</p>
             <p><strong>Customer Number:</strong> ${customerNumber}</p>
+            <p id="useCustomerExtraFundElement">
+            ${useCustomerExtraFundAmount > 0 ? `<label for="useCustomerExtraFund"><strong>Customer Extra Fund:</strong> Rs. ${formatCurrency(useCustomerExtraFundAmount)}</label> <input type="checkbox" id="useCustomerExtraFund" name="useCustomerExtraFund" onchange="handleUseCustomerExtraFund()">` : ''}
+            </p>
+
+            
             <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
 
             <p><strong>Subtotal:</strong> Rs. ${formatCurrency(subtotal)}</p>
             <p><strong>Discount:</strong> ${discountText}</p>
             <p><strong>Total Payable:</strong> 
-                <span id="total-payable" style="color: #d9534f; font-size: 1.5em; font-weight: bold;">
-                    Rs. ${formatCurrency(totalPayable)}
+                <span id="modal-total-payable" style="color: #d9534f; font-size: 1.5em; font-weight: bold;">
+                     ${formatCurrency(totalPayable)}
                 </span>
             </p>
             <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
@@ -58,6 +108,9 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 <button onclick="showPaymentTab('card-tab')" class="tab-button" id="tab-card">Card</button>
                 <button onclick="showPaymentTab('bank-tab')" class="tab-button" id="tab-bank">Online Trans.</button>
             </div>
+
+            <!-- Credit Payment Method -->
+            <p> <input type="checkbox" id="creditPayment" style="margin-right: 10px;"> <label for="creditPayment"> Credit Payment </label> <br> </p>
             
             <!-- Tab Contents -->
             <div id="cash-tab" class="tab-content active">
@@ -97,6 +150,13 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
         
     `;
 
+
+    if (paymentMethod === 'Credit') {
+        setTimeout(() => {
+            $('#creditPayment').prop('checked', true);
+        }, 0); // Ensure the checkbox exists before trying to modify it
+    }
+
     Swal.fire({
         title: '<strong>Finalize Payment</strong>',
         html: modalContent,
@@ -115,10 +175,13 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             const cardAmount = parseFloat(document.getElementById('card-amount').value || '0');
             const bankAmount = parseFloat(document.getElementById('bank-amount').value || '0');
             const totalReceived = cashAmount + cardAmount + bankAmount;
-            const balance = totalPayable - totalReceived;
+            var balance = totalPayable - totalReceived;
+            if (document.getElementById('useCustomerExtraFund')?.checked) {
+                balance = balance - useCustomerExtraFundAmount;
+            }
             const printReceipt = document.getElementById('print-receipt').checked;
 
-            if (balance > 0) {
+            if (balance > 0 && !$('#creditPayment').is(':checked')) {
                 Swal.showValidationMessage('Insufficient amount received.');
                 return false;
             }
@@ -166,7 +229,10 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 productList,
                 paymentMethod,
                 extraPaidAddToCustomerFund,
-                extraPaidAmount
+                extraPaidAmount,
+                bool_useCustomerExtraFund: document.getElementById('useCustomerExtraFund')?.checked || false,
+                useCustomerExtraFundAmount,
+                creditPayment: document.getElementById('creditPayment')?.checked || false
             };
 
             // Step 3: Send data to submit-invoice.php
@@ -224,6 +290,19 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
     });
 }
 
+function handleUseCustomerExtraFund() {
+    const useCustomerExtraFund = document.getElementById('useCustomerExtraFund');
+    if (useCustomerExtraFund.checked) {
+        var totalPayable = parseFloat(document.querySelector('#modal-total-payable').textContent.replace('Rs.', '').trim());
+        var updatedTotalPayable = totalPayable - useCustomerExtraFundAmount;
+        $('#modal-total-payable').text(`${formatCurrency(updatedTotalPayable)}`);
+        calculateBalance();
+    } else {
+        const totalPayable = parseFloat($('#total-payable').text().replace(/,/g, ''));
+        $('#modal-total-payable').text(`${formatCurrency(totalPayable)}`);
+        calculateBalance();
+    }
+}
 
 function showPaymentTab(tabId) {
     const tabs = document.querySelectorAll('.tab-content');
@@ -236,7 +315,7 @@ function showPaymentTab(tabId) {
 }
 
 function calculateBalance() {
-    const totalPayable = parseFloat($('#total-payable').text().replace(/,/g, ''));
+    const totalPayable = parseFloat($('#modal-total-payable').text().replace(/,/g, ''));
     const cashAmount = parseFloat(document.getElementById('cash-amount-received').value || '0');
     const cardAmount = parseFloat(document.getElementById('card-amount').value || '0');
     const bankAmount = parseFloat(document.getElementById('bank-amount').value || '0');
@@ -372,7 +451,7 @@ function calculateQuickCashTotal() {
     // Update the displayed change amount only if the element exists
     const changeDisplay = document.getElementById('change-amount');
     if (changeDisplay) {
-        const totalPayable = parseFloat($('#total-payable').text().replace(/,/g, ''));
+        const totalPayable = parseFloat($('#modal-total-payable').text().replace(/,/g, ''));
         const change = totalQuickCash - totalPayable;
         changeDisplay.innerText = change >= 0 ? formatCurrency(change.toFixed(2)) : '0.00';
     }

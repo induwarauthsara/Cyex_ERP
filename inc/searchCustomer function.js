@@ -166,6 +166,8 @@ function searchCustomer() {
         // Save or update customer data in Local Storage
         localStorage.setItem('customerName', customer.name);
         localStorage.setItem('customerPhone', customer.phone);
+
+        customerSavedExtraFund();
     }
 
     // Function to handle adding a new customer with JSON response handling
