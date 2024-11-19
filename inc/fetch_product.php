@@ -23,7 +23,7 @@ try {
             c.category_name,
             b.brand_name
         FROM 
-            products AS p
+            product_view AS p
         LEFT JOIN 
             categories AS c ON p.category_id = c.category_id
         LEFT JOIN 
