@@ -96,7 +96,7 @@
             max-height: 100%;
         }
 
-        .select2-dropdown--below{
+        .select2-dropdown--below {
             z-index: 100000;
         }
     </style>
@@ -290,12 +290,13 @@
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Product</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
+                                        <th>Product Name</th>
+                                        <th>Batch Name</th>
+                                        <th>Unit Cost</th>
                                         <th>Unit Selling Price</th>
+                                        <th>Quantity</th>
                                         <th>Total Cost</th>
-                                        <th>Total Selling</th>
+                                        <th>Total Selling Price</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -376,6 +377,16 @@
                             <option value="">Select Product</option>
                         </select>
                     </div>
+                    <div id="batchSection" class="hidden">
+                        <label for="batchSelect" class="form-label">Select Batch</label>
+                        <select class="form-select" id="batchSelect">
+                            <option value="">Select Batch</option>
+                        </select>
+                        <div class="mt-2">
+                            <strong>Batch Details:</strong>
+                            <p id="batchDetails" class="text-muted"></p>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label for="comboProductQty" class="form-label">Quantity</label>
                         <input type="number" class="form-control" id="comboProductQty" value="1">
@@ -401,6 +412,73 @@
             loadInitialData(); // Load initial options (brands, categories, suppliers)
             // Load Product list for combo product
             loadProductsForCombo();
+            $('#comboProductSelect').on('change', function() {
+                const productId = $(this).val();
+                if (productId) {
+                    fetchBatches(productId);
+                } else {
+                    resetBatchSelection();
+                }
+            });
+
+            function fetchBatches(productId) {
+                $.ajax({
+                    url: '../API/fetch_Single_product_batches.php',
+                    type: 'GET',
+                    data: {
+                        product_id: productId
+                    },
+                    dataType: 'json',
+                    success: function(batches) {
+                        if (batches.length > 0) {
+                            populateBatchDropdown(batches);
+                        } else {
+                            alert('No batches available for the selected product.');
+                            resetBatchSelection();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching batches:', error);
+                        alert('Unable to fetch batches. Please try again.');
+                    },
+                });
+            }
+
+            function populateBatchDropdown(batches) {
+                $('#batchSection').removeClass('hidden');
+                $('#batchSelect').empty().append('<option value="">Select Batch</option>');
+                batches.forEach((batch) => {
+                    $('#batchSelect').append(`
+                <option value="${batch.batch_name}" 
+                        data-selling-price="${batch.selling_price}" 
+                        data-cost="${batch.cost}">
+                    ${batch.batch_name} - Selling: ${batch.selling_price}, Cost: ${batch.cost}
+                </option>
+            `);
+                });
+            }
+
+            function resetBatchSelection() {
+                $('#batchSection').addClass('hidden');
+                $('#batchSelect').empty().append('<option value="">Select Batch</option>');
+                $('#batchDetails').text('');
+            }
+
+            // Update batch details on batch selection
+            $('#batchSelect').on('change', function() {
+                const selectedBatch = $(this).find(':selected');
+                const sellingPrice = selectedBatch.data('selling-price') || 0;
+                const cost = selectedBatch.data('cost') || 0;
+                const profit = selectedBatch.data('profit') || 0;
+                $('#batchDetails').text(`Selling Price: ${sellingPrice}, Cost: ${cost}, Profit: ${profit}`);
+            });
+
+            function resetModalFields() {
+                $('#addComboProductModal').modal('hide');
+                $('#comboProductQty').val(1);
+                $('#comboProductSelect').val('').trigger('change');
+                resetBatchSelection();
+            }
 
             //Product Type change handler
             $('#productType').on('change', function() {
@@ -488,7 +566,7 @@
 
             $('#addVariantBtn').on('click', function() {
                 variantCount++;
-                const newVariantRow = 
+                const newVariantRow = `
              <tr id="variant-row-${variantCount}">
                 <td><input type="text" class="form-control variant-name" required></td>
                 <td><input type="text" class="form-control variant-value" required></td>
@@ -497,17 +575,17 @@
                 <td><input type="number" class="form-control variant-price" value="0"></td>
                 <td><input type="number" class="form-control variant-alert" value="0"></td>
                  <td><button type="button" class="btn btn-danger deleteVariantBtn" data-variant-id="${variantCount}"><i class="fas fa-trash"></i></button></td>
-            </tr>;
+            </tr>`;
                 $('#variantTableBody').append(newVariantRow);
             });
             // Delete variant row
             $(document).on('click', '.deleteVariantBtn', function() {
                 const variantId = $(this).data('variant-id');
-                $(#variant-row-${variantId}).remove();
+                $(`#variant-row-${variantId}`).remove();
             });
 
             function handleModalSave(modalId, inputId, selectId, fetchUrl) {
-                const newName = $(#${inputId}).val().trim();
+                const newName = $(`#${inputId}`).val().trim();
                 if (newName) {
                     $.ajax({
                         url: fetchUrl,
@@ -518,8 +596,8 @@
                         },
                         success: function(response) {
                             if (response && response.id) {
-                                $(#${selectId}).append(<option value="${response.id}" selected>${newName}</option>);
-                                $(#${selectId}).val(response.id).trigger('change');
+                                $(`#${selectId}`).append(`<option value="${response.id}" selected>${newName}</option>`);
+                                $(`#${selectId}`).val(response.id).trigger('change');
                             } else {
                                 alert("Something went wrong, try again");
                             }
@@ -537,8 +615,8 @@
                             alert(errorMessage);
                         },
                         complete: function() {
-                            $(#${modalId}).modal('hide');
-                            $(#${inputId}).val('');
+                            $(`#${modalId}`).modal('hide');
+                            $(`#${inputId}`).val('');
                         }
                     });
                 } else {
@@ -560,54 +638,97 @@
             $('#addComboProductBtn').on('click', function() {
                 $('#addComboProductModal').modal('show')
             });
-            // Add Combo Product to Table
+
+            // Add selected product and batch to the combo table
             $('#addSelectedComboProduct').on('click', function() {
                 const productId = $('#comboProductSelect').val();
                 const productName = $('#comboProductSelect option:selected').text();
+                const batchName = $('#batchSelect').val();
+                const batchDetails = $('#batchSelect option:selected');
+                const unitCost = parseFloat(batchDetails.data('cost')) || 0;
+                const unitSellingPrice = parseFloat(batchDetails.data('selling-price')) || 0;
                 const quantity = parseFloat($('#comboProductQty').val());
-                const unitPrice = parseFloat($('#comboProductSelect option:selected').data('price'));
 
-                if (!productId || isNaN(quantity) || quantity <= 0) {
-                    alert('Please select a product and enter a valid quantity.');
+                if (!productId || !batchName || isNaN(quantity) || quantity <= 0) {
+                    alert('Please select a product, a batch, and enter a valid quantity.');
                     return;
                 }
-                const totalCost = quantity * unitPrice;
+
+                const totalCost = (unitCost * quantity).toFixed(2);
+                const totalSellingPrice = (unitSellingPrice * quantity).toFixed(2);
+
                 comboProductCount++;
-                const newComboRow = 
-                     <tr id="combo-row-${comboProductCount}" data-product-id="${productId}">
-                        <td>${productName}</td>
-                        <td>${quantity}</td>
-                        <td>${unitPrice.toFixed(2)}</td>
-                        <td class="total-product-cost">${totalCost.toFixed(2)}</td>
-                        <td><button type="button" class="btn btn-danger deleteComboProductBtn" data-combo-id="${comboProductCount}"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                ;
+                const newComboRow = `
+                        <tr id="combo-row-${comboProductCount}" data-product-id="${productId}">
+                            <td>${productName}</td>
+                            <td>${batchName}</td>
+                            <td>${unitCost.toFixed(2)}</td>
+                            <td>${unitSellingPrice.toFixed(2)}</td>
+                            <td><input type="number" class="form-control combo-quantity" data-unit-cost="${unitCost}" data-unit-selling-price="${unitSellingPrice}" value="${quantity}" min="1"></td>
+                            <td class="combo-total-cost">${totalCost}</td>
+                            <td class="combo-total-selling-price">${totalSellingPrice}</td>
+                            <td>
+                                <button type="button" class="btn btn-danger deleteComboProductBtn" data-combo-id="${comboProductCount}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
                 $('#comboProductTableBody').append(newComboRow);
-                $('#addComboProductModal').modal('hide');
-                $('#comboProductQty').val(1);
-                $('#comboProductSelect').val('').trigger('change');
+                resetModalFields();
                 updateTotalComboCostAndPrice();
             });
 
             // Delete Combo Product
             $(document).on('click', '.deleteComboProductBtn', function() {
                 const comboId = $(this).data('combo-id');
-                $(#combo-row-${comboId}).remove();
+                $(`#combo-row-${comboId}`).remove();
                 updateTotalComboCostAndPrice();
             });
 
+            // Update total cost and selling price when quantity changes
+            $(document).on('input', '.combo-quantity', function() {
+                const quantity = parseFloat($(this).val());
+                const unitCost = parseFloat($(this).data('unit-cost'));
+                const unitSellingPrice = parseFloat($(this).data('unit-selling-price'));
+
+                if (isNaN(quantity) || quantity <= 0) {
+                    alert('Please enter a valid quantity.');
+                    $(this).val(1); // Reset to 1 if invalid
+                    return;
+                }
+
+                // Update row totals
+                const totalCost = (unitCost * quantity).toFixed(2);
+                const totalSellingPrice = (unitSellingPrice * quantity).toFixed(2);
+                $(this).closest('tr').find('.combo-total-cost').text(totalCost);
+                $(this).closest('tr').find('.combo-total-selling-price').text(totalSellingPrice);
+
+                // Update overall totals
+                updateTotalComboCostAndPrice();
+            });
+
+            // Recalculate total combo cost and selling price
             function updateTotalComboCostAndPrice() {
                 let totalCost = 0;
-                let totalPrice = 0;
-                $('#comboProductTableBody tr').each(function() {
-                    totalCost += parseFloat($(this).find('.total-product-cost').text());
-                });
-                totalPrice = totalCost * 1.5;
-                $('#cost').val(totalCost.toFixed(2));
-                $('#sellingPrice').val(totalPrice.toFixed(2));
-                $('#totalComboCost').text(totalCost.toFixed(2));
+                let totalSellingPrice = 0;
 
+                $('#comboProductTableBody tr').each(function() {
+                    const costText = $(this).find('.combo-total-cost').text();
+                    const sellingPriceText = $(this).find('.combo-total-selling-price').text();
+
+                    const cost = parseFloat(costText) || 0;
+                    const sellingPrice = parseFloat(sellingPriceText) || 0;
+
+                    totalCost += cost;
+                    totalSellingPrice += sellingPrice;
+                });
+
+                $('#totalComboCost').text(totalCost.toFixed(2));
+                $('#cost').val(totalCost.toFixed(2));
+                $('#sellingPrice').val(totalSellingPrice.toFixed(2));
             }
+
 
             function loadInitialData() {
                 loadData('../API/getBrands.php', 'brand');
@@ -620,10 +741,10 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function(data) {
-                        var select = $(#${selectId});
+                        var select = $(`#${selectId}`);
                         select.empty().append('<option value="">Select</option>');
                         $.each(data, function(index, item) {
-                            select.append(<option value="${item.id}">${item.name}</option>);
+                            select.append(`<option value="${item.id}">${item.name}</option>`);
                         });
                         select.select2();
                     },
@@ -651,7 +772,7 @@
                         $('#comboProductSelect').empty();
                         $('#comboProductSelect').append('<option value="">Select Product</option>');
                         $.each(data, function(index, product) {
-                            $('#comboProductSelect').append(<option value="${product.id}" data-price="${product.selling_price}">${product.name}</option>);
+                            $('#comboProductSelect').append(`<option value="${product.id}">${product.name}</option>`);
                         });
                         $('#comboProductSelect').select2();
                     },
