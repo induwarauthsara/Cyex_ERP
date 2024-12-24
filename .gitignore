@@ -19,3 +19,4 @@ dashboard/makeProduct/error_log
 dashboard/product/error_log
 crons/error_log
 dashboard/*
+printerCount/.gitXX/*
