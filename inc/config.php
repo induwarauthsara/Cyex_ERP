@@ -3,10 +3,10 @@
 // $db_user = 'root';
 // $db_pwd = '';
 // $db_name = 'srijaya';
-$server = '68.183.191.157';
-$db_user = 'globalmart_user';
-$db_pwd = 'globalmart@1011';
-$db_name = 'globalMartERP';
+$server = 'athena.webserverlive.com:';
+$db_user = 'srijayapos_u1';
+$db_pwd = 'srijaya@P2';
+$db_name = 'srijayapos_new';
 
 // $server = 'morgana.webserverlive.com';
 // $db_user = 'srijayal_ifix';
