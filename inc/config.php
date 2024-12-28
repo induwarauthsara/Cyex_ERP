@@ -3,7 +3,7 @@
 // $db_user = 'root';
 // $db_pwd = '';
 // $db_name = 'srijaya';
-$server = 'athena.webserverlive.com:';
+$server = 'athena.webserverlive.com';
 $db_user = 'srijayapos_u1';
 $db_pwd = 'srijaya@P2';
 $db_name = 'srijayapos_new';
