@@ -1,113 +1,409 @@
 <?php
-require '../../../inc/config.php';
+// createProduct.php
+require_once '../../inc/config.php';
 
+header('Content-Type: application/json');
 
-// Check if it's a POST request and if product data is set
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['productData'])) {
-    $productData = json_decode($_POST['productData'], true);
+class ProductException extends Exception
+{
+    private $field;
 
-
-    $productType = mysqli_real_escape_string($con, $productData['productType']);
-    $productName = mysqli_real_escape_string($con, $productData['productName']);
-    $productCode = mysqli_real_escape_string($con, $productData['productCode']);
-    $barcodeSymbology = mysqli_real_escape_string($con, $productData['barcodeSymbology']);
-    $brandId = isset($productData['brandId']) && $productData['brandId'] !== '' ? mysqli_real_escape_string($con, $productData['brandId']) : null;
-    $categoryId = isset($productData['categoryId']) && $productData['categoryId'] !== '' ? mysqli_real_escape_string($con, $productData['categoryId']) : null;
-    $sku = mysqli_real_escape_string($con, $productData['sku']);
-    $showInEcommerce = $productData['showInEcommerce'] ? 1 : 0;
-    $hasVariant = $productData['hasVariant'] ? 1 : 0;
-
-    // Insert product main details into products table
-    $productInsertQuery = "INSERT INTO products (product_name, barcode, barcode_symbology, brand_id, category_id, sku, show_in_landing_page)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmt = mysqli_prepare($con, $productInsertQuery);
-    mysqli_stmt_bind_param($stmt, "sssiiis", $productName, $productCode, $barcodeSymbology, $brandId, $categoryId, $sku, $showInEcommerce);
-    $productInsertResult = mysqli_stmt_execute($stmt);
-
-    if ($productInsertResult) {
-        $productId = mysqli_insert_id($con);
-        $batchInsert = false;
-        //Handle product batch data for standard and combo product
-        if ($productType === 'standard') {
-            $defaultUnit = mysqli_real_escape_string($con, $productData['defaultUnit']);
-            $saleUnit = mysqli_real_escape_string($con, $productData['saleUnit']);
-            $purchaseUnit = mysqli_real_escape_string($con, $productData['purchaseUnit']);
-            $pcsPerBox = isset($productData['pcsPerBox']) ?  mysqli_real_escape_string($con, $productData['pcsPerBox']) : 1;
-            $initialStock =  mysqli_real_escape_string($con, $productData['initialStock']);
-            $cost = mysqli_real_escape_string($con, $productData['cost']);
-            $sellingPrice =  mysqli_real_escape_string($con, $productData['sellingPrice']);
-            // insert into product batch table
-            $batchInsertQuery = "INSERT INTO product_batch (product_id, cost, selling_price, quantity)
-                       VALUES (?, ?, ?, ?)";
-            $stmt = mysqli_prepare($con, $batchInsertQuery);
-            mysqli_stmt_bind_param($stmt, "isdd", $productId, $cost, $sellingPrice, $initialStock);
-            $batchInsert = mysqli_stmt_execute($stmt);
-        } else if ($productType === 'combo') {
-            $cost = mysqli_real_escape_string($con, $productData['cost']);
-            $sellingPrice = mysqli_real_escape_string($con, $productData['sellingPrice']);
-
-            $batchInsertQuery = "INSERT INTO product_batch (product_id, cost, selling_price, quantity)
-                       VALUES (?, ?, ?, ?)";
-            $stmt = mysqli_prepare($con, $batchInsertQuery);
-            $initialStock = 0;
-            mysqli_stmt_bind_param($stmt, "isdd", $productId, $cost, $sellingPrice, $initialStock);
-            $batchInsert = mysqli_stmt_execute($stmt);
-
-            // Insert into combo products table
-            if (isset($productData['comboProducts'])) {
-                foreach ($productData['comboProducts'] as $comboProduct) {
-                    $comboProductId = mysqli_real_escape_string($con, $comboProduct['productId']);
-                    $comboProductQty = mysqli_real_escape_string($con, $comboProduct['quantity']);
-                    $comboInsertQuery = "INSERT INTO combo_products (product_id, combo_product_id, quantity) VALUES (?, ?, ?)";
-                    $stmt = mysqli_prepare($con, $comboInsertQuery);
-                    mysqli_stmt_bind_param($stmt, 'iii', $productId, $comboProductId, $comboProductQty);
-                    mysqli_stmt_execute($stmt);
-                }
-            }
-        }
-        //Handle variant data
-        if ($hasVariant && isset($productData['variants'])) {
-            foreach ($productData['variants'] as $variant) {
-                $variantName = mysqli_real_escape_string($con, $variant['variantName']);
-                $variantValue = mysqli_real_escape_string($con, $variant['variantValue']);
-                $variantStock = mysqli_real_escape_string($con, $variant['variantStock']);
-                $variantCost = mysqli_real_escape_string($con, $variant['variantCost']);
-                $variantPrice = mysqli_real_escape_string($con, $variant['variantPrice']);
-                $variantAlert = mysqli_real_escape_string($con, $variant['variantAlert']);
-                $variantInsertQuery = "INSERT INTO product_variants (product_id, variant_name, variant_value, initial_stock, cost, selling_price, alert_quantity ) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                $stmt = mysqli_prepare($con, $variantInsertQuery);
-                mysqli_stmt_bind_param($stmt, "isiddii", $productId, $variantName, $variantValue, $variantStock, $variantCost, $variantPrice, $variantAlert);
-                mysqli_stmt_execute($stmt);
-            }
-        }
-        // Handle image upload
-        if (isset($_FILES['productImage']) && $_FILES['productImage']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = '../uploads/'; // Set your upload directory
-            $uploadFile = $uploadDir . basename($_FILES['productImage']['name']);
-            if (move_uploaded_file($_FILES['productImage']['tmp_name'], $uploadFile)) {
-                $imagePath =  basename($_FILES['productImage']['name']);
-                $imageUpdateQuery = "UPDATE products SET image = ? WHERE product_id = ?";
-                $stmt = mysqli_prepare($con, $imageUpdateQuery);
-                mysqli_stmt_bind_param($stmt, "si",  $imagePath,  $productId);
-                mysqli_stmt_execute($stmt);
-            } else {
-                echo json_encode(['error' => 'Error upload the image']);
-            }
-        }
-
-        if ($productType === 'digital' || $productType === 'service') {
-            $batchInsert = true;
-        }
-        if ($batchInsert) {
-            echo json_encode(['success' => true, 'message' => 'Product created successfully']);
-        } else {
-            echo json_encode(['error' => 'Error adding product batch or combo products.']);
-        }
-    } else {
-        echo json_encode(['error' => 'Error adding product main details.']);
+    public function __construct($message, $field = '')
+    {
+        parent::__construct($message);
+        $this->field = $field;
     }
-} else {
-    echo json_encode(['error' => 'Invalid request.']);
+
+    public function getField()
+    {
+        return $this->field;
+    }
 }
 
-mysqli_close($con);
+function generateBatchNumber()
+{
+    return 'BATCH-' . date('Ymd') . '-' . substr(uniqid(), -5);
+}
+
+function validateProductData($productData)
+{
+    if (empty($productData['productName'])) {
+        throw new ProductException("Product name is required", "productName");
+    }
+
+    if (empty($productData['productCode'])) {
+        throw new ProductException("Product code/barcode is required", "productCode");
+    }
+
+    if (empty($productData['sku'])) {
+        throw new ProductException("SKU is required", "sku");
+    }
+
+    // Validate product type specific fields
+    switch ($productData['productType']) {
+        case 'standard':
+            if (!isset($productData['hasVariant']) || !$productData['hasVariant']) {
+                if (!isset($productData['cost']) || $productData['cost'] <= 0) {
+                    throw new ProductException("Valid cost is required", "cost");
+                }
+                if (!isset($productData['sellingPrice']) || $productData['sellingPrice'] <= 0) {
+                    throw new ProductException("Valid selling price is required", "sellingPrice");
+                }
+                if ($productData['sellingPrice'] < $productData['cost']) {
+                    throw new ProductException("Selling price cannot be less than cost", "sellingPrice");
+                }
+            }
+            break;
+
+        case 'combo':
+            if (empty($productData['comboProducts'])) {
+                throw new ProductException("Combo product must contain at least one component", "comboProducts");
+            }
+            break;
+    }
+
+    // Validate variants if present
+    if (isset($productData['hasVariant']) && $productData['hasVariant']) {
+        if (empty($productData['variants'])) {
+            throw new ProductException("At least one variant is required", "variants");
+        }
+        foreach ($productData['variants'] as $index => $variant) {
+            if (empty($variant['variantName'])) {
+                throw new ProductException("Variant name is required for variant #" . ($index + 1), "variant-name");
+            }
+            if (empty($variant['variantValue'])) {
+                throw new ProductException("Variant value is required for variant #" . ($index + 1), "variant-value");
+            }
+            if ($variant['variantCost'] <= 0) {
+                throw new ProductException("Valid cost is required for variant #" . ($index + 1), "variant-cost");
+            }
+            if ($variant['variantPrice'] <= 0) {
+                throw new ProductException("Valid price is required for variant #" . ($index + 1), "variant-price");
+            }
+            if ($variant['variantPrice'] < $variant['variantCost']) {
+                throw new ProductException("Selling price cannot be less than cost for variant #" . ($index + 1), "variant-price");
+            }
+        }
+    }
+}
+
+function validateImage($file)
+{
+    if (!empty($file['name'])) {
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!in_array($file['type'], $allowedTypes)) {
+            throw new ProductException("Invalid image type. Only JPG, PNG and GIF are allowed", "productImage");
+        }
+
+        if ($file['size'] > $maxSize) {
+            throw new ProductException("Image size should not exceed 5MB", "productImage");
+        }
+    }
+}
+
+function checkDuplicates($con, $productData)
+{
+    // Check duplicate SKU
+    $stmt = $con->prepare("SELECT product_id FROM products WHERE sku = ? LIMIT 1");
+    $stmt->bind_param("s", $productData['sku']);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        throw new ProductException("This SKU is already in use", "sku");
+    }
+
+    // Check duplicate barcode
+    $stmt = $con->prepare("SELECT product_id FROM products WHERE barcode = ? LIMIT 1");
+    $stmt->bind_param("s", $productData['productCode']);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        throw new ProductException("This barcode is already in use", "productCode");
+    }
+
+    // Check duplicate product name
+    $stmt = $con->prepare("SELECT product_id FROM products WHERE product_name = ? LIMIT 1");
+    $stmt->bind_param("s", $productData['productName']);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        throw new ProductException("This product name is already in use", "productName");
+    }
+}
+
+try {
+    if (!isset($_POST['productData'])) {
+        throw new ProductException("No product data received");
+    }
+
+    // Get and decode the product data
+    $productData = json_decode($_POST['productData'], true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new ProductException("Invalid JSON data received");
+    }
+
+    // Validate product data
+    validateProductData($productData);
+
+    // Validate image if uploaded
+    if (isset($_FILES['productImage'])) {
+        validateImage($_FILES['productImage']);
+    }
+
+    // Start transaction
+    $con->begin_transaction();
+
+    // Check for duplicates
+    checkDuplicates($con, $productData);
+
+    // Prepare base product data
+    $productType = $con->real_escape_string($productData['productType']);
+    $productName = $con->real_escape_string($productData['productName']);
+    $productCode = $con->real_escape_string($productData['productCode']);
+    $sku = $con->real_escape_string($productData['sku']);
+    $showInEcommerce = $productData['showInEcommerce'] ? '1' : '0';
+    $categoryId = !empty($productData['categoryId']) ? (int)$productData['categoryId'] : null;
+    $brandId = !empty($productData['brandId']) ? (int)$productData['brandId'] : null;
+
+    // Handle image upload
+    $imagePath = null;
+    if (isset($_FILES['productImage']) && $_FILES['productImage']['error'] === 0) {
+        $uploadDir = 'uploads/products/';
+        if (!file_exists($uploadDir)) {
+            if (!mkdir($uploadDir, 0777, true)) {
+                throw new ProductException("Failed to create upload directory");
+            }
+        }
+
+        $imageFileName = uniqid() . '_' . basename($_FILES['productImage']['name']);
+        $targetPath = $uploadDir . $imageFileName;
+
+        if (!move_uploaded_file($_FILES['productImage']['tmp_name'], $targetPath)) {
+            throw new ProductException("Failed to upload image", "productImage");
+        }
+        $imagePath = $imageFileName;
+    }
+
+    // Insert into products table
+    $sql = "INSERT INTO products (product_name, product_type, barcode, sku, show_in_landing_page, 
+            category_id, brand_id, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = $con->prepare($sql);
+    if (!$stmt) {
+        throw new ProductException("Database error: " . $con->error);
+    }
+
+    $stmt->bind_param(
+        "sssssiis",
+        $productName,
+        $productType,
+        $productCode,
+        $sku,
+        $showInEcommerce,
+        $categoryId,
+        $brandId,
+        $imagePath
+    );
+
+    if (!$stmt->execute()) {
+        throw new ProductException("Error creating product: " . $stmt->error);
+    }
+
+    $productId = $con->insert_id;
+
+    // Handle different product types
+    switch ($productType) {
+        case 'standard':
+            if ($productData['hasVariant']) {
+                // Handle variants
+                foreach ($productData['variants'] as $variant) {
+                    $batchNumber = $variant['variantName'];
+                    $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, 
+                            quantity, notes) VALUES (?, ?, ?, ?, ?, ?)";
+
+                    $stmt = $con->prepare($sql);
+                    if (!$stmt) {
+                        throw new ProductException("Database error: " . $con->error);
+                    }
+
+                    $variantName = $variant['variantValue'];
+                    $stmt->bind_param(
+                        "isddis",
+                        $productId,
+                        $batchNumber,
+                        $variant['variantCost'],
+                        $variant['variantPrice'],
+                        $variant['variantStock'],
+                        $variantName
+                    );
+
+                    if (!$stmt->execute()) {
+                        throw new ProductException("Error creating variant: " . $stmt->error);
+                    }
+                }
+            } else {
+                // Single variant/batch
+                $batchNumber = generateBatchNumber();
+                $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
+                        VALUES (?, ?, ?, ?, ?)";
+
+                $stmt = $con->prepare($sql);
+                if (!$stmt) {
+                    throw new ProductException("Database error: " . $con->error);
+                }
+
+                $stmt->bind_param(
+                    "isddi",
+                    $productId,
+                    $batchNumber,
+                    $productData['cost'],
+                    $productData['sellingPrice'],
+                    $productData['initialStock']
+                );
+
+                if (!$stmt->execute()) {
+                    throw new ProductException("Error creating batch: " . $stmt->error);
+                }
+            }
+            break;
+
+        case 'combo':
+            // Create main combo batch
+            $batchNumber = generateBatchNumber();
+            $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
+                    VALUES (?, ?, ?, ?, 0)";
+
+            $stmt = $con->prepare($sql);
+            if (!$stmt) {
+                throw new ProductException("Database error: " . $con->error);
+            }
+
+            $stmt->bind_param(
+                "isdd",
+                $productId,
+                $batchNumber,
+                $productData['cost'],
+                $productData['sellingPrice']
+            );
+
+            if (!$stmt->execute()) {
+                throw new ProductException("Error creating combo batch: " . $stmt->error);
+            }
+
+            $comboBatchId = $con->insert_id;
+
+            // Create combo_products table if not exists
+            $sql = "CREATE TABLE IF NOT EXISTS combo_products (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                combo_product_id INT,
+                component_product_id INT,
+                quantity INT,
+                batch_number VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (combo_product_id) REFERENCES products(product_id),
+                FOREIGN KEY (component_product_id) REFERENCES products(product_id)
+            )";
+
+            if (!$con->query($sql)) {
+                throw new ProductException("Error creating combo_products table: " . $con->error);
+            }
+
+            // Insert combo components
+            foreach ($productData['comboProducts'] as $component) {
+                $sql = "INSERT INTO combo_products (combo_product_id, component_product_id, 
+                        quantity, batch_number) VALUES (?, ?, ?, ?)";
+
+                $stmt = $con->prepare($sql);
+                if (!$stmt) {
+                    throw new ProductException("Database error: " . $con->error);
+                }
+
+                $stmt->bind_param(
+                    "iiis",
+                    $productId,
+                    $component['productId'],
+                    $component['quantity'],
+                    $batchNumber
+                );
+
+                if (!$stmt->execute()) {
+                    throw new ProductException("Error creating combo component: " . $stmt->error);
+                }
+            }
+            break;
+
+        case 'digital':
+        case 'service':
+            // Create a batch without quantity
+            $batchNumber = generateBatchNumber();
+            $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
+                    VALUES (?, ?, ?, ?, 0)";
+
+            $stmt = $con->prepare($sql);
+            if (!$stmt) {
+                throw new ProductException("Database error: " . $con->error);
+            }
+
+            $stmt->bind_param(
+                "isdd",
+                $productId,
+                $batchNumber,
+                $productData['cost'],
+                $productData['sellingPrice']
+            );
+
+            if (!$stmt->execute()) {
+                throw new ProductException("Error creating digital/service batch: " . $stmt->error);
+            }
+            break;
+    }
+
+    // Commit transaction
+    $con->commit();
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Product created successfully',
+        'productId' => $productId
+    ]);
+} catch (ProductException $e) {
+    // Rollback transaction on error
+    if (isset($con) && $con->ping()) {
+        $con->rollback();
+    }
+
+    // Delete uploaded image if exists
+    if (isset($targetPath) && file_exists($targetPath)) {
+        unlink($targetPath);
+    }
+
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage(),
+        'field' => $e->getField(),
+        'type' => 'validation'
+    ]);
+} catch (Exception $e) {
+    // Rollback transaction on error
+    if (isset($con) && $con->ping()) {
+        $con->rollback();
+    }
+
+    // Delete uploaded image if exists
+    if (isset($targetPath) && file_exists($targetPath)) {
+        unlink($targetPath);
+    }
+
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'An unexpected error occurred. Please try again later.',
+        'type' => 'system',
+        'debug' => $e->getMessage() // Remove in production
+    ]);
+}
+
+// Close connection
+if (isset($con)) {
+    $con->close();
+}

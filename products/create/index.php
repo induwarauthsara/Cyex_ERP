@@ -11,6 +11,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Select2 for enhanced dropdowns -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
     <style>
         body {
             background-color: #f4f6f9;
@@ -131,7 +133,7 @@
                         <div class="mb-3">
                             <label for="productCode" class="form-label">Product Code / Barcode</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="productCode" required>
+                                <input type="text" class="form-control" id="productCode" required maxlength="13">
                                 <button type="button" class="btn btn-secondary" id="generateCodeBtn">
                                     <i class="fas fa-random"></i> Generate
                                 </button>
@@ -260,8 +262,8 @@
                             <table id="variantTable" class="table variant-table">
                                 <thead>
                                     <tr>
-                                        <th>Variation Name</th>
-                                        <th>Variation Value</th>
+                                        <th>Variation / Batch Name / Batch Number</th>
+                                        <th>Additional Note</th>
                                         <th>Initial Stock</th>
                                         <th>Cost</th>
                                         <th>Selling Price</th>
@@ -406,6 +408,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
+
+            // Focus Barcode input when Scan button is pressed
+            $(document).on('keydown', function(event) {
+                if (event.key === "Insert") {
+                    $('#productCode').focus();
+                }
+            });
 
             // Initialize Select2 for dropdowns
             $('select').select2();
@@ -649,8 +658,28 @@
                 const unitSellingPrice = parseFloat(batchDetails.data('selling-price')) || 0;
                 const quantity = parseFloat($('#comboProductQty').val());
 
-                if (!productId || !batchName || isNaN(quantity) || quantity <= 0) {
-                    alert('Please select a product, a batch, and enter a valid quantity.');
+                // if (!productId || !batchName || isNaN(quantity) || quantity <= 0) {
+                //     alert('Please select a product, a batch, and enter a valid quantity.');
+                //     return;
+                // }
+
+                if (!productId) {
+                    alert('Please select a product');
+                    return;
+                }
+
+                if (!batchName) {
+                    alert('Please select a batch');
+                    return;
+                }
+
+                if (isNaN(quantity)) {
+                    alert('Please enter a valid quantity.');
+                    return;
+                }
+
+                if (quantity <= 0) {
+                    alert('Quantity must be greater than 0.');
                     return;
                 }
 
@@ -791,69 +820,52 @@
                 });
             }
 
-            // Handle form submission
-            $('#productForm').on('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
-                createProduct();
+            // Initialize form handlers
+            $(document).ready(function() {
+                $('#productForm').on('submit', function(e) {
+                    e.preventDefault();
+                    createProduct();
+                });
+
+                // Remove validation errors when field is changed
+                $(document).on('input change', '.form-control, .form-select', function() {
+                    $(this).removeClass('is-invalid');
+                    $(this).siblings('.invalid-feedback').remove();
+                });
             });
 
 
+            // Main form submission handler
             function createProduct() {
+                // Show loading state
+                const submitButton = document.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Product...';
+                submitButton.disabled = true;
+
+                // Reset previous errors
+                resetFormErrors();
+
                 // Collect product data
-                const productData = {
-                    productType: $('#productType').val(),
-                    productName: $('#productName').val(),
-                    productCode: $('#productCode').val(),
-                    barcodeSymbology: $('#barcodeSymbology').val(),
-                    brandId: $('#brand').val(),
-                    categoryId: $('#category').val(),
-                    sku: $('#sku').val(),
-                    showInEcommerce: $('#showInEcommerce').is(':checked'),
-                    hasVariant: $('#hasVariant').is(':checked'),
+                const productData = collectProductData();
 
-                    variants: [],
-                    comboProducts: []
-                };
-                if ($('#productType').val() === 'standard') {
-                    productData.defaultUnit = $('#defaultUnit').val();
-                    productData.saleUnit = $('#saleUnit').val();
-                    productData.purchaseUnit = $('#purchaseUnit').val();
-                    productData.pcsPerBox = $('#pcsPerBox').val();
-                    productData.initialStock = $('#initialStock').val();
-                    productData.cost = $('#cost').val();
-                    productData.sellingPrice = $('#sellingPrice').val();
-                } else if ($('#productType').val() === 'combo') {
-                    $('#comboProductTableBody tr').each(function() {
-                        productData.comboProducts.push({
-                            productId: $(this).data('product-id'),
-                            quantity: parseFloat($(this).find('td:eq(1)').text())
-                        });
-                    });
-                    productData.cost = $('#cost').val();
-                    productData.sellingPrice = $('#sellingPrice').val();
-                }
-                // Collect variant data
-                if ($('#hasVariant').is(':checked')) {
-                    $('#variantTableBody tr').each(function() {
-                        productData.variants.push({
-                            variantName: $(this).find('.variant-name').val(),
-                            variantValue: $(this).find('.variant-value').val(),
-                            variantStock: parseFloat($(this).find('.variant-stock').val()),
-                            variantCost: parseFloat($(this).find('.variant-cost').val()),
-                            variantPrice: parseFloat($(this).find('.variant-price').val()),
-                            variantAlert: parseFloat($(this).find('.variant-alert').val())
-                        });
-                    });
+                // Client-side validation
+                try {
+                    validateProductData(productData);
+                } catch (error) {
+                    handleValidationError(error);
+                    resetSubmitButton(submitButton, originalButtonText);
+                    return;
                 }
 
-                // Collect image
-                const productImageInput = document.getElementById('productImage');
-                const productImageFile = productImageInput.files[0];
-
+                // Create FormData for submission
                 const formData = new FormData();
                 formData.append('productData', JSON.stringify(productData));
-                if (productImageFile) {
-                    formData.append('productImage', productImageFile);
+
+                // Add image if present
+                const productImageInput = document.getElementById('productImage');
+                if (productImageInput.files[0]) {
+                    formData.append('productImage', productImageInput.files[0]);
                 }
 
                 // Send data to server
@@ -864,32 +876,264 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        alert("product added successfully");
-                        $('#productForm')[0].reset();
-                        $('select').val('').trigger('change');
-                        $('#variantTableBody').empty();
-                        $('#comboProductTableBody').empty();
-                        $('#totalComboCost').text('0.00');
-                        $('#imagePreview').addClass('hidden');
-                        $('.image-preview-container').css('border', '1px dashed #ced4da');
-                        $('#pcsPerBoxDiv').addClass('hidden');
-                        $('#variantTableContainer').addClass('hidden');
-                        $('#comboProductSection').addClass('hidden');
-                        $('#initialStockSection, #unitSection').removeClass('hidden');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error adding product:', error);
-                        let errorMessage = "Something went wrong. Please try again.";
-                        if (xhr.status === 404) {
-                            errorMessage = "Resource not found, please check URL";
-                        } else if (xhr.status === 500) {
-                            errorMessage = "Internal server error, contact admin";
-                        } else if (xhr.status === 0) {
-                            errorMessage = "Network error. Please check your connection.";
+                        if (response.success) {
+                            showSuccessMessage("Product created successfully!");
+                            resetForm();
+                        } else {
+                            handleErrorResponse(response);
                         }
-                        alert(errorMessage);
+                    },
+                    error: function(xhr) {
+                        handleAjaxError(xhr);
+                    },
+                    complete: function() {
+                        resetSubmitButton(submitButton, originalButtonText);
                     }
                 });
+            }
+
+            // Collect all form data
+            function collectProductData() {
+                const productData = {
+                    productType: $('#productType').val(),
+                    productName: $('#productName').val().trim(),
+                    productCode: $('#productCode').val().trim(),
+                    barcodeSymbology: $('#barcodeSymbology').val(),
+                    brandId: $('#brand').val(),
+                    categoryId: $('#category').val(),
+                    sku: $('#sku').val().trim(),
+                    showInEcommerce: $('#showInEcommerce').is(':checked'),
+                    hasVariant: $('#hasVariant').is(':checked'),
+                    variants: [],
+                    comboProducts: []
+                };
+
+                // Add type-specific data
+                if (productData.productType === 'standard') {
+                    productData.defaultUnit = $('#defaultUnit').val();
+                    productData.saleUnit = $('#saleUnit').val();
+                    productData.purchaseUnit = $('#purchaseUnit').val();
+                    productData.pcsPerBox = $('#pcsPerBox').val();
+                    productData.initialStock = parseFloat($('#initialStock').val()) || 0;
+                    productData.cost = parseFloat($('#cost').val()) || 0;
+                    productData.sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
+                }
+
+                // Collect variants if enabled
+                if (productData.hasVariant) {
+                    $('#variantTableBody tr').each(function(index) {
+                        const variant = {
+                            variantName: $(this).find('.variant-name').val().trim(),
+                            variantValue: $(this).find('.variant-value').val().trim(),
+                            variantStock: parseFloat($(this).find('.variant-stock').val()) || 0,
+                            variantCost: parseFloat($(this).find('.variant-cost').val()) || 0,
+                            variantPrice: parseFloat($(this).find('.variant-price').val()) || 0,
+                            variantAlert: parseFloat($(this).find('.variant-alert').val()) || 0
+                        };
+                        productData.variants.push(variant);
+                    });
+                }
+
+                // Collect combo products if applicable
+                if (productData.productType === 'combo') {
+                    $('#comboProductTableBody tr').each(function() {
+                        const comboProduct = {
+                            productId: $(this).data('product-id'),
+                            quantity: parseFloat($(this).find('.combo-quantity').val()) || 0
+                        };
+                        productData.comboProducts.push(comboProduct);
+                    });
+                }
+
+                return productData;
+            }
+
+            // Client-side validation
+            function validateProductData(data) {
+                if (!data.productName) {
+                    throw new ValidationError("Product name is required", "productName");
+                }
+                if (!data.productCode) {
+                    throw new ValidationError("Product code/barcode is required", "productCode");
+                }
+                if (!data.sku) {
+                    throw new ValidationError("SKU is required", "sku");
+                }
+
+                // Type-specific validation
+                if (data.productType === 'standard' && !data.hasVariant) {
+                    if (!data.cost || data.cost <= 0) {
+                        throw new ValidationError("Valid cost is required", "cost");
+                    }
+                    if (!data.sellingPrice || data.sellingPrice <= 0) {
+                        throw new ValidationError("Valid selling price is required", "sellingPrice");
+                    }
+                    if (data.sellingPrice < data.cost) {
+                        throw new ValidationError("Selling price cannot be less than cost", "sellingPrice");
+                    }
+                }
+
+                // Validate combo products
+                if (data.productType === 'combo' && data.comboProducts.length === 0) {
+                    throw new ValidationError("Please add at least one product to the combo", "comboProducts");
+                }
+
+                // Validate variants
+                if (data.hasVariant && data.variants.length === 0) {
+                    throw new ValidationError("Please add at least one variant", "variants");
+                }
+
+                if (data.hasVariant) {
+                    data.variants.forEach((variant, index) => {
+                        if (!variant.variantName) {
+                            throw new ValidationError(`Variant name is required for variant #${index + 1}`, `variant-name-${index}`);
+                        }
+                        if (!variant.variantValue) {
+                            throw new ValidationError(`Variant value is required for variant #${index + 1}`, `variant-value-${index}`);
+                        }
+                        if (variant.variantPrice < variant.variantCost) {
+                            throw new ValidationError(`Selling price cannot be less than cost for variant #${index + 1}`, `variant-price-${index}`);
+                        }
+                    });
+                }
+            }
+
+            // Custom error class for validation
+            class ValidationError extends Error {
+                constructor(message, field) {
+                    super(message);
+                    this.name = 'ValidationError';
+                    this.field = field;
+                }
+            }
+
+            // Handle validation errors
+            function handleValidationError(error) {
+                if (error instanceof ValidationError) {
+                    showFieldError(error.field, error.message);
+                    showErrorMessage(error.message);
+                } else {
+                    showErrorMessage("Validation failed. Please check your input.");
+                }
+            }
+
+            // Handle AJAX errors
+            function handleAjaxError(xhr) {
+                let errorMessage = "An error occurred while creating the product.";
+
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) {
+                        errorMessage = response.message;
+                        if (response.field) {
+                            showFieldError(response.field, response.message);
+                        }
+                    }
+                } catch (e) {
+                    if (xhr.status === 404) {
+                        errorMessage = "Server endpoint not found. Please contact support.";
+                    } else if (xhr.status === 500) {
+                        errorMessage = "Internal server error. Please try again later.";
+                    } else if (xhr.status === 0) {
+                        errorMessage = "Network error. Please check your connection.";
+                    }
+                }
+
+                showErrorMessage(errorMessage);
+            }
+
+            // Show error message in UI
+            function showErrorMessage(message) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message,
+                    confirmButtonText: 'OK',
+                });
+                const alertHtml = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+
+                const existingAlert = document.querySelector('.alert');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+
+                $('#productForm').prepend(alertHtml);
+            }
+
+            // Show success message
+            function showSuccessMessage(message) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: message,
+                    confirmButtonText: 'OK',
+                });
+                const alertHtml = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                $('#productForm').prepend(alertHtml);
+            }
+
+            // Show field-specific error
+            function showFieldError(fieldId, message) {
+                const field = $(`#${fieldId}`);
+                if (field.length) {
+                    field.addClass('is-invalid');
+
+                    // Remove existing error message if any
+                    field.siblings('.invalid-feedback').remove();
+
+                    // Add new error message
+                    field.after(`<div class="invalid-feedback">${message}</div>`);
+
+                    // Scroll to the field
+                    field[0].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+
+            // Reset form errors
+            function resetFormErrors() {
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+                $('.alert').remove();
+            }
+
+            // Reset submit button
+            function resetSubmitButton(button, originalText) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+
+            // Reset form after successful submission
+            function resetForm() {
+                $('#productForm')[0].reset();
+                $('select').val('').trigger('change');
+                $('#variantTableBody').empty();
+                $('#comboProductTableBody').empty();
+                $('#totalComboCost').text('0.00');
+                $('#imagePreview').addClass('hidden');
+                $('.image-preview-container').css('border', '1px dashed #ced4da');
+                resetFormLayout();
+            }
+
+            // Reset form layout
+            function resetFormLayout() {
+                $('#pcsPerBoxDiv').addClass('hidden');
+                $('#variantTableContainer').addClass('hidden');
+                $('#comboProductSection').addClass('hidden');
+                $('#initialStockSection, #unitSection').removeClass('hidden');
+                $('#imageUploadSection').addClass('hidden');
             }
         });
     </script>
