@@ -34,7 +34,7 @@
         </li>
         <li class="dropdown dashboard_icon"> <a href="/comboProduct/productsList.php">Products</a>
             <div class="dropdown-content">
-                <a href="/comboProduct/AddNewComboProduct.php">Add New Product</a>
+                <a href="/products/create/">Add New Product</a>
                 <!-- <a href="/comboProduct/RawItemList.php">Raw Item List</a> -->
                 <!-- <a href="/comboProduct">Combo Product Breakdown</a> -->
                 <!-- <a href="/dashboard/item/list.php">Raw Item List</a> -->

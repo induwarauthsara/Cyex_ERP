@@ -1,3 +1,6 @@
+<?php require_once '../../inc/config.php'; ?>
+<?php require '../../inc/header.php';?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -440,37 +443,49 @@
                     dataType: 'json',
                     success: function(batches) {
                         if (batches.length > 0) {
-                            populateBatchDropdown(batches);
+                            // convert cost, profit, selling_price to number
+                            batches.forEach(batch => {
+                                batch.cost = parseFloat(batch.cost);
+                                batch.profit = parseFloat(batch.profit);
+                                batch.selling_price = parseFloat(batch.selling_price);
+                            });
+                            const prioritizedBatch = prioritizeBatch(batches);
+                            if (prioritizedBatch) {
+                                displayBatchDetails(prioritizedBatch);
+                            } else {
+                                resetBatchSelection();
+                                alert('No suitable batch found for the selected product.');
+                            }
                         } else {
-                            alert('No batches available for the selected product.');
                             resetBatchSelection();
+                            alert('No batches available for the selected product.');
                         }
                     },
                     error: function(xhr, status, error) {
                         console.error('Error fetching batches:', error);
                         alert('Unable to fetch batches. Please try again.');
-                    },
+                    }
                 });
             }
 
-            function populateBatchDropdown(batches) {
-                $('#batchSection').removeClass('hidden');
-                $('#batchSelect').empty().append('<option value="">Select Batch</option>');
-                batches.forEach((batch) => {
-                    $('#batchSelect').append(`
-                <option value="${batch.batch_name}" 
-                        data-selling-price="${batch.selling_price}" 
-                        data-cost="${batch.cost}">
-                    ${batch.batch_name} - Selling: ${batch.selling_price}, Cost: ${batch.cost}
-                </option>
-            `);
-                });
+            function prioritizeBatch(batches) {
+                console.log(batches);
+                return batches
+                    .filter(batch => batch.status === 'active' && batch.quantity > 1)
+                    .sort((a, b) => new Date(b.restocked_at) - new Date(a.restocked_at))[0];
+                console.log(batches);
+            }
+
+            function displayBatchDetails(batch) {
+                $('#batchSection').addClass('hidden'); // Hide batch selection field
+                $('#batchDetails').text(`Auto-selected Batch: ${batch.batch_name}, Selling Price: ${batch.selling_price}, Cost: ${batch.cost}`);
+                $('#batchDetails').data('selected-batch', batch); // Store the selected batch for later use
             }
 
             function resetBatchSelection() {
                 $('#batchSection').addClass('hidden');
-                $('#batchSelect').empty().append('<option value="">Select Batch</option>');
                 $('#batchDetails').text('');
+                $('#batchDetails').data('selected-batch', null);
             }
 
             // Update batch details on batch selection
@@ -652,61 +667,55 @@
             $('#addSelectedComboProduct').on('click', function() {
                 const productId = $('#comboProductSelect').val();
                 const productName = $('#comboProductSelect option:selected').text();
-                const batchName = $('#batchSelect').val();
-                const batchDetails = $('#batchSelect option:selected');
-                const unitCost = parseFloat(batchDetails.data('cost')) || 0;
-                const unitSellingPrice = parseFloat(batchDetails.data('selling-price')) || 0;
-                const quantity = parseFloat($('#comboProductQty').val());
-
-                // if (!productId || !batchName || isNaN(quantity) || quantity <= 0) {
-                //     alert('Please select a product, a batch, and enter a valid quantity.');
-                //     return;
-                // }
+                const selectedBatch = $('#batchDetails').data('selected-batch');
 
                 if (!productId) {
                     alert('Please select a product');
                     return;
                 }
 
-                if (!batchName) {
-                    alert('Please select a batch');
+                if (!selectedBatch) {
+                    alert('No batch available for the selected product.');
                     return;
                 }
 
-                if (isNaN(quantity)) {
+                const {
+                    batch_name,
+                    cost,
+                    selling_price
+                } = selectedBatch;
+                const quantity = parseFloat($('#comboProductQty').val());
+
+                if (isNaN(quantity) || quantity <= 0) {
                     alert('Please enter a valid quantity.');
                     return;
                 }
 
-                if (quantity <= 0) {
-                    alert('Quantity must be greater than 0.');
-                    return;
-                }
-
-                const totalCost = (unitCost * quantity).toFixed(2);
-                const totalSellingPrice = (unitSellingPrice * quantity).toFixed(2);
+                const totalCost = (cost * quantity).toFixed(2);
+                const totalSellingPrice = (selling_price * quantity).toFixed(2);
 
                 comboProductCount++;
                 const newComboRow = `
-                        <tr id="combo-row-${comboProductCount}" data-product-id="${productId}">
-                            <td>${productName}</td>
-                            <td>${batchName}</td>
-                            <td>${unitCost.toFixed(2)}</td>
-                            <td>${unitSellingPrice.toFixed(2)}</td>
-                            <td><input type="number" class="form-control combo-quantity" data-unit-cost="${unitCost}" data-unit-selling-price="${unitSellingPrice}" value="${quantity}" min="1"></td>
-                            <td class="combo-total-cost">${totalCost}</td>
-                            <td class="combo-total-selling-price">${totalSellingPrice}</td>
-                            <td>
-                                <button type="button" class="btn btn-danger deleteComboProductBtn" data-combo-id="${comboProductCount}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                    <tr id="combo-row-${comboProductCount}" data-product-id="${productId}">
+                        <td>${productName}</td>
+                        <td>${batch_name}</td>
+                        <td>${cost.toFixed(2)}</td>
+                        <td>${selling_price.toFixed(2)}</td>
+                        <td><input type="number" class="form-control combo-quantity" data-unit-cost="${cost}" data-unit-selling-price="${selling_price}" value="${quantity}" min="1"></td>
+                        <td class="combo-total-cost">${totalCost}</td>
+                        <td class="combo-total-selling-price">${totalSellingPrice}</td>
+                        <td>
+                            <button type="button" class="btn btn-danger deleteComboProductBtn" data-combo-id="${comboProductCount}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
                 $('#comboProductTableBody').append(newComboRow);
                 resetModalFields();
                 updateTotalComboCostAndPrice();
             });
+
 
             // Delete Combo Product
             $(document).on('click', '.deleteComboProductBtn', function() {
