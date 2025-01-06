@@ -82,8 +82,9 @@ button {
 }
 
 #cart-left-top-bottons {
-    display: flex;
-    flex: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
 }
 
 #cart-rightSide {
@@ -692,4 +693,10 @@ kbd {
 
 .dropdown {
     position: static !important;
+}
+
+.quick-aceess-buttons-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
