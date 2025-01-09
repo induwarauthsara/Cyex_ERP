@@ -349,6 +349,28 @@ input-field#changeInvoiceOptions-account {
     margin-top: 50px;
 }
 
+.dt-buttons {
+    margin-bottom: 1rem;
+}
+
+.dt-buttons .btn {
+    margin-right: 0.5rem;
+}
+
+.dt-button-collection {
+    padding: 0.5rem;
+}
+
+.dt-button-collection .dt-button {
+    margin: 0.25rem 0;
+}
+
+.dt-buttons.btn-group.flex-wrap {
+    position: absolute;
+    top: -15px;
+    right: 0;
+}
+
 th {
     text-align: center !important;
 }

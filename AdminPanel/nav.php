@@ -51,7 +51,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Reports",
             icon: "fas fa-table-list"
         },
-        "/AdminPanel/suppliers.php": {
+        "/suppliers/": {
             name: "Suppliers",
             icon: "fas fa-truck"
         },
