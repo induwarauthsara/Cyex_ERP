@@ -64,6 +64,7 @@ try {
             pb.quantity AS batch_quantity,
             pb.status,
             pb.notes,
+            pb.restocked_at,
             s.supplier_name
         FROM 
             product_batch AS pb
@@ -89,6 +90,7 @@ try {
             'batch_quantity' => $row['batch_quantity'],
             'status' => $row['status'],
             'notes' => $row['notes'],
+            'restocked_at' => $row['restocked_at'],
             'supplier_name' => $row['supplier_name']
         ];
     }

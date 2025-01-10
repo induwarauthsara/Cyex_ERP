@@ -339,14 +339,17 @@
         }
 
         function displayBatchModal(product, batches) {
+            console.log('Displaying batch modal for product:', product, 'batches:', batches);
             let batchList = `
             <h3>${product.product_name} - ${product.sku || ''} (${product.barcode || 'No Barcode'})</h3>
+            <br> <p>(Use <kbd>Tab</kbd> Key to Move Between Batches)</p>
             <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
                         <thead>
                             <tr style="background-color: #f5f5f5;">
                                 <th>Batch</th>
                                 <th>Price</th>
                                 <th>Expiry</th>
+                                <th>Restocked Date</th>
                                 <th>Quantity</th>
                                 <th>Action</th>
                             </tr>
@@ -357,6 +360,7 @@
                                     <td>${batch.batch_number}</td>
                                     <td>${batch.selling_price}</td>
                                     <td>${batch.expiry_date || 'N/A'}</td>
+                                    <td>${batch.restocked_at}</td>
                                     <td>${batch.batch_quantity}</td>
                                     <td><button class="select-batch" data-product='${JSON.stringify(product)}' data-batch='${JSON.stringify(batch)}'>Select</button></td>
                                 </tr>
