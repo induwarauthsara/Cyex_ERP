@@ -1,5 +1,5 @@
 <?php require_once '../../inc/config.php'; ?>
-<?php require '../../inc/header.php';?>
+<?php require '../../inc/header.php'; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -103,6 +103,21 @@
 
         .select2-dropdown--below {
             z-index: 100000;
+        }
+
+        #loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: #555;
+            background: rgba(255, 190, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 9999999999;
+            top: 182px;
         }
     </style>
 </head>
@@ -367,6 +382,8 @@
         </div>
     </div>
 
+    <div id="loader" style="display: none;">Loading Product Data...</div>
+
     <!-- Modal for adding combo product -->
     <div class="modal fade" id="addComboProductModal" tabindex="-1" aria-labelledby="addComboProductModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -434,6 +451,8 @@
             });
 
             function fetchBatches(productId) {
+                // Show the loader
+                $('#loader').show();
                 $.ajax({
                     url: '../API/fetch_Single_product_batches.php',
                     type: 'GET',
@@ -442,6 +461,8 @@
                     },
                     dataType: 'json',
                     success: function(batches) {
+                        // Hide the loader
+                        $('#loader').hide();
                         if (batches.length > 0) {
                             // convert cost, profit, selling_price to number
                             batches.forEach(batch => {
@@ -462,19 +483,35 @@
                         }
                     },
                     error: function(xhr, status, error) {
+                        // Hide the loader
+                        $('#loader').hide();
                         console.error('Error fetching batches:', error);
                         alert('Unable to fetch batches. Please try again.');
                     }
                 });
             }
 
+
+            // function prioritizeBatch(batches) {
+            //     console.log(batches);
+            //     return batches
+            //         .filter(batch => batch.status === 'active' && batch.quantity > 1)
+            //         .sort((a, b) => new Date(b.restocked_at) - new Date(a.restocked_at))[0];
+            //     console.log(batches);
+            // }
+
             function prioritizeBatch(batches) {
                 console.log(batches);
                 return batches
-                    .filter(batch => batch.status === 'active' && batch.quantity > 1)
-                    .sort((a, b) => new Date(b.restocked_at) - new Date(a.restocked_at))[0];
-                console.log(batches);
+                    .filter(batch => batch.status === 'active')
+                    .sort((a, b) => {
+                        if (b.quantity !== a.quantity) {
+                            return b.quantity - a.quantity; // Sort by quantity in descending order
+                        }
+                        return new Date(b.restocked_at) - new Date(a.restocked_at); // If quantities are equal, sort by restocked_at
+                    })[0];
             }
+
 
             function displayBatchDetails(batch) {
                 $('#batchSection').addClass('hidden'); // Hide batch selection field
@@ -669,6 +706,9 @@
                 const productName = $('#comboProductSelect option:selected').text();
                 const selectedBatch = $('#batchDetails').data('selected-batch');
 
+                // wait for batch selection
+
+
                 if (!productId) {
                     alert('Please select a product');
                     return;
@@ -753,18 +793,18 @@
 
                 $('#comboProductTableBody tr').each(function() {
                     const costText = $(this).find('.combo-total-cost').text();
-                    const sellingPriceText = $(this).find('.combo-total-selling-price').text();
+                    // const sellingPriceText = $(this).find('.combo-total-selling-price').text();
 
                     const cost = parseFloat(costText) || 0;
-                    const sellingPrice = parseFloat(sellingPriceText) || 0;
+                    // const sellingPrice = parseFloat(sellingPriceText) || 0;
 
                     totalCost += cost;
-                    totalSellingPrice += sellingPrice;
+                    // totalSellingPrice += sellingPrice;
                 });
 
                 $('#totalComboCost').text(totalCost.toFixed(2));
                 $('#cost').val(totalCost.toFixed(2));
-                $('#sellingPrice').val(totalSellingPrice.toFixed(2));
+                // $('#sellingPrice').val(totalSellingPrice.toFixed(2));
             }
 
 
@@ -914,7 +954,8 @@
                     showInEcommerce: $('#showInEcommerce').is(':checked'),
                     hasVariant: $('#hasVariant').is(':checked'),
                     variants: [],
-                    comboProducts: []
+                    comboProducts: [],
+                    sellingPrice: parseFloat($('#sellingPrice').val()) || 0,
                 };
 
                 // Add type-specific data
@@ -925,7 +966,6 @@
                     productData.pcsPerBox = $('#pcsPerBox').val();
                     productData.initialStock = parseFloat($('#initialStock').val()) || 0;
                     productData.cost = parseFloat($('#cost').val()) || 0;
-                    productData.sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
                 }
 
                 // Collect variants if enabled
@@ -951,6 +991,7 @@
                             quantity: parseFloat($(this).find('.combo-quantity').val()) || 0
                         };
                         productData.comboProducts.push(comboProduct);
+                        productData.cost = parseFloat($('#cost').val()) || 0;
                     });
                 }
 
