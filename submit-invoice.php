@@ -186,11 +186,24 @@ try {
         }
     }
 
+    // Update product stock reusable - function
+    function updateStock($con, $batch_id, $quantity)
+    {
+        $query = "UPDATE product_batch SET quantity = quantity - ? WHERE batch_id = ?";
+        $stmt = mysqli_prepare($con, $query);
+        if (!$stmt) {
+            throw new Exception("Error preparing product stock update query: " . mysqli_error($con));
+        }
 
+        mysqli_stmt_bind_param($stmt, 'is', $quantity, $batch_id);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+    
     // Insert sales records
     foreach ($productList as $product) {
-        $query = "INSERT INTO sales (invoice_number, product, qty, rate, amount, cost, profit, worker)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO sales (invoice_number, product, batch, qty, rate, amount, cost, profit, worker)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($con, $query);
         if (!$stmt) {
             throw new Exception("Error preparing sales insert query: " . mysqli_error($con));
@@ -203,22 +216,89 @@ try {
         $cost = 0; // You need to fetch this from your product or batch table
         $profit = $amount - ($cost * $quantity);
         $worker = $biller; // Using the cashier as the worker
-        $batch_number = $product['batch_id'];
+        $batch_id = $product['batch_id'];
 
-        mysqli_stmt_bind_param($stmt, 'isidddds', $invoiceNumber, $productName, $quantity, $price, $amount, $cost, $profit, $worker);
+        mysqli_stmt_bind_param($stmt, 'issddddds', $invoiceNumber, $productName, $batch_id, $quantity, $price, $amount, $cost, $profit, $worker);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        // Update product stock
-        $query = "UPDATE product_batch SET quantity = quantity - ? WHERE batch_number = ?";
-        $stmt = mysqli_prepare($con, $query);
-        if (!$stmt) {
-            throw new Exception("Error preparing product stock update query: " . mysqli_error($con));
+        // Check product type. if product type is service or digital, then no need to update stock. if combo product, then update stock for each product in combo product. if normal product, then update stock.
+        $stmt = mysqli_prepare($con, "SELECT product_type FROM products WHERE product_name = ?");
+        if (!$stmt) throw new Exception("Error preparing query: " . mysqli_error($con));
+
+        mysqli_stmt_bind_param($stmt, 's', $productName);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $productType);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+
+
+
+        // Update stock according to product type
+        // standard, combo, service, digital
+        // for standard product, update stock
+        if ($productType === 'standard') {
+            updateStock($con, $batch_id, $quantity);
         }
 
-        mysqli_stmt_bind_param($stmt, 'is', $quantity, $batch_number);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+
+        // for combo product, update stock for each product in combo product
+        if ($productType === 'combo') {
+            // Find This Combo Product's ID
+            $query = "SELECT product_id FROM products WHERE product_name = ?";
+            $stmt = mysqli_prepare($con, $query);
+            if (!$stmt) {
+                throw new Exception("Error preparing combo product id query: " . mysqli_error($con));
+            }
+            mysqli_stmt_bind_param($stmt, 's', $productName);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_store_result($stmt);
+            mysqli_stmt_bind_result($stmt, $comboProductId);
+            mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
+
+            // combo_products(id,combo_product_id, component_product_id, quantity, created_at)
+            // product_batch(batch_id, product_id, batch_number, cost, selling_price, profit, expiry_date, quantity, supplier_id, purchase_date, status, notes, created_at, updated_at, restocked_at) 
+            // need to connect product id and name to get combo product details
+            // for each component_product_id find priority batch number (priority batch = active, oldersted restock date, max qty available) and update stock
+
+            // Get all component products for this combo
+            $query = "SELECT cp.component_product_id, cp.quantity as required_qty, p.product_name 
+                      FROM combo_products cp 
+                      JOIN products p ON p.product_id = cp.component_product_id 
+                      WHERE cp.combo_product_id = ?";
+            $stmt = mysqli_prepare($con, $query);
+            if (!$stmt) {
+                throw new Exception("Error preparing combo components query: " . mysqli_error($con));
+            }
+
+            mysqli_stmt_bind_param($stmt, 'i', $comboProductId);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+
+            while ($row = mysqli_fetch_assoc($result)) {
+                // Calculate total quantity needed for this component
+                $totalQtyNeeded = $row['required_qty'] * $quantity;
+
+                // Find suitable batch with enough quantity
+                $batchQuery = "SELECT batch_id FROM product_batch 
+                               WHERE product_id = ? AND status = 'active' AND quantity >= ? 
+                               ORDER BY restocked_at ASC LIMIT 1";
+                $batchStmt = mysqli_prepare($con, $batchQuery);
+                mysqli_stmt_bind_param($batchStmt, 'id', $row['component_product_id'], $totalQtyNeeded);
+                mysqli_stmt_execute($batchStmt);
+                mysqli_stmt_bind_result($batchStmt, $componentBatchID);
+                mysqli_stmt_fetch($batchStmt);
+                mysqli_stmt_close($batchStmt);
+
+                if ($componentBatchID) {
+                    updateStock($con, $componentBatchID, $totalQtyNeeded);
+                } else {
+                    throw new Exception("Insufficient stock for component: " . $row['product_name']);
+                }
+            }
+            mysqli_stmt_close($stmt);
+        }
     }
 
     // Commit transaction

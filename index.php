@@ -233,7 +233,7 @@
         }
 
         function fetchProduct(query, selectFirstMatch = false) {
-            console.log('Fetching product for query:', query, 'selectFirstMatch', selectFirstMatch);
+            // console.log('Fetching product for query:', query, 'selectFirstMatch', selectFirstMatch);
             if (productsCache[query]) {
                 // If product is in cache, use it directly
                 handleProductResponse(productsCache[query], selectFirstMatch);
@@ -262,7 +262,7 @@
 
         // Fetch product based on search query
         function handleProductResponse(response, selectFirstMatch) {
-            console.log('Handling product response:', response, 'selectFirstMatch', selectFirstMatch, "response : ", response);
+            // console.log('Handling product response:', response, 'selectFirstMatch', selectFirstMatch, "response : ", response);
             if (response.products.length === 1) {
                 let product = response.products[0];
                 if (response.batches.length === 1) {
@@ -339,7 +339,7 @@
         }
 
         function displayBatchModal(product, batches) {
-            console.log('Displaying batch modal for product:', product, 'batches:', batches);
+            // console.log('Displaying batch modal for product:', product, 'batches:', batches);
             let batchList = `
             <h3>${product.product_name} - ${product.sku || ''} (${product.barcode || 'No Barcode'})</h3>
             <br> <p>(Use <kbd>Tab</kbd> Key to Move Between Batches)</p>
@@ -370,6 +370,7 @@
 
             Swal.fire({
                 title: 'Select Batch',
+                width: '40em',
                 html: batchList,
                 showConfirmButton: false,
                 didOpen: () => {
