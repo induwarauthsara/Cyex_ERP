@@ -128,6 +128,19 @@ function checkDuplicates($con, $productData)
     if ($stmt->get_result()->num_rows > 0) {
         throw new ProductException("This product name is already in use", "productName");
     }
+
+    // check duplicate batch_number
+    if ($productData['hasVariant']) {
+        foreach ($productData['variants'] as $variant) {
+            $batchNumber = $variant['variantName'];
+            $stmt = $con->prepare("SELECT product_id FROM product_batch WHERE batch_number = ? LIMIT 1");
+            $stmt->bind_param("s", $batchNumber);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                throw new ProductException("Batch number '" . $batchNumber . "' is already in use. Please use a unique batch number for each variant.", "variants");
+            }
+        }
+    }
 }
 
 try {

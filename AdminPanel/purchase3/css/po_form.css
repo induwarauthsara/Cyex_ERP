@@ -1,0 +1,147 @@
+/* Required field labels */
+
+.form-label.required:after {
+    content: '*';
+    @apply text-red-500 ml-1;
+}
+
+
+/* Product table styles */
+
+#productsTable {
+    @apply w-full border-collapse;
+}
+
+#productsTable th {
+    @apply bg-gray-100 dark: bg-gray-700 text-left p-3 font-semibold text-gray-700 dark: text-gray-200 border-b border-gray-200 dark: border-gray-600;
+}
+
+#productsTable td {
+    @apply border-b border-gray-200 dark: border-gray-700 p-3;
+}
+
+#productsTable input[type="number"] {
+    @apply form-input py-1 px-2;
+}
+
+
+/* Product modal styles */
+
+#productModal {
+    @apply fixed inset-0 z-50 overflow-y-auto;
+    backdrop-filter: blur(4px);
+}
+
+#productModal .modal-content {
+    @apply bg-white dark: bg-gray-800 rounded-lg shadow-xl max-w-2xl mx-auto my-8 p-6;
+}
+
+
+/* Select2 customization for dark mode */
+
+.dark .select2-container--default .select2-selection--single {
+    @apply bg-gray-700 border-gray-600 text-white;
+}
+
+.dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+    @apply text-white;
+}
+
+.dark .select2-dropdown {
+    @apply bg-gray-700 border-gray-600;
+}
+
+.dark .select2-container--default .select2-search--dropdown .select2-search__field {
+    @apply bg-gray-800 border-gray-600 text-white;
+}
+
+.dark .select2-container--default .select2-results__option {
+    @apply text-white;
+}
+
+.dark .select2-container--default .select2-results__option[aria-selected=true] {
+    @apply bg-gray-600;
+}
+
+.dark .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    @apply bg-blue-600;
+}
+
+
+/* Responsive design */
+
+@media (max-width: 768px) {
+    #productsTable {
+        @apply block overflow-x-auto;
+    }
+    .form-input,
+    .select2-container {
+        @apply w-full;
+    }
+    .btn {
+        @apply w-full mb-2;
+    }
+    .flex.justify-end {
+        @apply flex-col;
+    }
+    .flex.justify-end .btn {
+        @apply w-full;
+    }
+}
+
+
+/* Loading states */
+
+.loading {
+    @apply opacity-50 cursor-wait pointer-events-none;
+}
+
+.btn.loading:before {
+    content: '';
+    @apply inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin;
+}
+
+
+/* Error states */
+
+.form-input.error {
+    @apply border-red-500 focus: ring-red-500;
+}
+
+.error-message {
+    @apply text-red-500 text-sm mt-1;
+}
+
+
+/* Success states */
+
+.form-input.success {
+    @apply border-green-500 focus: ring-green-500;
+}
+
+
+/* Animation for adding/removing products */
+
+.product-row {
+    @apply transition-all duration-300;
+}
+
+.product-row.removing {
+    @apply opacity-0 transform -translate-x-full;
+}
+
+.product-row.adding {
+    @apply opacity-0 transform translate-x-full;
+}
+
+
+/* Tooltip styles */
+
+.tooltip {
+    @apply invisible absolute z-10 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark: bg-gray-700;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.has-tooltip:hover .tooltip {
+    @apply visible opacity-100;
+}

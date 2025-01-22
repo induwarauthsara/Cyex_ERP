@@ -1,0 +1,119 @@
+/* File: /AdminPanel/barcode-print/css/barcode_print.css */
+
+
+/* Paper size preview */
+
+.paper-preview {
+    @apply border border-gray-300 dark: border-gray-600 rounded-lg p-4 my-4;
+}
+
+.paper-preview.size-36 {
+    @apply w-36 h-36;
+}
+
+.paper-preview.size-24 {
+    @apply w-24 h-24;
+}
+
+.paper-preview.size-18 {
+    @apply w-18 h-18;
+}
+
+.paper-preview.size-30x15 {
+    @apply w-30 h-15;
+}
+
+
+/* Preview modal */
+
+#previewModal {
+    @apply fixed inset-0 z-50 overflow-y-auto;
+}
+
+#previewModal .modal-content {
+    @apply bg-white dark: bg-gray-800 rounded-lg shadow-xl max-w-4xl mx-auto my-8;
+}
+
+#previewContent {
+    @apply bg-white p-4 rounded-lg;
+    min-height: 400px;
+}
+
+
+/* Form elements customization */
+
+.form-checkbox {
+    @apply rounded border-gray-300 dark: border-gray-600 text-blue-600 shadow-sm focus: border-blue-300 focus: ring focus: ring-offset-0 focus: ring-blue-200 focus: ring-opacity-50;
+}
+
+
+/* Select2 customization */
+
+.select2-container--default .select2-selection--single {
+    @apply bg-white dark: bg-gray-700 border border-gray-300 dark: border-gray-600 rounded-lg;
+    height: 2.5rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    @apply text-gray-700 dark: text-gray-200 leading-loose;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    @apply bg-blue-500 text-white;
+}
+
+
+/* Table styles */
+
+#itemsTable th {
+    @apply bg-gray-100 dark: bg-gray-700 text-left py-3 px-4 font-semibold text-gray-700 dark: text-gray-200 border-b border-gray-200 dark: border-gray-600;
+}
+
+#itemsTable td {
+    @apply py-2 px-4 border-b border-gray-200 dark: border-gray-700;
+}
+
+
+/* Loading state */
+
+.loading {
+    @apply opacity-50 pointer-events-none;
+}
+
+.loading:after {
+    content: '';
+    @apply absolute inset-0 bg-white dark: bg-gray-800 bg-opacity-50;
+}
+
+
+/* Responsive design */
+
+@media (max-width: 768px) {
+    .grid-cols-3 {
+        @apply grid-cols-1;
+    }
+    .btn {
+        @apply w-full mb-2;
+    }
+    #itemsTable {
+        @apply block overflow-x-auto whitespace-nowrap;
+    }
+}
+
+
+/* Print preview */
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #previewContent,
+    #previewContent * {
+        visibility: visible;
+    }
+    #previewContent {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}

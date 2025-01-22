@@ -205,8 +205,11 @@ require_once 'inc/config.php'; ?>
                             } else {
                                 // This is Regular (Database Saved) Product (Not One-Time-Product) 
 
+                                // Check this Product type (Standard Product or Combo Product or Digital or Service)
+                                $product_type = mysqli_fetch_assoc(mysqli_query($con, "SELECT product_type FROM products WHERE product_name = '{$product}'"))['product_type'];
+
                                 // Product Cost eka Stock Account eken Adu wenawa (Kalin Thibbe + wenna.)
-                                $cost_sql = "SELECT cost, worker_commision FROM products WHERE product_name = '{$product}'";
+                                $cost_sql = "SELECT cost FROM products WHERE product_name = '{$product}'";
                                 $cost_result = mysqli_query($con, $cost_sql);
                                 $cost_row = mysqli_fetch_assoc($cost_result);
                                 $cost = $cost_row['cost'] * $qty;
@@ -214,9 +217,6 @@ require_once 'inc/config.php'; ?>
                                 $emoloyee_commission += $worker_commission;
                                 $total_cost = $cost + $worker_commission;
                                 $profit = $amount - $total_cost;
-
-                                $sql = "UPDATE accounts SET amount = amount - {$cost} WHERE account_name = 'Stock Account'";
-                                insert_query($sql, "Rs. $cost", "Add Product Cost to Stock Account");
 
                                 // Total Bill Product Cost and Profit
                                 $total_bill_cost += $total_cost;

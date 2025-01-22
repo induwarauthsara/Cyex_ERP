@@ -1,0 +1,149 @@
+/* DataTables Custom Styling */
+
+.dataTables_wrapper {
+    @apply bg-white dark: bg-gray-800 rounded-lg p-4;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_processing,
+.dataTables_wrapper .dataTables_paginate {
+    @apply text-gray-700 dark: text-gray-300;
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+    @apply bg-white dark: bg-gray-700 border border-gray-300 dark: border-gray-600 rounded-lg focus: ring-2 focus: ring-blue-500 focus: border-blue-500;
+}
+
+
+/* Table Styling */
+
+table.dataTable {
+    @apply w-full border-collapse;
+}
+
+table.dataTable thead th {
+    @apply bg-gray-100 dark: bg-gray-700 text-gray-700 dark: text-gray-200 px-4 py-3 text-left font-semibold border-b border-gray-200 dark: border-gray-600;
+}
+
+table.dataTable tbody td {
+    @apply px-4 py-3 border-b border-gray-200 dark: border-gray-700 text-gray-700 dark: text-gray-300;
+}
+
+
+/* Responsive Table */
+
+@media (max-width: 640px) {
+    table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child:before,
+    table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child:before {
+        @apply bg-blue-500 dark: bg-blue-600 text-white rounded-full;
+    }
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        @apply float-none text-center mb-4;
+    }
+}
+
+
+/* Pagination Buttons */
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    @apply px-3 py-1 mx-1 rounded-md;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    @apply bg-blue-500 text-white border-blue-500;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    @apply bg-blue-100 dark: bg-blue-900 text-blue-700 dark: text-blue-300 border-blue-500;
+}
+
+
+/* Loading State */
+
+.dataTables_processing {
+    @apply bg-white dark: bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark: border-gray-700;
+}
+
+
+/* Select2 Custom Styling */
+
+.select2-container--default .select2-selection--single {
+    @apply bg-white dark: bg-gray-700 border border-gray-300 dark: border-gray-600 rounded-lg h-10;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    @apply text-gray-700 dark: text-gray-300 leading-10;
+}
+
+.select2-dropdown {
+    @apply bg-white dark: bg-gray-700 border border-gray-300 dark: border-gray-600;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    @apply bg-blue-500 text-white;
+}
+
+.select2-container--default .select2-results__option[aria-selected=true] {
+    @apply bg-gray-100 dark: bg-gray-600;
+}
+
+
+/* Status Badge Colors */
+
+.status-badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-badge.draft {
+    @apply bg-gray-200 text-gray-800;
+}
+
+.status-badge.pending {
+    @apply bg-yellow-200 text-yellow-800;
+}
+
+.status-badge.approved {
+    @apply bg-blue-200 text-blue-800;
+}
+
+.status-badge.ordered {
+    @apply bg-purple-200 text-purple-800;
+}
+
+.status-badge.received {
+    @apply bg-green-200 text-green-800;
+}
+
+.status-badge.cancelled {
+    @apply bg-red-200 text-red-800;
+}
+
+
+/* Action Buttons */
+
+.action-btn {
+    @apply p-1 rounded-full transition-colors duration-200;
+}
+
+.action-btn:hover {
+    @apply bg-gray-100 dark: bg-gray-700;
+}
+
+
+/* Export Menu Animation */
+
+#exportMenu {
+    @apply transition-all duration-200 transform origin-top-right;
+}
+
+#exportMenu.hidden {
+    @apply scale-95 opacity-0;
+}
+
+#exportMenu:not(.hidden) {
+    @apply scale-100 opacity-100;
+}
