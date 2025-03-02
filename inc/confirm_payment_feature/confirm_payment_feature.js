@@ -9,12 +9,12 @@ function customerSavedExtraFund() {
     if (customerPhone) {
         // Send request with customerPhone value
         fetch('/inc/confirm_payment_feature/customer_extra_fund.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ customerPhone }),
-        })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ customerPhone }),
+            })
             .then(response => response.text())
             .then(data => {
                 const parsedAmount = parseFloat(data);
@@ -38,7 +38,7 @@ function customerSavedExtraFund() {
     // });
 }
 
-$(document).ready(function () {
+$(document).ready(function() {
     customerSavedExtraFund();
 });
 
@@ -83,7 +83,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
         `Rs. ${formatCurrency(discount)}`;
 
     let modalContent = `
-        <div style="display: flex; flex-direction: column; max-width: 800px;">
+        <div style="flex-direction: column; max-width: 800px;">
             <p><strong>Customer:</strong> ${customerName}</p>
             <p><strong>Customer Number:</strong> ${customerNumber}</p>
             <p id="useCustomerExtraFundElement">

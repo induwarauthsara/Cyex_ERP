@@ -31,7 +31,7 @@
                     <button class="view-held-invoices" onclick="loadHeldInvoices()"><svg style="width: 20px; color: #fff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                             <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75H15a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z" clip-rule="evenodd"></path>
                         </svg> &nbsp; Held Invoices List</button>
-                    <button class="shortcut-button" onclick="clearQuickSearch()"><i class="fas fa-broom"></i> &nbsp; Clear Quick Search</button>
+                    <button class="clear-search-cache-button" onclick="clearQuickSearch()"><i class="fas fa-broom"></i> &nbsp; Clear Quick Search</button>
                 </div>
             </div>
             <!-- Customer Details -->
@@ -74,11 +74,22 @@
         <div id="cart-rightSide">
             <!-- Invoice Summary -->
             <div class="invoice-summary">
-                <div class="summery-count">
-                    <p>Products <span id="product-count">0</span></p>
-                    <p>Items <span id="item-count">0</span></p>
+                <div class="summary-counts">
+                    <div class="count-item">
+                        <i class="fas fa-box" aria-hidden="true"></i>
+                        <div class="count-details">
+                            <span class="count-label">Products</span>
+                            <span class="count-value" id="product-count">0</span>
+                        </div>
+                    </div>
+                    <div class="count-item">
+                        <i class="fas fa-shopping-basket" aria-hidden="true"></i>
+                        <div class="count-details">
+                            <span class="count-label">Items</span>
+                            <span class="count-value" id="item-count">0</span>
+                        </div>
+                    </div>
                 </div>
-                <hr />
                 <p>Subtotal<span class="total-without-discount"> Rs. <span id="total-without-discount">0.00</span></span></p>
                 <hr />
                 <p> <span class="discount-edit">Discount &nbsp; <button onclick="openDiscountModal()"><i class="fas fa-edit"></i> </button></span> <span class="discount-amount"> Rs. <span id="discount-amount">0.00</span> </span></p>
@@ -89,16 +100,21 @@
             <!-- Button Group -->
             <div class="button-group">
                 <div id="payment-buttons">
-                    <button id="pay-btn" onclick="openConfirmPaymentModal('Cash')">Cash Payment</button>
-                    <button id="card-btn" onclick="openConfirmPaymentModal('Card')">Card Payment</button>
+                    <button id="pay-btn" onclick="openConfirmPaymentModal('Cash')"><i class="fas fa-money-bill-alt"></i> Cash Payment <kbd class="small">F1</kbd></button>
+                    <button id="card-btn" onclick="openConfirmPaymentModal('Card')"><i class="fas fa-credit-card"></i> Card Payment <kbd class="small">F2</kbd></button>
                 </div>
                 <div id="cart-action-buttons">
-                    <button id="hold-btn" onclick="holdInvoice()">Hold</button>
-                    <button id="credit-btn" onclick="openConfirmPaymentModal('Credit')">Credit</button>
-                    <button id="cancel-btn" onclick="cancelBill()">Cancel</button>
+                    <button id="hold-btn" onclick="holdInvoice()"><i class="fas fa-pause-circle"></i> Hold</button>
+                    <button id="credit-btn" onclick="openConfirmPaymentModal('Credit')"><i class="fas fa-handshake"></i> Credit</button>
+                    <button id="cancel-btn" onclick="cancelBill()"><i class="fas fa-times-circle"></i> Cancel</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Software Developed by <a href="https://cyextech.com" target="_blank">CyexTech Solutions</a> &copy; 2021 - <?php echo date('Y'); ?>
     </div>
 
     <script>

@@ -120,7 +120,7 @@
             padding: 0;
             overflow: hidden;
             background-color: #2b365b;
-            margin-bottom: 10px;
+            /* margin-bottom: 10px; */
             top: 0;
             width: 100%;
         }
