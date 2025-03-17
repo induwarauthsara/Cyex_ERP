@@ -21,6 +21,7 @@ $totalPayable = $data['totalPayable'] ?? 0;
 $totalReceived = $data['totalReceived'] ?? 0;
 $customerName = $data['customerName'] ?? 'Walk-in Customer';
 $customerNumber = $data['customerNumber'] ?? '0';
+$individualDiscountMode = $data['individualDiscountMode'] ?? false; // Get individual discount mode
 
 // Calculate discount and final totals
 $subtotal = $data['subtotal'];
@@ -29,7 +30,7 @@ $discountType = $data['discountType'];
 $discount = $discountType === 'percentage' ? ($subtotal * $discountValue / 100) : $discountValue;
 $finalTotal = $subtotal - $discount;
 
-$balance = $data['balance']; // Api customer ta denna thiyena balance eka.
+$balance = $data['balance']; // Amount customer needs to pay
 $paymentMethod = $data['paymentMethod'] ?? 'Cash';
 $printReceipt = $data['printReceipt'] ?? false;
 $extraPaidAmount = $data['extraPaidAmount'] ?? 0;
@@ -58,8 +59,6 @@ if (!empty($errors)) {
     echo json_encode(['success' => false, 'message' => implode(", ", $errors)]);
     exit;
 }
-
-
 
 // Start database transaction
 mysqli_begin_transaction($con);
@@ -94,9 +93,9 @@ try {
         mysqli_stmt_close($stmt);
     }
 
-    // Insert invoice
-    $query = "INSERT INTO invoice (customer_name, customer_mobile, total, discount, advance, balance, paymentMethod, full_paid, invoice_description, biller)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    // Insert invoice - add individual_discount_mode field
+    $query = "INSERT INTO invoice (customer_name, customer_mobile, total, discount, advance, balance, paymentMethod, full_paid, invoice_description, biller, individual_discount_mode)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($con, $query);
     if (!$stmt) {
         throw new Exception("Error preparing invoice insert query: " . mysqli_error($con));
@@ -106,10 +105,11 @@ try {
     $fullPaid = ($balance <= 0) ? 1 : 0;
     $biller = $data['cashierName'] ?? 'Unknown';
     $advance = $totalReceived - $balance;
+    $individual_discount_mode = $individualDiscountMode ? 1 : 0;
 
     mysqli_stmt_bind_param(
         $stmt,
-        'ssddddsiss',
+        'ssddddsissi',
         $customerName,
         $customerNumber,
         $subtotal,
@@ -119,7 +119,8 @@ try {
         $paymentMethod,
         $fullPaid,
         $invoiceDescription,
-        $biller
+        $biller,
+        $individual_discount_mode
     );
 
     mysqli_stmt_execute($stmt);
@@ -153,7 +154,7 @@ try {
 
         $cashAmount = $data['cashAmount'];
     } else {
-        $cashAmount = $data['cashAmount'] - $extraPaidAmount; // Remove extra paid amount from cash amount (Salli ithuru dunna ewa eya dunna ganen adu karanawa)
+        $cashAmount = $data['cashAmount'] - $extraPaidAmount; // Remove extra paid amount from cash amount
     }
 
     // Insert Payment Amounts to Accounts
@@ -200,10 +201,10 @@ try {
         mysqli_stmt_close($stmt);
     }
     
-    // Insert sales records
+    // Insert sales records - modified to handle individual_discount_mode
     foreach ($productList as $product) {
-        $query = "INSERT INTO sales (invoice_number, product, batch, qty, rate, amount, cost, profit, worker)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO sales (invoice_number, product, batch, qty, rate, discount_price, amount, cost, profit, worker, individual_discount_mode)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($con, $query);
         if (!$stmt) {
             throw new Exception("Error preparing sales insert query: " . mysqli_error($con));
@@ -211,18 +212,40 @@ try {
 
         $productName = $product['name'];
         $quantity = $product['quantity'];
-        $price = $product['price'];
+        
+        // Use regular_price or discount_price based on individual_discount_mode
+        $regularPrice = isset($product['regular_price']) ? $product['regular_price'] : $product['price'];
+        $discountPrice = isset($product['discount_price']) ? $product['discount_price'] : $regularPrice;
+        
+        // Use the appropriate price based on the mode
+        $price = $individualDiscountMode ? $discountPrice : $regularPrice;
         $amount = $quantity * $price;
+        
         $cost = 0; // You need to fetch this from your product or batch table
         $profit = $amount - ($cost * $quantity);
         $worker = $biller; // Using the cashier as the worker
         $batch_id = $product['batch_id'];
+        $individual_discount_mode_int = $individualDiscountMode ? 1 : 0;
 
-        mysqli_stmt_bind_param($stmt, 'issddddds', $invoiceNumber, $productName, $batch_id, $quantity, $price, $amount, $cost, $profit, $worker);
+        mysqli_stmt_bind_param(
+            $stmt, 
+            'issdddddsdi', 
+            $invoiceNumber, 
+            $productName, 
+            $batch_id, 
+            $quantity, 
+            $regularPrice, 
+            $discountPrice, 
+            $amount, 
+            $cost, 
+            $profit, 
+            $worker,
+            $individual_discount_mode_int
+        );
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        // Check product type. if product type is service or digital, then no need to update stock. if combo product, then update stock for each product in combo product. if normal product, then update stock.
+        // Check product type and update stock accordingly
         $stmt = mysqli_prepare($con, "SELECT product_type FROM products WHERE product_name = ?");
         if (!$stmt) throw new Exception("Error preparing query: " . mysqli_error($con));
 
@@ -232,15 +255,12 @@ try {
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
 
-
-
         // Update stock according to product type
         // standard, combo, service, digital
         // for standard product, update stock
         if ($productType === 'standard') {
             updateStock($con, $batch_id, $quantity);
         }
-
 
         // for combo product, update stock for each product in combo product
         if ($productType === 'combo') {
@@ -256,11 +276,6 @@ try {
             mysqli_stmt_bind_result($stmt, $comboProductId);
             mysqli_stmt_fetch($stmt);
             mysqli_stmt_close($stmt);
-
-            // combo_products(id,combo_product_id, component_product_id, quantity, created_at)
-            // product_batch(batch_id, product_id, batch_number, cost, selling_price, profit, expiry_date, quantity, supplier_id, purchase_date, status, notes, created_at, updated_at, restocked_at) 
-            // need to connect product id and name to get combo product details
-            // for each component_product_id find priority batch number (priority batch = active, oldersted restock date, max qty available) and update stock
 
             // Get all component products for this combo
             $query = "SELECT cp.component_product_id, cp.quantity as required_qty, p.product_name 

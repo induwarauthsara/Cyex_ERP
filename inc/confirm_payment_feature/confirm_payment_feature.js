@@ -232,7 +232,8 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 extraPaidAmount,
                 bool_useCustomerExtraFund: document.getElementById('useCustomerExtraFund')?.checked || false,
                 useCustomerExtraFundAmount,
-                creditPayment: document.getElementById('creditPayment')?.checked || false
+                creditPayment: document.getElementById('creditPayment')?.checked || false,
+                individualDiscountMode // Add the individual discount mode flag
             };
 
             // Step 3: Send data to submit-invoice.php

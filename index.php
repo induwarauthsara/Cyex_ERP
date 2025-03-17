@@ -49,7 +49,7 @@
             <div class="product-container">
                 <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off">
                 <button id="add-product" style="display: none;">Add Product</button>
-                <div id="search-results" style="position: absolute; background-color: white; border: 1px solid #ccc; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; display: none; transform: translateY(40px);"> </div>
+                <div id="search-results" style="position: absolute; background-color: white; border: 1px solid #ccc; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"> </div>
             </div>
             <!-- Product List Table -->
             <div class="product-list">
@@ -92,8 +92,25 @@
                 </div>
                 <p>Subtotal<span class="total-without-discount"> Rs. <span id="total-without-discount">0.00</span></span></p>
                 <hr />
-                <p> <span class="discount-edit">Discount &nbsp; <button onclick="openDiscountModal()"><i class="fas fa-edit"></i> </button></span> <span class="discount-amount"> Rs. <span id="discount-amount">0.00</span> </span></p>
+                <p> <span class="discount-edit"> Discount &nbsp; <button onclick="openDiscountModal()"><i class="fas fa-edit"></i> </button></span> <span class="discount-amount"> Rs. <span id="discount-amount">0.00</span> </span></p>
                 <hr />
+
+                <!-- Add the individual discount toggle here -->
+                <div class="individual-discount-toggle-container">
+                    <div class="individual-discount-toggle">
+                        <label for="individual-discount-toggle">Individual Item Discount Price</label>
+                        <label class="switch">
+                            <input type="checkbox" id="individual-discount-toggle" onchange="toggleIndividualDiscountMode()">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <!-- Add the total savings display that shows when toggle is checked -->
+                    <div id="individual-discount-savings" style="display: none;">
+                        Total Savings: <span id="individual-discount-savings-amount">Rs. 0.00</span>
+                    </div>
+                </div>
+                <hr />
+
                 <p>Total Payable <span class="total-payable"> Rs. <span id="total-payable">0.00</span></span></p>
             </div>
 
@@ -122,6 +139,7 @@
         let productsCache = JSON.parse(localStorage.getItem('productsCache')) || {};
         let discountType = localStorage.getItem('discountType') || 'flat'; // Load discount type from localStorage
         let discountValue = parseFloat(localStorage.getItem('discountValue')) || 0; // Load discount value from localStorage
+        let individualDiscountMode = JSON.parse(localStorage.getItem('individualDiscountMode')) || false;
 
         // Debounce function to limit the rate of search requests
         function debounce(func, delay) {
@@ -213,6 +231,26 @@
                     $('#search-results').hide();
                 }
             });
+
+            // Set toggle state from localStorage
+            $('#individual-discount-toggle').prop('checked', individualDiscountMode);
+
+            // Render the product list with the appropriate columns
+            renderProductList();
+            calculateInvoiceTotal();
+
+            // Set toggle state from localStorage and show/hide individual discount savings
+            $('#individual-discount-toggle').prop('checked', individualDiscountMode);
+            if (individualDiscountMode) {
+                $('#individual-discount-savings').show();
+                calculateIndividualDiscountSavings();
+            } else {
+                $('#individual-discount-savings').hide();
+            }
+
+            // Render the product list with the appropriate columns
+            renderProductList();
+            calculateInvoiceTotal();
         });
 
         function showShortcuts() {
@@ -455,18 +493,23 @@
             if (existingBatch) {
                 // Increment the quantity if the batch already exists in the cart
                 existingBatch.quantity++;
-                existingBatch.subtotal = existingBatch.quantity * existingBatch.price;
+                existingBatch.subtotal = existingBatch.quantity * (individualDiscountMode ? existingBatch.discount_price : existingBatch.regular_price);
                 productIndex = productList.indexOf(existingBatch); // Get index of the existing product in the list
             } else {
+                // Regular price is the batch selling price
+                const regularPrice = parseFloat(batch.selling_price);
+                // Default discount price to the same as regular price
+                const discountPrice = regularPrice;
+                
                 // Add new entry if batch doesn't exist in cart
                 productList.push({
                     product_id: batch.product_id,
                     batch_id: batch.batch_id,
                     name: batch.product_name || product.product_name, // Use batch name if available, fallback to product name
-                    price: batch.selling_price,
+                    regular_price: regularPrice,
+                    discount_price: discountPrice,
                     quantity: 1, // Initialize with a quantity of 1
-                    discount: 0,
-                    subtotal: batch.selling_price // Set initial subtotal
+                    subtotal: individualDiscountMode ? discountPrice : regularPrice // Set initial subtotal based on mode
                 });
                 productIndex = productList.length - 1; // New product is at the last index
             }
@@ -487,32 +530,74 @@
         // Render product list in cart
         function renderProductList() {
             $('#product-table-body').empty(); // Clear existing rows
+            
+            // Update table headers based on the mode
+            if (individualDiscountMode) {
+                $('.product-list thead tr').html(`
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Regular Price</th>
+                    <th>Discount Price</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                `);
+            } else {
+                $('.product-list thead tr').html(`
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                `);
+            }
 
             productList.forEach((product, index) => {
-                $('#product-table-body').append(
-                    `<tr>
-                <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
-                <td style="padding: 10px; border: 1px solid #ccc;">
-                    <input id="quantity-${index}" type="text" min="1" value="${product.quantity}" 
-                        onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
-                </td>
-                <td style="padding: 10px; border: 1px solid #ccc;">
-                    <input type="number" step="0.01" min="0" value="${product.price}" 
-                        onchange="updatePrice(${index}, this.value)" style="width: 80px; padding: 5px;">
-                </td>
-                <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.price).toFixed(2))}</td>
-                <td style="padding: 10px; border: 1px solid #ccc;">
-                    <button class="remove-product" onclick="removeProduct(${index})"> <i class="fas fa-trash-alt"></i> </button>
-                </td>
-            </tr>`
-                );
+                let row = `<tr>
+                    <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
+                    <td style="padding: 10px; border: 1px solid #ccc;">
+                        <input id="quantity-${index}" type="text" min="1" value="${product.quantity}" 
+                            onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
+                    </td>`;
+                    
+                if (individualDiscountMode) {
+                    // In individual discount mode, show both regular and discount price
+                    row += `
+                    <td style="padding: 10px; border: 1px solid #ccc;">
+                        <input type="number" step="0.01" min="0" value="${product.regular_price}" 
+                            onchange="updateRegularPrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ccc;">
+                        <input type="number" step="0.01" min="0" value="${product.discount_price}" 
+                            onchange="updateDiscountPrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.discount_price).toFixed(2))}</td>`;
+                } else {
+                    // In regular mode, just show the regular price
+                    row += `
+                    <td style="padding: 10px; border: 1px solid #ccc;">
+                        <input type="number" step="0.01" min="0" value="${product.regular_price}" 
+                            onchange="updateRegularPrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.regular_price).toFixed(2))}</td>`;
+                }
+                
+                row += `
+                    <td style="padding: 10px; border: 1px solid #ccc;">
+                        <button class="remove-product" onclick="removeProduct(${index})"> <i class="fas fa-trash-alt"></i> </button>
+                    </td>
+                </tr>`;
+                
+                $('#product-table-body').append(row);
             });
         }
 
-
         function updateQuantity(index, value) {
             productList[index].quantity = parseInt(value);
-            productList[index].subtotal = productList[index].quantity * productList[index].price;
+            
+            // Update subtotal based on current mode
+            productList[index].subtotal = productList[index].quantity * 
+                (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
+            
             localStorage.setItem('productList', JSON.stringify(productList));
             renderProductList();
             calculateInvoiceTotal();
@@ -595,12 +680,23 @@
         }
 
         function calculateInvoiceTotal() {
-            let totalWithoutDiscount = productList.reduce((acc, product) => acc + product.quantity * product.price, 0);
+            let totalWithoutDiscount = 0;
+            
+            // Calculate the subtotal based on the current mode
+            if (individualDiscountMode) {
+                totalWithoutDiscount = productList.reduce((acc, product) => 
+                    acc + (product.quantity * product.discount_price), 0);
+                // Update individual discount savings display
+                calculateIndividualDiscountSavings();
+            } else {
+                totalWithoutDiscount = productList.reduce((acc, product) => 
+                    acc + (product.quantity * product.regular_price), 0);
+            }
             
             // Convert discount value to a number and handle potential non-numeric values
             let discountValueNum = parseFloat(discountValue) || 0;
             
-            // Calculate discount based on type
+            // Calculate discount based on type (this is the global discount)
             let discount = discountType === 'percentage' 
                 ? (totalWithoutDiscount * discountValueNum / 100) 
                 : discountValueNum;
@@ -639,6 +735,95 @@
                     Swal.close();
                 }
             });
+        }
+
+        // Toggle individual discount mode
+        function toggleIndividualDiscountMode() {
+            individualDiscountMode = $('#individual-discount-toggle').is(':checked');
+            localStorage.setItem('individualDiscountMode', JSON.stringify(individualDiscountMode));
+            
+            // Display or hide individual discount savings
+            if (individualDiscountMode) {
+                $('#individual-discount-savings').show();
+                calculateIndividualDiscountSavings();
+            } else {
+                $('#individual-discount-savings').hide();
+            }
+            
+            // Re-render product list with updated column structure
+            renderProductList();
+            calculateInvoiceTotal();
+        }
+
+        // Add a new function to calculate individual discount savings
+        function calculateIndividualDiscountSavings() {
+            let totalSavings = 0;
+            
+            productList.forEach(product => {
+                const regularTotal = product.quantity * product.regular_price;
+                const discountTotal = product.quantity * product.discount_price;
+                totalSavings += (regularTotal - discountTotal);
+            });
+            
+            $('#individual-discount-savings-amount').text('Rs. ' + formatNumber(totalSavings.toFixed(2)));
+            
+            return totalSavings;
+        }
+
+        // Update the updateRegularPrice function
+        function updateRegularPrice(index, value) {
+            productList[index].regular_price = parseFloat(value);
+            
+            // If discount price is not set or higher than regular price, set it to match regular price
+            if (!productList[index].discount_price || productList[index].discount_price > productList[index].regular_price) {
+                productList[index].discount_price = productList[index].regular_price;
+            }
+            
+            // Update subtotal based on current mode
+            productList[index].subtotal = productList[index].quantity * 
+                (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
+            
+            localStorage.setItem('productList', JSON.stringify(productList));
+            renderProductList();
+            calculateInvoiceTotal();
+            
+            // Update individual discount savings if in individual discount mode
+            if (individualDiscountMode) {
+                calculateIndividualDiscountSavings();
+            }
+        }
+
+        // Update the updateDiscountPrice function
+        function updateDiscountPrice(index, value) {
+            const discountPrice = parseFloat(value);
+            
+            // Ensure discount price is not higher than regular price
+            if (discountPrice > productList[index].regular_price) {
+                Swal.fire({
+                    title: 'Invalid Discount Price',
+                    text: 'Discount price cannot be higher than regular price.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                
+                // Reset to regular price
+                productList[index].discount_price = productList[index].regular_price;
+            } else {
+                productList[index].discount_price = discountPrice;
+            }
+            
+            // Update subtotal based on current mode
+            productList[index].subtotal = productList[index].quantity * 
+                (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
+            
+            localStorage.setItem('productList', JSON.stringify(productList));
+            renderProductList();
+            calculateInvoiceTotal();
+            
+            // Update individual discount savings if in individual discount mode
+            if (individualDiscountMode) {
+                calculateIndividualDiscountSavings();
+            }
         }
     </script>
 

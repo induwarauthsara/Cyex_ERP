@@ -11,18 +11,41 @@ if (!$data) {
 }
 
 // Retrieve data from JSON
-$customer_name = $data['customer_name'];
-$customer_number = $data['customer_number'];
+$customer_name = mysqli_real_escape_string($con, $data['customer_name']);
+$customer_number = mysqli_real_escape_string($con, $data['customer_number']);
 $items = json_encode($data['items']);
-$total_amount = $data['total_amount'];
-$discount_amount = $data['discount_amount'];
-$discount_type = $data['discount_type'];
-$discount_value = $data['discount_value'];
-$total_payable = $data['total_payable'];
+$total_amount = floatval($data['total_amount']);
+$discount_amount = floatval($data['discount_amount']);
+$discount_type = mysqli_real_escape_string($con, $data['discount_type']);
+$discount_value = floatval($data['discount_value']);
+$total_payable = floatval($data['total_payable']);
 
-// Prepare SQL query
-$sql = "INSERT INTO held_invoices (customer_name, customer_number, items, total_amount, discount_amount, discount_type, discount_value, total_payable) 
-        VALUES ('$customer_name', '$customer_number', '$items', $total_amount, $discount_amount, '$discount_type', $discount_value, $total_payable)";
+// Get individual discount mode (convert to 0 or 1 for database)
+$individual_discount_mode = isset($data['individual_discount_mode']) && $data['individual_discount_mode'] ? 1 : 0;
+
+// Prepare SQL query with individual_discount_mode field
+$sql = "INSERT INTO held_invoices (
+            customer_name, 
+            customer_number, 
+            items, 
+            total_amount, 
+            discount_amount, 
+            discount_type, 
+            discount_value, 
+            total_payable, 
+            individual_discount_mode
+        ) 
+        VALUES (
+            '$customer_name', 
+            '$customer_number', 
+            '$items', 
+            $total_amount, 
+            $discount_amount, 
+            '$discount_type', 
+            $discount_value, 
+            $total_payable, 
+            $individual_discount_mode
+        )";
 
 // Execute the query
 if (mysqli_query($con, $sql)) {

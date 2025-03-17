@@ -38,21 +38,25 @@ function holdInvoice() {
             //     "total_payable": totalPayable
             // });
 
+            // Include individual discount mode in the data sent to the server
+            const payload = {
+                customer_name: customerName,
+                customer_number: customerNumber,
+                total_amount: totalAmount,
+                discount_amount: discountAmount,
+                discount_type: discountType, // Include discount type
+                discount_value: discountPercentage || discountValue, // Save the extracted percentage if available
+                total_payable: totalPayable,
+                items: productList,
+                individual_discount_mode: individualDiscountMode
+            };
+
             fetch('/inc/hold_invoices/save_held_invoice.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        customer_name: customerName,
-                        customer_number: customerNumber,
-                        items: items,
-                        total_amount: totalAmount,
-                        discount_amount: discountAmount,
-                        discount_type: discountType, // Include discount type
-                        discount_value: discountPercentage || discountValue, // Save the extracted percentage if available
-                        total_payable: totalPayable
-                    })
+                    body: JSON.stringify(payload)
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -233,8 +237,11 @@ function retrieveHeldInvoice(invoiceId) {
 
                 // Set discount type and value from retrieved data
                 discountType = data.discount_type || 'flat';
-                // Ensure discount value is a number
                 discountValue = parseFloat(data.discount_value) || 0;
+                
+                // Set individual discount mode
+                individualDiscountMode = data.individual_discount_mode || false;
+                $('#individual-discount-toggle').prop('checked', individualDiscountMode);
 
                 // Set customer name and number from retrieved data
                 const customerName = data.customer_name || 'Walk-in Customer';
@@ -250,6 +257,7 @@ function retrieveHeldInvoice(invoiceId) {
                 localStorage.setItem('discountValue', discountValue);
                 localStorage.setItem('customerName', customerName);
                 localStorage.setItem('customerPhone', customerNumber);
+                localStorage.setItem('individualDiscountMode', JSON.stringify(individualDiscountMode));
 
                 // Re-render the product list in the cart, apply discount, and calculate totals
                 renderProductList();
