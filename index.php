@@ -596,14 +596,31 @@
 
         function calculateInvoiceTotal() {
             let totalWithoutDiscount = productList.reduce((acc, product) => acc + product.quantity * product.price, 0);
-            let discount = discountType === 'percentage' ? (totalWithoutDiscount * discountValue / 100) : discountValue;
-            let totalAfterDiscount = totalWithoutDiscount - discount;
-            $('#product-count').text(productList.length);
-            $('#item-count').text(productList.reduce((acc, product) => acc + product.quantity, 0));
-            $('#total-without-discount').text(formatNumber(totalWithoutDiscount.toFixed(2)));
-            let discountText = discountType === 'percentage' ? `${formatNumber(discount.toFixed(2))} (${discountValue}%)` : formatNumber(discount.toFixed(2));
-            $('#discount-amount').text(discountText);
-            $('#total-payable').text(formatNumber(totalAfterDiscount.toFixed(2)));
+            
+            // Convert discount value to a number and handle potential non-numeric values
+            let discountValueNum = parseFloat(discountValue) || 0;
+            
+            // Calculate discount based on type
+            let discount = discountType === 'percentage' 
+                ? (totalWithoutDiscount * discountValueNum / 100) 
+                : discountValueNum;
+            
+            // Ensure discount is a number before using toFixed
+            discount = parseFloat(discount) || 0;
+            
+            let totalPayable = totalWithoutDiscount - discount;
+            
+            // Update the DOM elements with formatted values
+            $('#total-without-discount').text(formatNumber(totalWithoutDiscount));
+            $('#discount-amount').text(formatNumber(discount));
+            $('#total-payable').text(formatNumber(totalPayable));
+            
+            // Update item counts
+            let totalItems = productList.reduce((acc, product) => acc + product.quantity, 0);
+            let totalProducts = productList.length;
+            
+            $('#product-count').text(totalProducts);
+            $('#item-count').text(totalItems);
         }
 
         // Cancel and clear the bill

@@ -93,6 +93,46 @@ function clearCart() {
 
 
 function loadHeldInvoices() {
+    // Show loading animation immediately
+    Swal.fire({
+        title: 'Loading Held Invoices',
+        html: `
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Please wait...</p>
+            </div>
+        `,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+            // Add the spinner styles if not already in your CSS
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .loading-spinner {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }
+                .spinner {
+                    width: 50px;
+                    height: 50px;
+                    border: 5px solid rgba(0, 0, 0, 0.1);
+                    border-radius: 50%;
+                    border-top-color: var(--primary, #4361ee);
+                    animation: spin 1s ease-in-out infinite;
+                    margin-bottom: 15px;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    });
+
+    // Fetch held invoices data
     fetch('/inc/hold_invoices/get_held_invoices.php')
         .then(response => response.json())
         .then(data => {
@@ -104,49 +144,49 @@ function loadHeldInvoices() {
                 } else {
                     // Generate the table of held invoices
                     heldInvoicesHtml = `
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f0f0f0;">
-                                <th style="padding: 8px; border: 1px solid #ddd;">Invoice ID</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Customer Name</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Customer Number</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Items</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Total Amount</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Discount Amount</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Discount Type</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Discount Value</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Total Payable</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Held At</th>
-                                <th style="padding: 8px; border: 1px solid #ddd;">Actions</th>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background-color: #f0f0f0;">
+                            <th style="padding: 8px; border: 1px solid #ddd;">Invoice ID</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Customer Name</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Customer Number</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Items</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Total Amount</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Discount Amount</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Discount Type</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Discount Value</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Total Payable</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Held At</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(invoice => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${invoice.id}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${invoice.customer_name}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${invoice.customer_number}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">
+                                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                                        ${invoice.items.map(item => `<li>${item.name} x ${item.quantity}</li>`).join('')}
+                                    </ul>
+                                </td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Rs. ${parseFloat(invoice.total_amount || 0).toFixed(2)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Rs. ${parseFloat(invoice.discount_amount || 0).toFixed(2)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${invoice.discount_type}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${parseFloat(invoice.discount_value || 0)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Rs. ${parseFloat(invoice.total_payable || 0).toFixed(2)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${invoice.status}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${invoice.held_at}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                    <button onclick="retrieveHeldInvoice(${invoice.id})" class="btn-retrieve" style="padding: 5px 10px; border: none; background-color: #4CAF50; color: white; border-radius: 4px; cursor: pointer;">Retrieve</button>
+                                    <button onclick="Swal.close(); deleteHeldInvoice(${invoice.id})" class="btn-delete" style="padding: 5px 10px; border: none; background-color: #f44336; color: white; border-radius: 4px; cursor: pointer; margin-left: 5px;">Delete</button>                                        
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${data.map(invoice => `
-                                <tr>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${invoice.id}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${invoice.customer_name}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${invoice.customer_number}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">
-                                        <ul style="list-style-type: none; padding: 0; margin: 0;">
-                                            ${invoice.items.map(item => `<li>${item.name} x ${item.quantity}</li>,`).join('')}
-                                        </ul>
-                                    </td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Rs. ${parseFloat(invoice.total_amount || 0).toFixed(2)}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Rs. ${parseFloat(invoice.discount_amount || 0).toFixed(2)}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${invoice.discount_type}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${parseFloat(invoice.discount_value || 0)}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Rs. ${parseFloat(invoice.total_payable || 0).toFixed(2)}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${invoice.status}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">${invoice.held_at}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
-                                        <button onclick="retrieveHeldInvoice(${invoice.id})" class="btn-retrieve" style="padding: 5px 10px; border: none; background-color: #4CAF50; color: white; border-radius: 4px; cursor: pointer;">Retrieve</button>
-                                        <button onclick="Swal.close(); deleteHeldInvoice(${invoice.id})" class="btn-delete" style="padding: 5px 10px; border: none; background-color: #f44336; color: white; border-radius: 4px; cursor: pointer; margin-left: 5px;">Delete</button>                                        
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>`;
+                        `).join('')}
+                    </tbody>
+                </table>`;
             }
 
             // Display the held invoices or the empty message in a modal
@@ -193,7 +233,8 @@ function retrieveHeldInvoice(invoiceId) {
 
                 // Set discount type and value from retrieved data
                 discountType = data.discount_type || 'flat';
-                discountValue = data.discount_value || 0;
+                // Ensure discount value is a number
+                discountValue = parseFloat(data.discount_value) || 0;
 
                 // Set customer name and number from retrieved data
                 const customerName = data.customer_name || 'Walk-in Customer';
