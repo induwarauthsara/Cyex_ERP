@@ -6,7 +6,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, width=device-width, initial-scale=1.0">
     <title>Create Product - Advanced POS System</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -135,7 +135,7 @@
                             <option value="standard">Standard Product</option>
                             <option value="combo">Combo Product</option>
                             <option value="digital">Digital Product</option>
-                            <option value="service">Service Product</option>
+                            <option value="service">Service </option>
                         </select>
                     </div>
                 </div>
@@ -240,6 +240,12 @@
                             <input type="number" class="form-control" id="initialStock">
                         </div>
 
+                        <!-- Add Alert Quantity field here -->
+                        <div class="mb-3" id="alertQuantitySection">
+                            <label for="alertQuantity" class="form-label">Alert Quantity <small>(Low stock warning threshold)</small></label>
+                            <input type="number" class="form-control" id="alertQuantity" min="0" value="5">
+                            <small class="text-muted">System will alert when stock falls below this value</small>
+                        </div>
 
                         <div class="mb-3">
                             <label for="cost" class="form-label">Cost</label>
@@ -253,7 +259,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="discountPrice" class="form-label">Discount Price <small>(optional)</small></label>
-                                <input type="number" class="form-control" id="discountPrice" name="discountPrice" step="0.01" min="0" placeholder="Leave empty for no discount">
+                                <input type="number" class="form-control" id="discountPrice" name="discountPrice" step="0.01" min="0" placeholder="Optional">
                             </div>
                         </div>
 
@@ -968,14 +974,14 @@
                 };
 
                 // Based on product type
-                // Add type-specific data
                 if (data.productType === 'standard') {
-                    productData.defaultUnit = $('#defaultUnit').val();
-                    productData.saleUnit = $('#saleUnit').val();
-                    productData.purchaseUnit = $('#purchaseUnit').val();
-                    productData.pcsPerBox = $('#pcsPerBox').val();
-                    productData.initialStock = parseFloat($('#initialStock').val()) || 0;
-                    productData.cost = parseFloat($('#cost').val()) || 0;
+                    data.defaultUnit = $('#defaultUnit').val();
+                    data.saleUnit = $('#saleUnit').val();
+                    data.purchaseUnit = $('#purchaseUnit').val();
+                    data.pcsPerBox = $('#pcsPerBox').val();
+                    data.initialStock = parseFloat($('#initialStock').val()) || 0;
+                    data.alertQuantity = parseFloat($('#alertQuantity').val()) || 5; // Add alert quantity
+                    data.cost = parseFloat($('#cost').val()) || 0;
                 }
 
                 // Collect variants if enabled
@@ -995,14 +1001,14 @@
                 }
 
                 // Collect combo products if applicable
-                if (productData.productType === 'combo') {
+                if (data.productType === 'combo') {
                     $('#comboProductTableBody tr').each(function() {
                         const comboProduct = {
                             productId: $(this).data('product-id'),
                             quantity: parseFloat($(this).find('.combo-quantity').val()) || 0
                         };
-                        productData.comboProducts.push(comboProduct);
-                        productData.cost = parseFloat($('#cost').val()) || 0;
+                        data.comboProducts.push(comboProduct);
+                        data.cost = parseFloat($('#cost').val()) || 0;
                     });
                 }
 
