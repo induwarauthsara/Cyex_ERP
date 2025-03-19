@@ -53,13 +53,14 @@ try {
         ];
     }
 
-    // Fetch relevant batch details for each product if available
+    // Fetch relevant batch details including discount_price for each product if available
     $batchQuery = "
         SELECT 
             pb.batch_id,
             pb.product_id,
             pb.batch_number,
             pb.selling_price,
+            pb.discount_price, -- Add discount_price field
             pb.expiry_date,
             pb.quantity AS batch_quantity,
             pb.status,
@@ -72,6 +73,7 @@ try {
             suppliers AS s ON pb.supplier_id = s.supplier_id
         WHERE 
             pb.product_id IN (SELECT product_id FROM products WHERE product_name LIKE ? OR barcode = ? OR sku = ?)
+            AND pb.status = 'active' -- Only include active batches
     ";
 
     $stmtBatch = $con->prepare($batchQuery);
@@ -81,17 +83,23 @@ try {
 
     $batches = [];
     while ($row = $batchResult->fetch_assoc()) {
+        // Format the discount price - if null, keep as null for the frontend to handle
+        $discountPrice = $row['discount_price'] !== null ? 
+            floatval($row['discount_price']) : null;
+            
         $batches[] = [
             'batch_id' => $row['batch_id'],
             'product_id' => $row['product_id'],
             'batch_number' => $row['batch_number'],
             'selling_price' => $row['selling_price'],
+            'discount_price' => $discountPrice, // Include discount_price in the response
             'expiry_date' => $row['expiry_date'],
             'batch_quantity' => $row['batch_quantity'],
             'status' => $row['status'],
             'notes' => $row['notes'],
             'restocked_at' => $row['restocked_at'],
-            'supplier_name' => $row['supplier_name']
+            'supplier_name' => $row['supplier_name'],
+            'has_discount' => ($discountPrice !== null && $discountPrice < floatval($row['selling_price'])) // Flag to easily identify discounted items
         ];
     }
 
@@ -99,6 +107,6 @@ try {
     echo json_encode(['products' => $products, 'batches' => $batches]);
 } catch (Exception $e) {
     // Handle any errors, such as database connection issues
-    echo json_encode(['error' => 'An error occurred while fetching product details.']);
+    echo json_encode(['error' => 'An error occurred while fetching product details: ' . $e->getMessage()]);
     error_log($e->getMessage()); // Log the error for debugging
 }

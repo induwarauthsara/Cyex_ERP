@@ -246,9 +246,15 @@
                             <input type="number" class="form-control" id="cost" required>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="sellingPrice" class="form-label">Selling Price</label>
-                            <input type="number" class="form-control" id="sellingPrice" required>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="sellingPrice" class="form-label">Selling Price</label>
+                                <input type="number" class="form-control" id="sellingPrice" name="sellingPrice" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="discountPrice" class="form-label">Discount Price <small>(optional)</small></label>
+                                <input type="number" class="form-control" id="discountPrice" name="discountPrice" step="0.01" min="0" placeholder="Leave empty for no discount">
+                            </div>
                         </div>
 
 
@@ -285,6 +291,7 @@
                                         <th>Initial Stock</th>
                                         <th>Cost</th>
                                         <th>Selling Price</th>
+                                        <th>Discount Price (Optional)</th>
                                         <th>Alert Quantity</th>
                                         <th>Actions</th>
                                     </tr>
@@ -634,6 +641,7 @@
                 <td><input type="number" class="form-control variant-stock" value="0"></td>
                 <td><input type="number" class="form-control variant-cost" value="0"></td>
                 <td><input type="number" class="form-control variant-price" value="0"></td>
+                <td><input type="number" class="form-control variant-discount-price" value="" min="0" step="0.01" placeholder="Optional"></td>
                 <td><input type="number" class="form-control variant-alert" value="0"></td>
                  <td><button type="button" class="btn btn-danger deleteVariantBtn" data-variant-id="${variantCount}"><i class="fas fa-trash"></i></button></td>
             </tr>`;
@@ -943,7 +951,7 @@
 
             // Collect all form data
             function collectProductData() {
-                const productData = {
+                const data = {
                     productType: $('#productType').val(),
                     productName: $('#productName').val().trim(),
                     productCode: $('#productCode').val().trim(),
@@ -956,10 +964,12 @@
                     variants: [],
                     comboProducts: [],
                     sellingPrice: parseFloat($('#sellingPrice').val()) || 0,
+                    discountPrice: parseFloat($('#discountPrice').val()) || null,
                 };
 
+                // Based on product type
                 // Add type-specific data
-                if (productData.productType === 'standard') {
+                if (data.productType === 'standard') {
                     productData.defaultUnit = $('#defaultUnit').val();
                     productData.saleUnit = $('#saleUnit').val();
                     productData.purchaseUnit = $('#purchaseUnit').val();
@@ -969,17 +979,18 @@
                 }
 
                 // Collect variants if enabled
-                if (productData.hasVariant) {
+                if (data.hasVariant) {
                     $('#variantTableBody tr').each(function(index) {
                         const variant = {
-                            variantName: $(this).find('.variant-name').val().trim(),
-                            variantValue: $(this).find('.variant-value').val().trim(),
-                            variantStock: parseFloat($(this).find('.variant-stock').val()) || 0,
+                            variantName: $(this).find('.variant-name').val(),
+                            variantValue: $(this).find('.variant-value').val(),
+                            variantQuantity: parseInt($(this).find('.variant-quantity').val()) || 0,
                             variantCost: parseFloat($(this).find('.variant-cost').val()) || 0,
                             variantPrice: parseFloat($(this).find('.variant-price').val()) || 0,
+                            variantDiscountPrice: parseFloat($(this).find('.variant-discount-price').val()) || null,
                             variantAlert: parseFloat($(this).find('.variant-alert').val()) || 0
                         };
-                        productData.variants.push(variant);
+                        data.variants.push(variant);
                     });
                 }
 
@@ -995,7 +1006,7 @@
                     });
                 }
 
-                return productData;
+                return data;
             }
 
             // Client-side validation
@@ -1064,6 +1075,7 @@
                     showErrorMessage(error.message);
                 } else {
                     showErrorMessage("Validation failed. Please check your input.");
+                    showErrorMessage(error.message);
                 }
             }
 

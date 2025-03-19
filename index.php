@@ -394,37 +394,42 @@
 
         function displayBatchModal(product, batches) {
             // console.log('Displaying batch modal for product:', product, 'batches:', batches);
+            // console.log('Displaying batch modal for product:', product, 'batches:', batches);
             let batchList = `
             <h3>${product.product_name} - ${product.sku || ''} (${product.barcode || 'No Barcode'})</h3>
             <br> <p>(Use <kbd>Tab</kbd> Key to Move Between Batches)</p>
             <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5;">
-                                <th>Batch</th>
-                                <th>Price</th>
-                                <th>Expiry</th>
-                                <th>Restocked Date</th>
-                                <th>Quantity</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
+               <thead>
+                    <tr style="background-color: #f5f5f5;">
+                        <th>Batch</th>
+                        <th>Price</th>
+                        <th>Discount Price</th>
+                        <th>Expiry</th>
+                        <th>Restocked Date</th>
+                        <th>Quantity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
                         <tbody>
-                            ${batches.map(batch => `
+                            ${batches.map(batch => {
+                                const hasDiscount = batch.discount_price && parseFloat(batch.discount_price) < parseFloat(batch.selling_price);
+                                return `
                                 <tr>
                                     <td>${batch.batch_number}</td>
                                     <td>${batch.selling_price}</td>
+                                    <td style="padding: 8px; border: 1px solid #ddd;"> ${hasDiscount ? `Rs. ${parseFloat(batch.discount_price).toFixed(2)}` : 'N/A'} </td>
                                     <td>${batch.expiry_date || 'N/A'}</td>
                                     <td>${batch.restocked_at}</td>
                                     <td>${batch.batch_quantity}</td>
                                     <td><button class="select-batch" data-product='${JSON.stringify(product)}' data-batch='${JSON.stringify(batch)}'>Select</button></td>
                                 </tr>
-                            `).join('')}
+                            `}).join('')}
                         </tbody>
                     </table>`;
 
             Swal.fire({
                 title: 'Select Batch',
-                width: '40em',
+                width: '65em',
                 html: batchList,
                 showConfirmButton: false,
                 didOpen: () => {
@@ -493,14 +498,15 @@
             if (existingBatch) {
                 // Increment the quantity if the batch already exists in the cart
                 existingBatch.quantity++;
-                existingBatch.subtotal = existingBatch.quantity * (individualDiscountMode ? existingBatch.discount_price : existingBatch.regular_price);
+                existingBatch.subtotal = existingBatch.quantity *
+                    (individualDiscountMode ? existingBatch.discount_price : existingBatch.regular_price);
                 productIndex = productList.indexOf(existingBatch); // Get index of the existing product in the list
             } else {
                 // Regular price is the batch selling price
                 const regularPrice = parseFloat(batch.selling_price);
-                // Default discount price to the same as regular price
-                const discountPrice = regularPrice;
-                
+                // Use discount_price from batch if available, otherwise default to regularPrice
+                const discountPrice = (batch.discount_price && batch.discount_price !== 'N/A') ? parseFloat(batch.discount_price) : regularPrice;
+
                 // Add new entry if batch doesn't exist in cart
                 productList.push({
                     product_id: batch.product_id,
@@ -530,7 +536,7 @@
         // Render product list in cart
         function renderProductList() {
             $('#product-table-body').empty(); // Clear existing rows
-            
+
             // Update table headers based on the mode
             if (individualDiscountMode) {
                 $('.product-list thead tr').html(`
@@ -558,7 +564,7 @@
                         <input id="quantity-${index}" type="text" min="1" value="${product.quantity}" 
                             onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
                     </td>`;
-                    
+
                 if (individualDiscountMode) {
                     // In individual discount mode, show both regular and discount price
                     row += `
@@ -580,24 +586,24 @@
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.regular_price).toFixed(2))}</td>`;
                 }
-                
+
                 row += `
                     <td style="padding: 10px; border: 1px solid #ccc;">
                         <button class="remove-product" onclick="removeProduct(${index})"> <i class="fas fa-trash-alt"></i> </button>
                     </td>
                 </tr>`;
-                
+
                 $('#product-table-body').append(row);
             });
         }
 
         function updateQuantity(index, value) {
             productList[index].quantity = parseInt(value);
-            
+
             // Update subtotal based on current mode
-            productList[index].subtotal = productList[index].quantity * 
+            productList[index].subtotal = productList[index].quantity *
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
-            
+
             localStorage.setItem('productList', JSON.stringify(productList));
             renderProductList();
             calculateInvoiceTotal();
@@ -681,40 +687,40 @@
 
         function calculateInvoiceTotal() {
             let totalWithoutDiscount = 0;
-            
+
             // Calculate the subtotal based on the current mode
             if (individualDiscountMode) {
-                totalWithoutDiscount = productList.reduce((acc, product) => 
+                totalWithoutDiscount = productList.reduce((acc, product) =>
                     acc + (product.quantity * product.discount_price), 0);
                 // Update individual discount savings display
                 calculateIndividualDiscountSavings();
             } else {
-                totalWithoutDiscount = productList.reduce((acc, product) => 
+                totalWithoutDiscount = productList.reduce((acc, product) =>
                     acc + (product.quantity * product.regular_price), 0);
             }
-            
+
             // Convert discount value to a number and handle potential non-numeric values
             let discountValueNum = parseFloat(discountValue) || 0;
-            
+
             // Calculate discount based on type (this is the global discount)
-            let discount = discountType === 'percentage' 
-                ? (totalWithoutDiscount * discountValueNum / 100) 
-                : discountValueNum;
-            
+            let discount = discountType === 'percentage' ?
+                (totalWithoutDiscount * discountValueNum / 100) :
+                discountValueNum;
+
             // Ensure discount is a number before using toFixed
             discount = parseFloat(discount) || 0;
-            
+
             let totalPayable = totalWithoutDiscount - discount;
-            
+
             // Update the DOM elements with formatted values
             $('#total-without-discount').text(formatNumber(totalWithoutDiscount));
             $('#discount-amount').text(formatNumber(discount));
             $('#total-payable').text(formatNumber(totalPayable));
-            
+
             // Update item counts
             let totalItems = productList.reduce((acc, product) => acc + product.quantity, 0);
             let totalProducts = productList.length;
-            
+
             $('#product-count').text(totalProducts);
             $('#item-count').text(totalItems);
         }
@@ -741,7 +747,7 @@
         function toggleIndividualDiscountMode() {
             individualDiscountMode = $('#individual-discount-toggle').is(':checked');
             localStorage.setItem('individualDiscountMode', JSON.stringify(individualDiscountMode));
-            
+
             // Display or hide individual discount savings
             if (individualDiscountMode) {
                 $('#individual-discount-savings').show();
@@ -749,7 +755,7 @@
             } else {
                 $('#individual-discount-savings').hide();
             }
-            
+
             // Re-render product list with updated column structure
             renderProductList();
             calculateInvoiceTotal();
@@ -758,35 +764,35 @@
         // Add a new function to calculate individual discount savings
         function calculateIndividualDiscountSavings() {
             let totalSavings = 0;
-            
+
             productList.forEach(product => {
                 const regularTotal = product.quantity * product.regular_price;
                 const discountTotal = product.quantity * product.discount_price;
                 totalSavings += (regularTotal - discountTotal);
             });
-            
+
             $('#individual-discount-savings-amount').text('Rs. ' + formatNumber(totalSavings.toFixed(2)));
-            
+
             return totalSavings;
         }
 
         // Update the updateRegularPrice function
         function updateRegularPrice(index, value) {
             productList[index].regular_price = parseFloat(value);
-            
+
             // If discount price is not set or higher than regular price, set it to match regular price
             if (!productList[index].discount_price || productList[index].discount_price > productList[index].regular_price) {
                 productList[index].discount_price = productList[index].regular_price;
             }
-            
+
             // Update subtotal based on current mode
-            productList[index].subtotal = productList[index].quantity * 
+            productList[index].subtotal = productList[index].quantity *
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
-            
+
             localStorage.setItem('productList', JSON.stringify(productList));
             renderProductList();
             calculateInvoiceTotal();
-            
+
             // Update individual discount savings if in individual discount mode
             if (individualDiscountMode) {
                 calculateIndividualDiscountSavings();
@@ -796,7 +802,7 @@
         // Update the updateDiscountPrice function
         function updateDiscountPrice(index, value) {
             const discountPrice = parseFloat(value);
-            
+
             // Ensure discount price is not higher than regular price
             if (discountPrice > productList[index].regular_price) {
                 Swal.fire({
@@ -805,21 +811,21 @@
                     icon: 'warning',
                     confirmButtonText: 'OK'
                 });
-                
+
                 // Reset to regular price
                 productList[index].discount_price = productList[index].regular_price;
             } else {
                 productList[index].discount_price = discountPrice;
             }
-            
+
             // Update subtotal based on current mode
-            productList[index].subtotal = productList[index].quantity * 
+            productList[index].subtotal = productList[index].quantity *
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
-            
+
             localStorage.setItem('productList', JSON.stringify(productList));
             renderProductList();
             calculateInvoiceTotal();
-            
+
             // Update individual discount savings if in individual discount mode
             if (individualDiscountMode) {
                 calculateIndividualDiscountSavings();
