@@ -119,6 +119,90 @@
             z-index: 9999999999;
             top: 182px;
         }
+
+        /* Add these styles to improve the visual hierarchy */
+        .card-header {
+            background: linear-gradient(to right, #4a90e2, #5a9de2);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 12px 20px;
+        }
+
+        .form-section-title {
+            color: #4a90e2;
+            font-weight: 600;
+            margin: 15px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        /* Improved form controls */
+        .form-control,
+        .form-select {
+            transition: box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
+            padding: 10px 12px;
+        }
+
+        /* Improved focus state */
+        .form-control:focus,
+        .form-select:focus,
+        .select2-container--focus .select2-selection {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 0.25rem rgba(74, 144, 226, 0.25) !important;
+        }
+
+        /* Tooltips for better UX */
+        .tooltip-icon {
+            margin-left: 5px;
+            color: #6c757d;
+            cursor: help;
+        }
+
+        /* Required field indicator */
+        .required-field::after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+        }
+
+        /* Improved buttons */
+        .btn-primary {
+            background-color: #4a90e2;
+            border-color: #4a90e2;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a80d2;
+            border-color: #3a80d2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Improved variation table */
+        .variant-table th {
+            background-color: #f0f7ff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .variant-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Better card appearance */
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 25px;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -130,7 +214,7 @@
                 <!-- Product Type Selection -->
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="productType" class="form-label">Product Type</label>
+                        <label for="productType" class="form-label" required-field>Product Type</label>
                         <select id="productType" class="form-select" required>
                             <option value="standard">Standard Product</option>
                             <option value="combo">Combo Product</option>
@@ -140,129 +224,185 @@
                     </div>
                 </div>
 
+                <div class="progress mb-3">
+                    <div class="progress-bar" id="form-progress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+
                 <div class="row">
                     <!-- Left Column -->
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="productName" class="form-label">Product Name</label>
-                            <input type="text" class="form-control" id="productName" required>
-                        </div>
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="productName" class="form-label required-field">Product Name</label>
+                                    <input type="text" class="form-control" id="productName" required>
+                                </div>
 
-                        <div class="mb-3">
-                            <label for="productCode" class="form-label">Product Code / Barcode</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="productCode" required maxlength="13">
-                                <button type="button" class="btn btn-secondary" id="generateCodeBtn">
-                                    <i class="fas fa-random"></i> Generate
-                                </button>
+                                <div class="mb-3">
+                                    <label for="productCode" class="form-label required-field">Product Code / Barcode</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="productCode" required maxlength="13">
+                                        <button type="button" class="btn btn-secondary" id="generateCodeBtn">
+                                            <i class="fas fa-random"></i> Generate
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="barcodeSymbology" class="form-label required-field">
+                                        Barcode Symbology
+                                        <i class="fas fa-question-circle tooltip-icon"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Select the barcode type that fits your scanning equipment"></i>
+                                    </label>
+                                    <select class="form-select" id="barcodeSymbology">
+                                        <option value="EAN13">EAN-13</option>
+                                        <option value="EAN8">EAN-8</option>
+                                        <option value="UPC">UPC</option>
+                                        <option value="CODE128">Code 128</option>
+                                        <option value="QR">QR Code</option>
+                                        <option value="ISBN13">ISBN-13</option>
+                                        <option value="DATAMATRIX">Data Matrix</option>
+                                        <option value="CODE39">Code 39</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="barcodeSymbology" class="form-label">Barcode Symbology</label>
-                            <select class="form-select" id="barcodeSymbology">
-                                <option value="EAN13">EAN-13</option>
-                                <option value="EAN8">EAN-8</option>
-                                <option value="UPC">UPC</option>
-                                <option value="CODE128">Code 128</option>
-                                <option value="QR">QR Code</option>
-                                <option value="ISBN13">ISBN-13</option>
-                                <option value="DATAMATRIX">Data Matrix</option>
-                                <option value="CODE39">Code 39</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="brand" class="form-label">Brand</label>
-                            <div class="input-group">
-                                <select id="brand" class="form-select">
-                                    <option value="">Select Brand</option>
-                                </select>
-                                <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#addBrandModal">
-                                    Add New Brand
-                                </button>
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Classification</h5>
                             </div>
-                        </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="brand" class="form-label required-field">Brand</label>
+                                    <div class="input-group">
+                                        <select id="brand" class="form-select" required>
+                                            <option value="">Select Brand</option>
+                                        </select>
+                                        <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#addBrandModal">
+                                            Add New Brand
+                                        </button>
+                                    </div>
+                                </div>
 
-                        <div class="mb-3">
-                            <label for="category" class="form-label">Category</label>
-                            <div class="input-group">
-                                <select id="category" class="form-select" required>
-                                    <option value="">Select Category</option>
-                                </select>
-                                <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                                    Add New Category
-                                </button>
+                                <div class="mb-3">
+                                    <label for="category" class="form-label required-field">Category</label>
+                                    <div class="input-group">
+                                        <select id="category" class="form-select" required>
+                                            <option value="">Select Category</option>
+                                        </select>
+                                        <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                            Add New Category
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3" id="skuSection">
+                                    <label for="sku" class="form-label required-field">SKU<i class="fas fa-question-circle tooltip-icon"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Stock Keeping Unit. Unique identifier for the product"></i></label>
+                                    <input type=" text" class="form-control" id="sku" required>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="mb-3" id="skuSection">
-                            <label for="sku" class="form-label">SKU</label>
-                            <input type="text" class="form-control" id="sku" required>
                         </div>
                     </div>
 
                     <!-- Right Column -->
                     <div class="col-md-6">
-                        <div class="mb-3" id="unitSection">
-                            <label for="unitOfMeasurement" class="form-label">Units</label>
-                            <div class="row">
-                                <div class="col">
-                                    <select id="defaultUnit" class="form-select">
-                                        <option value="">Select Default Unit</option>
-                                        <option value="pcs">Pcs</option>
-                                        <option value="kg">Kg</option>
-                                        <option value="gm">Grams</option>
-                                        <option value="ml">ML</option>
-                                        <option value="meter">Meter</option>
-                                    </select>
-                                    <small class="text-muted">Default Unit</small>
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Pricing & Inventory</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3" id="initialStockSection">
+                                    <label for="initialStock" class="form-label">Initial Stock Quantity</label>
+                                    <input type="number" class="form-control" id="initialStock">
                                 </div>
-                                <div class="col">
-                                    <select id="saleUnit" class="form-select">
-                                    </select>
-                                    <small class="text-muted">Sale Unit</small>
+
+                                <!-- Add Alert Quantity field here -->
+                                <div class="mb-3" id="alertQuantitySection">
+                                    <label for="alertQuantity" class="form-label">
+                                        Alert Quantity <small>(Low stock warning threshold)</small>
+                                        <i class="fas fa-question-circle tooltip-icon"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="System will send notifications when stock falls below this value"></i>
+                                    </label>
+                                    <input type="number" class="form-control" id="alertQuantity" min="0" value="5">
+                                    <small class="text-muted">System will alert when stock falls below this value</small>
                                 </div>
-                                <div class="col">
-                                    <select id="purchaseUnit" class="form-select">
-                                    </select>
-                                    <small class="text-muted">Purchase Unit</small>
+
+                                <div class="mb-3">
+                                    <label for="cost" class="form-label required-field">Cost</label>
+                                    <input type="number" class="form-control" id="cost" required>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="sellingPrice" class="form-label required-field">Selling Price</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" class="form-control" id="sellingPrice" name="sellingPrice" step="1" min="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="discountPrice" class="form-label">Discount Price <small>(optional)</small></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rs.</span>
+                                            <input type="number" class="form-control" id="discountPrice" name="discountPrice" step="0.01" min="0" placeholder="Optional">
+                                            <button class="btn btn-outline-secondary discount-percent-toggle" type="button">
+                                                <i class="fas fa-percentage"></i>
+                                            </button>
+                                        </div>
+                                        <div id="discountPercentage" class="text-success small mt-1"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3 hidden" id="pcsPerBoxDiv">
-                            <label for="pcsPerBox" class="form-label">Pcs per Box</label>
-                            <input type="number" class="form-control" id="pcsPerBox" value="1">
-                        </div>
 
-                        <div class="mb-3" id="initialStockSection">
-                            <label for="initialStock" class="form-label">Initial Stock Quantity</label>
-                            <input type="number" class="form-control" id="initialStock">
-                        </div>
-
-                        <!-- Add Alert Quantity field here -->
-                        <div class="mb-3" id="alertQuantitySection">
-                            <label for="alertQuantity" class="form-label">Alert Quantity <small>(Low stock warning threshold)</small></label>
-                            <input type="number" class="form-control" id="alertQuantity" min="0" value="5">
-                            <small class="text-muted">System will alert when stock falls below this value</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="cost" class="form-label">Cost</label>
-                            <input type="number" class="form-control" id="cost" required>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="sellingPrice" class="form-label">Selling Price</label>
-                                <input type="number" class="form-control" id="sellingPrice" name="sellingPrice" step="0.01" min="0" required>
+                        <div class="card mb-3" id="unitSectionCard">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Units & Measurement</h5>
                             </div>
-                            <div class="col-md-4">
-                                <label for="discountPrice" class="form-label">Discount Price <small>(optional)</small></label>
-                                <input type="number" class="form-control" id="discountPrice" name="discountPrice" step="0.01" min="0" placeholder="Optional">
+                            <div class="card-body">
+                                <div class="mb-3" id="unitSection">
+                                    <label for="unitOfMeasurement" class="form-label">Units</label>
+                                    <div class="row">
+                                        <div class="col">
+                                            <select id="defaultUnit" class="form-select">
+                                                <option value="">Select Default Unit</option>
+                                                <option value="pcs">Pcs</option>
+                                                <option value="kg">Kg</option>
+                                                <option value="gm">Grams</option>
+                                                <option value="ml">ML</option>
+                                                <option value="meter">Meter</option>
+                                            </select>
+                                            <small class="text-muted">Default Unit</small>
+                                        </div>
+                                        <div class="col">
+                                            <select id="saleUnit" class="form-select">
+                                            </select>
+                                            <small class="text-muted">Sale Unit</small>
+                                        </div>
+                                        <div class="col">
+                                            <select id="purchaseUnit" class="form-select">
+                                            </select>
+                                            <small class="text-muted">Purchase Unit</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 hidden" id="pcsPerBoxDiv">
+                                    <label for="pcsPerBox" class="form-label">Pcs per Box</label>
+                                    <input type="number" class="form-control" id="pcsPerBox" value="1">
+                                </div>
                             </div>
                         </div>
-
 
                         <div class="mb-3" id="ecommerceSection">
                             <div class="form-check">
@@ -280,36 +420,95 @@
                     </div>
                 </div>
 
+                <!-- Add a real-time preview card for product info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Product Preview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div id="productImagePreviewCard" class="text-center">
+                                    <img id="previewProductImage" src="../../assets/img/no-image.png" alt="Product Preview" class="img-fluid mb-2" style="max-height: 150px;">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <h4 id="previewProductName">Product Name</h4>
+                                <p id="previewProductCode" class="text-muted"><small>Code: </small></p>
+                                <p id="previewSKU" class="text-muted"><small>SKU: </small></p>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p><strong>Category:</strong> <span id="previewCategory"></span></p>
+                                        <p><strong>Brand:</strong> <span id="previewBrand"></span></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <p><strong>Type:</strong> <span id="previewType"></span></p>
+                                        <div id="previewPriceSection">
+                                            <p class="mb-0"><strong>Regular Price:</strong> <span id="previewRegularPrice">Rs. 0.00</span></p>
+                                            <p class="text-success" id="previewDiscountSection" style="display: none;">
+                                                <strong>Discount Price:</strong> <span id="previewDiscountPrice">Rs. 0.00</span>
+                                                <span id="previewDiscountPercent" class="badge bg-success ms-2"></span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Variant Section -->
                 <div class="row mt-4">
                     <div class="col-12">
-                        <div class="form-check mb-3">
-                            <input type="checkbox" class="form-check-input" id="hasVariant">
-                            <label class="form-check-label" for="hasVariant">This Product Has Variant</label>
+                        <div class="form-switch mb-3 d-flex align-items-center">
+                            <label class="form-check-label me-3" for="hasVariant">This Product Has Variants</label>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="hasVariant" style="width: 3.5em; height: 2em;">
+                            </div>
                         </div>
 
                         <div id="variantTableContainer" class="hidden">
-                            <table id="variantTable" class="table variant-table">
-                                <thead>
-                                    <tr>
-                                        <th>Variation / Batch Name / Batch Number</th>
-                                        <th>Additional Note</th>
-                                        <th>Initial Stock</th>
-                                        <th>Cost</th>
-                                        <th>Selling Price</th>
-                                        <th>Discount Price (Optional)</th>
-                                        <th>Alert Quantity</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="variantTableBody">
-                                    <!-- Dynamic variant rows will be added here -->
-                                </tbody>
-                            </table>
-                            <div class="text-end">
-                                <button type="button" id="addVariantBtn" class="btn btn-add">
-                                    <i class="fas fa-plus"></i> Add Variant
-                                </button>
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Product Variants</h5>
+                                    <button type="button" id="addVariantBtn" class="btn btn-add btn-sm">
+                                        <i class="fas fa-plus"></i> Add Variant
+                                    </button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table id="variantTable" class="table variant-table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th style="min-width: 150px;">Variation Name</th>
+                                                    <th style="min-width: 150px;">Additional Note</th>
+                                                    <th style="min-width: 100px;">Initial Stock</th>
+                                                    <th style="min-width: 100px;">Cost</th>
+                                                    <th style="min-width: 120px;">Selling Price</th>
+                                                    <th style="min-width: 120px;">Discount Price</th>
+                                                    <th style="min-width: 100px;">Low stock Alert Qty</th>
+                                                    <th style="width: 80px;">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="variantTableBody">
+                                                <!-- Dynamic variant rows will be added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="variant-summary p-3 border-top">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <p class="mb-0"><strong>Total Variants:</strong> <span id="variantCount">0</span></p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-0"><strong>Total Stock:</strong> <span id="variantTotalStock">0</span></p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-0"><strong>Price Range:</strong> <span id="variantPriceRange">Rs. 0.00</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -319,32 +518,44 @@
                 <div id="comboProductSection" class="hidden">
                     <div class="row mt-4">
                         <div class="col-12">
-                            <h4>Combo Product Composition</h4>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Product Name</th>
-                                        <th>Batch Name</th>
-                                        <th>Unit Cost</th>
-                                        <th>Unit Selling Price</th>
-                                        <th>Quantity</th>
-                                        <th>Total Cost</th>
-                                        <th>Total Selling Price</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="comboProductTableBody">
-                                    <!-- Dynamic combo product rows will be added here -->
-                                </tbody>
-                            </table>
-                            <div class="text-end">
-                                <strong>Total Combo Cost: </strong>
-                                <span id="totalComboCost">0.00</span>
-                            </div>
-                            <div class="text-end">
-                                <button type="button" id="addComboProductBtn" class="btn btn-add">
-                                    <i class="fas fa-plus"></i> Add Product
-                                </button>
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Combo Product Composition</h5>
+                                    <button type="button" id="addComboProductBtn" class="btn btn-add btn-sm">
+                                        <i class="fas fa-plus"></i> Add Product
+                                    </button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table variant-table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th style="min-width: 150px;">Product Name</th>
+                                                    <th style="min-width: 120px;">Batch Name</th>
+                                                    <th style="min-width: 100px;">Unit Cost</th>
+                                                    <th style="min-width: 120px;">Unit Selling Price</th>
+                                                    <th style="min-width: 100px;">Quantity</th>
+                                                    <th style="min-width: 100px;">Total Cost</th>
+                                                    <th style="min-width: 120px;">Total Selling Price</th>
+                                                    <th style="width: 80px;">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="comboProductTableBody">
+                                                <!-- Dynamic combo product rows will be added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="variant-summary p-3 border-top">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p class="mb-0"><strong>Total Products:</strong> <span id="comboProductCount">0</span></p>
+                                            </div>
+                                            <div class="col-md-6 text-end">
+                                                <p class="mb-0"><strong>Total Combo Cost: </strong><span id="totalComboCost">Rs. 0.00</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -435,6 +646,36 @@
         </div>
     </div>
 
+    <!-- Add this discount percentage modal -->
+    <div class="modal fade" id="discountPercentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Set Discount Percentage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="discountPercentInput" class="form-label">Discount Percentage</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="discountPercentInput" min="0" max="100" value="0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    <div class="discount-preview">
+                        <p class="mb-1">Regular Price: <strong>Rs. <span id="regularPricePreview">0.00</span></strong></p>
+                        <p class="mb-1">Discount Amount: <strong>Rs. <span id="discountAmountPreview">0.00</span></strong></p>
+                        <p class="mb-0">Final Price: <strong class="text-success">Rs. <span id="finalPricePreview">0.00</span></strong></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="applyPercentDiscount">Apply Discount</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Include necessary scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -451,6 +692,10 @@
 
             // Initialize Select2 for dropdowns
             $('select').select2();
+            
+            // Initialize product type based on default selection
+            handleProductTypeChange($('#productType').val());
+            
             loadInitialData(); // Load initial options (brands, categories, suppliers)
             // Load Product list for combo product
             loadProductsForCombo();
@@ -566,11 +811,12 @@
                 $('#skuSection').removeClass('hidden');
                 if (productType === 'standard') {
                     $('#initialStockSection, #unitSection').removeClass('hidden');
+                    $('#unitSectionCard').removeClass('hidden');
                 } else if (productType === 'combo') {
-                    $('#initialStockSection, #unitSection').addClass('hidden');
+                    $('#initialStockSection, #unitSection, #unitSectionCard').addClass('hidden');
                     $('#comboProductSection').removeClass('hidden');
                 } else if (productType === 'digital' || productType === 'service') {
-                    $('#unitSection, #initialStockSection').addClass('hidden');
+                    $('#unitSection, #initialStockSection, #unitSectionCard').addClass('hidden');
                 }
             }
             // Generate Product Code
@@ -631,32 +877,191 @@
 
             // Variant Management
             $('#hasVariant').on('change', function() {
-                $('#variantTableContainer').toggleClass('hidden', !this.checked);
-                $('#variantTableBody').empty();
+                const isChecked = $(this).is(':checked');
+                $('#variantTableContainer').toggleClass('hidden', !isChecked);
+                
+                // If checked and there are no rows, add initial row
+                if (isChecked && $('#variantTableBody tr').length === 0) {
+                    // Add initial row
+                    addVariantRow();
+                }
             });
 
+            // Extract the variant row creation to a separate function so it can be reused
+            function addVariantRow() {
+                variantCount++;
+                const newVariantRow = `
+                    <tr id="variant-row-${variantCount}" class="variant-row">
+                        <td>
+                            <input type="text" class="form-control variant-name" required placeholder="e.g., Color, Size">
+                        </td>
+                        <td>
+                            <input type="text" class="form-control variant-value" required placeholder="e.g., Red, Large">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control variant-stock" value="0" min="0">
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control variant-cost" value="0" min="0">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control variant-price" value="0" min="0">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group variant-discount-price-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control variant-discount-price" value="" min="0" placeholder="Optional">
+                            </div>
+                            <div class="variant-discount-indicator text-success small mt-1"></div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control variant-alert" value="5" min="0">
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-danger deleteVariantBtn" data-variant-id="${variantCount}" data-bs-toggle="tooltip" title="Remove Variant">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary duplicateVariantBtn" data-variant-id="${variantCount}" data-bs-toggle="tooltip" title="Duplicate Variant">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                $('#variantTableBody').append(newVariantRow);
+                updateVariantSummary();
+
+                // Initialize tooltips for new row
+                $(`#variant-row-${variantCount} [data-bs-toggle="tooltip"]`).tooltip();
+            }
+
+            // Updated addVariantBtn handler with better styling and tooltips
+            $('#addVariantBtn').on('click', function() {
+                addVariantRow();
+            });
 
             let variantCount = 0;
 
-            $('#addVariantBtn').on('click', function() {
+            // Add duplicate variant functionality
+            $(document).on('click', '.duplicateVariantBtn', function() {
+                const variantId = $(this).data('variant-id');
+                const $originalRow = $(`#variant-row-${variantId}`);
+
                 variantCount++;
                 const newVariantRow = `
-             <tr id="variant-row-${variantCount}">
-                <td><input type="text" class="form-control variant-name" required></td>
-                <td><input type="text" class="form-control variant-value" required></td>
-                <td><input type="number" class="form-control variant-stock" value="0"></td>
-                <td><input type="number" class="form-control variant-cost" value="0"></td>
-                <td><input type="number" class="form-control variant-price" value="0"></td>
-                <td><input type="number" class="form-control variant-discount-price" value="" min="0" step="0.01" placeholder="Optional"></td>
-                <td><input type="number" class="form-control variant-alert" value="0"></td>
-                 <td><button type="button" class="btn btn-danger deleteVariantBtn" data-variant-id="${variantCount}"><i class="fas fa-trash"></i></button></td>
-            </tr>`;
+                    <tr id="variant-row-${variantCount}" class="variant-row">
+                        <td>
+                            <input type="text" class="form-control variant-name" required value="${$originalRow.find('.variant-name').val()} (Copy)">
+                        </td>
+                        <td>
+                            <input type="text" class="form-control variant-value" required value="${$originalRow.find('.variant-value').val()}">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control variant-stock" value="${$originalRow.find('.variant-stock').val()}" min="0">
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control variant-cost" value="${$originalRow.find('.variant-cost').val()}" min="0">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control variant-price" value="${$originalRow.find('.variant-price').val()}" min="0">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group variant-discount-price-group">
+                                <span class="input-group-text">Rs.</span>
+                                <input type="number" class="form-control variant-discount-price" value="${$originalRow.find('.variant-discount-price').val()}" min="0" placeholder="Optional">
+                            </div>
+                            <div class="variant-discount-indicator text-success small mt-1"></div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control variant-alert" value="${$originalRow.find('.variant-alert').val()}" min="0">
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-danger deleteVariantBtn" data-variant-id="${variantCount}" data-bs-toggle="tooltip" title="Remove Variant">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary duplicateVariantBtn" data-variant-id="${variantCount}" data-bs-toggle="tooltip" title="Duplicate Variant">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
                 $('#variantTableBody').append(newVariantRow);
+
+                // Trigger discount price calculation for the new row
+                $(`#variant-row-${variantCount} .variant-discount-price`).trigger('input');
+
+                updateVariantSummary();
+
+                // Initialize tooltips for new row
+                $(`#variant-row-${variantCount} [data-bs-toggle="tooltip"]`).tooltip();
             });
-            // Delete variant row
+
+            // Update variant summary
+            function updateVariantSummary() {
+                const variantRows = $('#variantTableBody tr').length;
+                $('#variantCount').text(variantRows);
+
+                let totalStock = 0;
+                let minPrice = Infinity;
+                let maxPrice = 0;
+
+                $('#variantTableBody tr').each(function() {
+                    const stock = parseInt($(this).find('.variant-stock').val()) || 0;
+                    totalStock += stock;
+
+                    const price = parseFloat($(this).find('.variant-price').val()) || 0;
+                    if (price > 0) {
+                        minPrice = Math.min(minPrice, price);
+                        maxPrice = Math.max(maxPrice, price);
+                    }
+                });
+
+                $('#variantTotalStock').text(totalStock);
+
+                if (minPrice === Infinity) minPrice = 0;
+                if (minPrice === maxPrice) {
+                    $('#variantPriceRange').text(`Rs. ${minPrice.toFixed(2)}`);
+                } else {
+                    $('#variantPriceRange').text(`Rs. ${minPrice.toFixed(2)} - Rs. ${maxPrice.toFixed(2)}`);
+                }
+            }
+
+            // Update summary when variant data changes
+            $(document).on('input', '.variant-stock, .variant-price', function() {
+                updateVariantSummary();
+            });
+
+            // Delete variant row with confirmation
             $(document).on('click', '.deleteVariantBtn', function() {
                 const variantId = $(this).data('variant-id');
-                $(`#variant-row-${variantId}`).remove();
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This variant will be removed",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, remove it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(`#variant-row-${variantId}`).remove();
+                        updateVariantSummary();
+                    }
+                });
             });
 
             function handleModalSave(modalId, inputId, selectId, fetchUrl) {
@@ -750,7 +1155,7 @@
 
                 comboProductCount++;
                 const newComboRow = `
-                    <tr id="combo-row-${comboProductCount}" data-product-id="${productId}">
+                    <tr id="combo-row-${comboProductCount}" data-product-id="${productId}" class="variant-row">
                         <td>${productName}</td>
                         <td>${batch_name}</td>
                         <td>${cost.toFixed(2)}</td>
@@ -804,6 +1209,7 @@
             function updateTotalComboCostAndPrice() {
                 let totalCost = 0;
                 let totalSellingPrice = 0;
+                let productCount = $('#comboProductTableBody tr').length;
 
                 $('#comboProductTableBody tr').each(function() {
                     const costText = $(this).find('.combo-total-cost').text();
@@ -816,7 +1222,8 @@
                     // totalSellingPrice += sellingPrice;
                 });
 
-                $('#totalComboCost').text(totalCost.toFixed(2));
+                $('#comboProductCount').text(productCount);
+                $('#totalComboCost').text('Rs. ' + totalCost.toFixed(2));
                 $('#cost').val(totalCost.toFixed(2));
                 // $('#sellingPrice').val(totalSellingPrice.toFixed(2));
             }
@@ -986,15 +1393,17 @@
 
                 // Collect variants if enabled
                 if (data.hasVariant) {
+                    // Fix the variant collection in collectProductData
                     $('#variantTableBody tr').each(function(index) {
                         const variant = {
                             variantName: $(this).find('.variant-name').val(),
                             variantValue: $(this).find('.variant-value').val(),
-                            variantQuantity: parseInt($(this).find('.variant-quantity').val()) || 0,
+                            variantQuantity: parseInt($(this).find('.variant-stock').val()) || 0,
                             variantCost: parseFloat($(this).find('.variant-cost').val()) || 0,
                             variantPrice: parseFloat($(this).find('.variant-price').val()) || 0,
-                            variantDiscountPrice: parseFloat($(this).find('.variant-discount-price').val()) || null,
-                            variantAlert: parseFloat($(this).find('.variant-alert').val()) || 0
+                            variantDiscountPrice: $(this).find('.variant-discount-price').val().trim() === '' ?
+                                null : parseFloat($(this).find('.variant-discount-price').val()),
+                            variantAlert: parseInt($(this).find('.variant-alert').val()) || 5
                         };
                         data.variants.push(variant);
                     });
@@ -1061,7 +1470,14 @@
                         if (variant.variantPrice < variant.variantCost) {
                             throw new ValidationError(`Selling price cannot be less than cost for variant #${index + 1}`, `variant-price-${index}`);
                         }
+                        if (variant.variantDiscountPrice !== null && variant.variantDiscountPrice > variant.variantPrice) {
+                            throw new ValidationError(`Discount price cannot be higher than selling price for variant #${index + 1}`, `variant-discount-price-${index}`);
+                        }
                     });
+                }
+
+                if (data.discountPrice !== null && data.discountPrice > data.sellingPrice) {
+                    throw new ValidationError("Discount price cannot be higher than selling price", "discountPrice");
                 }
             }
 
@@ -1203,6 +1619,205 @@
                 $('#initialStockSection, #unitSection').removeClass('hidden');
                 $('#imageUploadSection').addClass('hidden');
             }
+
+            // Calculate and display discount percentage
+            $('#sellingPrice, #discountPrice').on('input', function() {
+                const sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
+                const discountPrice = parseFloat($('#discountPrice').val()) || 0;
+
+                if (sellingPrice > 0 && discountPrice > 0 && discountPrice < sellingPrice) {
+                    const discountPercentage = ((sellingPrice - discountPrice) / sellingPrice) * 100;
+                    $('#discountPercentage').html(`<i class="fas fa-tags"></i> ${discountPercentage.toFixed(2)}% discount`);
+                } else {
+                    $('#discountPercentage').html('');
+                }
+            });
+
+            // Also implement for variants
+            $(document).on('input', '.variant-price, .variant-discount-price', function() {
+                const row = $(this).closest('tr');
+                const variantPrice = parseFloat(row.find('.variant-price').val()) || 0;
+                const variantDiscountPrice = parseFloat(row.find('.variant-discount-price').val()) || 0;
+
+                if (variantPrice > 0 && variantDiscountPrice > 0 && variantDiscountPrice < variantPrice) {
+                    const discountPercentage = ((variantPrice - variantDiscountPrice) / variantPrice) * 100;
+
+                    if (row.find('.variant-discount-indicator').length === 0) {
+                        row.find('.variant-discount-price-group').after(`<div class="variant-discount-indicator text-success small mt-1"></div>`);
+                    }
+
+                    row.find('.variant-discount-indicator').html(`<i class="fas fa-tags"></i> ${discountPercentage.toFixed(2)}%`);
+                } else {
+                    row.find('.variant-discount-indicator').remove();
+                }
+            });
+
+            // Update progress as fields are completed
+            function updateFormProgress() {
+                const requiredFields = $('#productForm').find('[required]');
+                const filledFields = requiredFields.filter(function() {
+                    return $(this).val() !== '';
+                });
+
+                const progress = Math.round((filledFields.length / requiredFields.length) * 100);
+                $('#form-progress').css('width', progress + '%').attr('aria-valuenow', progress).text(progress + '%');
+            }
+
+            // Call this on each input change
+            $(document).on('input change', '.form-control, .form-select', function() {
+                updateFormProgress();
+            });
+
+            // Add to document ready
+            $('#discountPrice').on('input', function() {
+                const sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
+                const discountPrice = parseFloat($(this).val()) || 0;
+
+                if (discountPrice > sellingPrice) {
+                    $(this).addClass('is-invalid');
+                    if ($(this).next('.invalid-feedback').length === 0) {
+                        $(this).after('<div class="invalid-feedback">Discount price cannot exceed selling price</div>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+
+            // Similar logic for variant discount prices
+            $(document).on('input', '.variant-discount-price', function() {
+                const row = $(this).closest('tr');
+                const variantPrice = parseFloat(row.find('.variant-price').val()) || 0;
+                const variantDiscountPrice = parseFloat($(this).val()) || 0;
+
+                if (variantDiscountPrice > variantPrice) {
+                    $(this).addClass('is-invalid');
+                    if ($(this).next('.invalid-feedback').length === 0) {
+                        $(this).after('<div class="invalid-feedback">Discount price cannot exceed selling price</div>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+
+            // Add this to your document ready function:
+            $('.discount-percent-toggle').on('click', function() {
+                const sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
+                const discountPrice = parseFloat($('#discountPrice').val()) || 0;
+                let currentPercent = 0;
+                
+                if (sellingPrice > 0 && discountPrice > 0 && discountPrice < sellingPrice) {
+                    currentPercent = ((sellingPrice - discountPrice) / sellingPrice) * 100;
+                }
+                
+                $('#discountPercentInput').val(currentPercent.toFixed(2));
+                $('#regularPricePreview').text(sellingPrice.toFixed(2));
+                
+                updateDiscountPreview();
+                
+                const discountPercentModal = new bootstrap.Modal(document.getElementById('discountPercentModal'));
+                discountPercentModal.show();
+            });
+
+            $('#discountPercentInput').on('input', function() {
+                updateDiscountPreview();
+            });
+
+            function updateDiscountPreview() {
+                const sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
+                const discountPercent = parseFloat($('#discountPercentInput').val()) || 0;
+                
+                const discountAmount = (sellingPrice * discountPercent / 100).toFixed(2);
+                const finalPrice = (sellingPrice - discountAmount).toFixed(2);
+                
+                $('#discountAmountPreview').text(discountAmount);
+                $('#finalPricePreview').text(finalPrice);
+            }
+
+            $('#applyPercentDiscount').on('click', function() {
+                const sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
+                const discountPercent = parseFloat($('#discountPercentInput').val()) || 0;
+                
+                if (sellingPrice > 0 && discountPercent > 0 && discountPercent <= 100) {
+                    const finalPrice = sellingPrice - (sellingPrice * discountPercent / 100);
+                    $('#discountPrice').val(finalPrice.toFixed(2));
+                    $('#discountPrice').trigger('input'); // Trigger input to update the UI
+                }
+                
+                bootstrap.Modal.getInstance(document.getElementById('discountPercentModal')).hide();
+            });
+
+            // Add this to your document ready function:
+            function updateProductPreview() {
+                // Update product name
+                $('#previewProductName').text($('#productName').val() || 'Product Name');
+
+                // Update product code
+                const productCode = $('#productCode').val();
+                $('#previewProductCode').html(productCode ? `<small>Code: ${productCode}</small>` : '');
+
+                // Update SKU
+                const sku = $('#sku').val();
+                $('#previewSKU').html(sku ? `<small>SKU: ${sku}</small>` : '');
+
+                // Update category and brand
+                $('#previewCategory').text($('#category option:selected').text() || '');
+                $('#previewBrand').text($('#brand option:selected').text() || '');
+
+                // Update type
+                $('#previewType').text($('#productType option:selected').text() || '');
+
+                // Update prices
+                const regularPrice = parseFloat($('#sellingPrice').val()) || 0;
+                $('#previewRegularPrice').text(`Rs. ${regularPrice.toFixed(2)}`);
+
+                const discountPrice = parseFloat($('#discountPrice').val()) || 0;
+                if (discountPrice > 0 && discountPrice < regularPrice) {
+                    $('#previewDiscountSection').show();
+                    $('#previewDiscountPrice').text(`Rs. ${discountPrice.toFixed(2)}`);
+
+                    const discountPercentage = ((regularPrice - discountPrice) / regularPrice) * 100;
+                    $('#previewDiscountPercent').text(`${discountPercentage.toFixed(2)}% OFF`);
+                } else {
+                    $('#previewDiscountSection').hide();
+                }
+
+                // Update image preview
+                const productImageInput = document.getElementById('productImage');
+                if (productImageInput.files && productImageInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#previewProductImage').attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(productImageInput.files[0]);
+                } else {
+                    $('#previewProductImage').attr('src', 'https://www.productsamples.com/wp-content/uploads/2021/10/il-box.png');
+                }
+            }
+
+            // Attach the preview update to input changes
+            $(document).on('input change', '#productName, #productCode, #sku, #category, #brand, #sellingPrice, #discountPrice, #productType', function() {
+                updateProductPreview();
+            });
+
+            // Handle image changes
+            $('#productImage').on('change', function() {
+                updateProductPreview();
+            });
+
+            // Connect the bottom Add Variant button to the same function
+            $('#addVariantBtnBottom').on('click', function() {
+                addVariantRow();
+                
+                // Scroll to the newly added row
+                setTimeout(() => {
+                    const lastRow = $('#variantTableBody tr:last');
+                    lastRow[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Focus the first input in the new row
+                    lastRow.find('.variant-name').focus();
+                }, 100);
+            });
         });
     </script>
 </body>

@@ -232,8 +232,8 @@ try {
                     $batchNumber = $variant['variantName'];
                     $discountPrice = !empty($variant['variantDiscountPrice']) ? $variant['variantDiscountPrice'] : null;
                     
-                    $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity, notes) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity, notes, alert_quantity) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                     
                     $stmt = $con->prepare($sql);
                     if (!$stmt) {
@@ -242,14 +242,15 @@ try {
 
                     $variantName = $variant['variantValue'];
                     $stmt->bind_param(
-                        "isdddis",
+                        "isdddisi",
                         $productId,
                         $batchNumber,
                         $variant['variantCost'],
                         $variant['variantPrice'],
                         $discountPrice,
                         $variant['variantQuantity'],
-                        $variantName
+                        $variantName,
+                        $variant['variantAlertQty']
                     );
 
                     if (!$stmt->execute()) {
@@ -260,9 +261,10 @@ try {
                 // Single variant/batch
                 $batchNumber = generateBatchNumber();
                 $discountPrice = !empty($productData['discountPrice']) ? $productData['discountPrice'] : null;
+                $alertQuantity = isset($productData['alertQuantity']) ? intval($productData['alertQuantity']) : 5;
 
-                $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity) 
-                        VALUES (?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity, alert_quantity) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?)";
 
                 $stmt = $con->prepare($sql);
                 if (!$stmt) {
@@ -270,13 +272,14 @@ try {
                 }
 
                 $stmt->bind_param(
-                    "isdddi",
+                    "isdddii",
                     $productId,
                     $batchNumber,
                     $productData['cost'],
                     $productData['sellingPrice'],
                     $discountPrice,
-                    $productData['initialStock']
+                    $productData['initialStock'],
+                    $alertQuantity
                 );
 
                 if (!$stmt->execute()) {
