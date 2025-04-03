@@ -534,7 +534,7 @@ body {
 .dt-buttons.btn-group.flex-wrap {
     position: absolute;
     top: -15px;
-    right: 0;
+    left: 0;
 }
 
 th {

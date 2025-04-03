@@ -32,7 +32,7 @@
                 <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
             </div>
         </li>
-        <li class="dropdown dashboard_icon"> <a href="/comboProduct/productsList.php">Products</a>
+        <li class="dropdown dashboard_icon"> <a href="/products/">Products</a>
             <div class="dropdown-content">
                 <a href="/products/create/">Add New Product</a>
                 <!-- <a href="/comboProduct/RawItemList.php">Raw Item List</a> -->

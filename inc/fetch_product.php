@@ -29,7 +29,8 @@ try {
         LEFT JOIN 
             brands AS b ON p.brand_id = b.brand_id
         WHERE 
-            p.product_name LIKE ? OR p.barcode = ? OR p.sku = ?
+            (p.product_name LIKE ? OR p.barcode = ? OR p.sku = ?)
+            AND p.active_status = 1
     ";
 
     $stmtProduct = $con->prepare($productQuery);
@@ -72,7 +73,7 @@ try {
         LEFT JOIN 
             suppliers AS s ON pb.supplier_id = s.supplier_id
         WHERE 
-            pb.product_id IN (SELECT product_id FROM products WHERE product_name LIKE ? OR barcode = ? OR sku = ?)
+            pb.product_id IN (SELECT product_id FROM products WHERE (product_name LIKE ? OR barcode = ? OR sku = ?) AND active_status = 1)
             AND pb.status = 'active' -- Only include active batches
     ";
 
