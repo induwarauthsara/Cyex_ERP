@@ -3,7 +3,7 @@
 import {
     CONFIG,
     handleError,
-    showSuccess,
+    showSuccess as configShowSuccess,
     confirmAction
 } from '../../js/config.js';
 
@@ -80,6 +80,19 @@ $(document).ready(async function() {
             }
         }
     };
+
+    // Handle print format change to show/hide thermal printer settings
+    $('#printFormat').on('change', function() {
+        const printFormat = $(this).val();
+        if (printFormat === 'thermal') {
+            $('#thermalPrinterSettings').removeClass('hidden');
+        } else {
+            $('#thermalPrinterSettings').addClass('hidden');
+        }
+    });
+
+    // Trigger change on page load to set initial state
+    $('#printFormat').trigger('change');
 });
 
 // Function to update quantity when changed
@@ -116,7 +129,7 @@ async function loadGRNItems() {
             batch_id: item.batch_id,
             batch_number: item.batch_number,
             price: item.selling_price,
-            barcode: item.barcode || ('PROD' + item.product_id),
+            barcode: item.barcode || (item.product_id),
             quantity: item.received_qty
         }));
 
@@ -141,7 +154,7 @@ function addProduct() {
             product_id: selected.id,
             product_name: selected.text,
             price: selected.price,
-            barcode: selected.barcode || ('PROD' + selected.id),
+            barcode: selected.barcode || (selected.id),
             quantity: 1
         });
         refreshItemsTable();
@@ -238,8 +251,6 @@ function refreshItemsTable() {
 
 async function showPreview() {
     if (items.length === 0) {
-                        console.log('Items to print3:', items.length);
-
         Swal.fire({
             title: 'No Items',
             text: 'Please add items to print',
@@ -251,8 +262,24 @@ async function showPreview() {
     try {
         $('#loadingOverlay').removeClass('hidden').addClass('flex');
         
+        // Get settings and ensure paper_size is numeric
         const settings = getSettings();
-        const response = await fetch('../api/barcode.php', {
+        settings.paper_size = parseFloat(settings.paper_size);
+        
+        // Create items array with expanded quantities
+        const expandedItems = [];
+        items.forEach(item => {
+            const qty = parseInt(item.quantity) || 1;
+            for (let i = 0; i < qty; i++) {
+                expandedItems.push({
+                    ...item,
+                    quantity: 1  // Set quantity to 1 for each expanded item
+                });
+            }
+        });
+        
+        // Send request to generate PDF preview
+        const response = await fetch('./api/barcode.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -260,7 +287,7 @@ async function showPreview() {
             body: JSON.stringify({
                 action: 'preview',
                 settings: settings,
-                items: items
+                items: expandedItems
             })
         });
 
@@ -290,8 +317,6 @@ function closePreviewModal() {
 
 async function printBarcodes() {
     if (items.length === 0) {
-        console.log('Items to print4:', items.length);
-
         Swal.fire({
             title: 'No Items',
             text: 'Please add items to print',
@@ -304,10 +329,75 @@ async function printBarcodes() {
         // Show loading overlay
         $('#loadingOverlay').removeClass('hidden').addClass('flex');
         
-        // Get settings
+        // Get settings and ensure paper_size is numeric
         const settings = getSettings();
+        settings.paper_size = parseFloat(settings.paper_size);
         
-        const response = await fetch('../api/barcode.php', {
+        // Create items array with expanded quantities
+        const expandedItems = [];
+        items.forEach(item => {
+            const qty = parseInt(item.quantity) || 1;
+            for (let i = 0; i < qty; i++) {
+                expandedItems.push({
+                    ...item,
+                    quantity: 1  // Set quantity to 1 for each expanded item
+                });
+            }
+        });
+        
+        // Get the print format
+        const printFormat = $('#printFormat').val();
+        
+        // For thermal printing
+        if (printFormat === 'thermal') {
+            // Get printer settings
+            const printerIp = $('#printerIp').val();
+            const printerPort = parseInt($('#printerPort').val()) || 9100;
+            
+            if (!printerIp) {
+                $('#loadingOverlay').removeClass('flex').addClass('hidden');
+                Swal.fire({
+                    title: 'Missing Information',
+                    text: 'Printer IP address is required for thermal printing',
+                    icon: 'warning'
+                });
+                return;
+            }
+            
+            // Send to thermal printer
+            const response = await fetch('./api/thermal_print.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'thermal_print',
+                    printer_ip: printerIp,
+                    printer_port: printerPort,
+                    settings: settings,
+                    items: expandedItems
+                })
+            });
+            
+            $('#loadingOverlay').removeClass('flex').addClass('hidden');
+            
+            const result = await response.json();
+            
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Failed to send to thermal printer');
+            }
+            
+            // Show success message
+            Swal.fire({
+                title: 'Success',
+                text: 'Labels sent to thermal printer',
+                icon: 'success'
+            });
+            
+            return;
+        }
+        
+        const response = await fetch('./api/barcode.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -315,7 +405,7 @@ async function printBarcodes() {
             body: JSON.stringify({
                 action: 'print',
                 settings: settings,
-                items: items
+                items: expandedItems
             })
         });
 
@@ -331,13 +421,27 @@ async function printBarcodes() {
         // Open in new window for printing
         const printWindow = window.open(url);
 
-        printWindow.onload = function () {
-            printWindow.print();
-            // Revoke URL after a delay to ensure print dialog is shown
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-            }, 2000);
-        };
+        if (printWindow) {
+            printWindow.onload = function () {
+                printWindow.print();
+                // Revoke URL after a delay to ensure print dialog is shown
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                }, 2000);
+            };
+        } else {
+            // If popup blocked or window didn't open
+            Swal.fire({
+                title: 'Popup Blocked',
+                text: 'Please allow popups to print barcodes',
+                icon: 'warning',
+                confirmButtonText: 'Open PDF',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open(url, '_blank');
+                }
+            });
+        }
 
     } catch (error) {
         $('#loadingOverlay').removeClass('flex').addClass('hidden');
@@ -448,6 +552,135 @@ function getSettings() {
     };
 }
 
+// Function to generate preview HTML
+function generatePreviewHTML(items, settings) {
+    let html = '<h3 class="text-xl font-semibold mb-4">Live Preview</h3>';
+    html += `<div class="flex flex-wrap gap-2 justify-center">`;
+
+    // Determine dimensions based on paper size
+    let labelWidth, labelHeight;
+    switch (settings.paper_size) {
+        case 36:
+            labelWidth = 36;
+            labelHeight = 13;
+            break;
+        case 24:
+            labelWidth = 24;
+            labelHeight = 12;
+            break;
+        case 18:
+            labelWidth = 18;
+            labelHeight = 10;
+            break;
+        case 30:
+        default:
+            labelWidth = 30;
+            labelHeight = 15;
+    }
+
+    // Calculate display size (scaled for preview)
+    const scale = 3; // Scale for display purposes
+    const displayWidth = labelWidth * scale;
+    const displayHeight = labelHeight * scale;
+    const margin = settings.margin || 0.1;
+
+    // Generate a unique timestamp to use for all barcode IDs
+    const timestamp = Date.now();
+
+    items.forEach((item, index) => {
+        // Create a unique ID for each barcode
+        const barcodeId = `barcode-${index}-${timestamp}`;
+        const barcode = item.barcode || `PROD${item.product_id}`;
+
+        // Create a barcode preview card for each item
+        html += `
+            <div class="barcode-preview border p-1 relative bg-white" 
+                 style="width: ${displayWidth}px; height: ${displayHeight}px; margin: ${settings.gap_between || 0}px;">
+                <div class="absolute inset-0 p-${margin}" style="overflow: hidden;">
+                    ${settings.show_shop_name ? 
+                        `<div class="text-center font-bold" style="font-size: ${Math.min(settings.font_size * 0.9, 7)}pt; line-height: 1;">
+                            ${settings.shop_name || '<?php echo $ERP_COMPANY_NAME; ?>'}
+                        </div>` : ''}
+                    
+                    ${settings.show_product_name ? 
+                        `<div class="text-center overflow-hidden" style="font-size: ${settings.font_size * 0.9}pt; line-height: 1.1; 
+                        white-space: nowrap; text-overflow: ellipsis;">
+                            ${item.product_name}
+                        </div>` : ''}
+                    
+                    <div class="flex justify-center" style="height: ${settings.barcode_height}px;">
+                        <svg id="${barcodeId}" class="w-full"></svg>
+                    </div>
+                    
+                    <div class="flex justify-between items-center" style="font-size: ${settings.font_size * 0.7}pt; transform: translateY(10px);">
+                        ${settings.show_category && item.category ? 
+                            `<div class="text-left">${item.category}</div>` : 
+                            '<div></div>'
+                        }
+                        
+                        <div class="text-center flex-grow">
+                            ${settings.show_price ? 
+                                `<div class="font-bold ${settings.show_promo_price && item.discount_price ? 'line-through' : ''}">
+                                    Rs. ${parseFloat(item.price).toFixed(2)}
+                                </div>` : ''
+                            }
+                            ${settings.show_promo_price && item.discount_price ? 
+                                `<div class="font-bold text-green-600">
+                                    Rs. ${parseFloat(item.discount_price).toFixed(2)}
+                                </div>` : ''
+                            }
+                        </div>
+                        
+                        ${settings.show_unit ? 
+                            `<div class="text-right">${item.unit || 'pcs'}</div>` : 
+                            '<div></div>'
+                        }
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+
+    // Add script to render barcodes after HTML is added to DOM
+    html += `
+    <script>
+        function initializeBarcodes() {
+            const timestamp = ${timestamp};
+            ${items.map((item, index) => {
+                const barcode = item.barcode || `PROD${item.product_id}`;
+                
+                return `
+                    try {
+                        const barcodeElement = document.getElementById("barcode-${index}-${timestamp}");
+                        if (barcodeElement) {
+                            JsBarcode(barcodeElement, "${barcode}", {
+                                format: "CODE128",
+                                width: 1,
+                                height: ${settings.barcode_height},
+                                displayValue: true,
+                                fontSize: ${settings.font_size * 1.5},
+                                margin: 0,
+                                background: "#ffffff"
+                            });
+                        } else {
+                            console.error("Barcode element not found for index ${index}");
+                        }
+                    } catch(e) {
+                        console.error("Error rendering barcode for ${item.product_name}:", e);
+                    }
+                `;
+            }).join('')}
+        }
+
+        // Initialize barcodes after a short delay to ensure DOM is ready
+        setTimeout(initializeBarcodes, 100);
+    <\/script>`;
+
+    return html;
+}
+
 function formatCurrency(amount) {
     return 'Rs. ' + parseFloat(amount).toFixed(2);
 }
@@ -461,10 +694,7 @@ function showError(message) {
     });
 }
 
+// Use imported showSuccess function
 function showSuccess(message) {
-    Swal.fire({
-        title: 'Success',
-        text: message,
-        icon: 'success'
-    });
+    configShowSuccess(message);
 }
