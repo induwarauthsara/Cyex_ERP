@@ -44,6 +44,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
     <!-- Additional required libraries -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <!-- Load our JavaScript after dependencies -->
     <script type="module" src="../js/config.js"></script>
@@ -151,90 +152,67 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <h3 class="text-lg font-semibold mb-3">Paper Settings</h3>
-                                <div class="space-y-4">
-                                    <div>
+                    <div class="space-y-4">
+                        <div>
                                         <label for="paperSize" class="block text-sm mb-1">Paper Size (mm):</label>
                                         <select id="paperSize" class="form-select block w-full">
                                             <option value="30">30×15 mm (Small Label)</option>
                                             <option value="36">36×13 mm</option>
                                             <option value="24">24×12 mm</option>
                                             <option value="18">18×10 mm</option>
-                                        </select>
-                                    </div>
-                                    <div>
+                            </select>
+                        </div>
+                        <div>
                                         <label for="margin" class="block text-sm mb-1">Margin (mm):</label>
-                                        <input type="number" id="margin" class="form-input block w-full" value="2" min="0" step="0.5">
-                                    </div>
-                                    <div>
+                                        <input type="number" id="margin" class="form-input block w-full" value="1" min="0" step="0.5">
+                        </div>
+                        <div>
                                         <label for="gapBetween" class="block text-sm mb-1">Gap Between Labels (mm):</label>
-                                        <input type="number" id="gapBetween" class="form-input block w-full" value="3" min="0" step="0.5">
-                                    </div>
+                                        <input type="number" id="gapBetween" class="form-input block w-full" value="2.5" min="0" step="0.5">
+                        </div>
                                     <div>
                                         <label for="fontSize" class="block text-sm mb-1">Font Size (pt):</label>
-                                        <input type="number" id="fontSize" class="form-input block w-full" value="8" min="6" max="12">
+                                        <input type="number" id="fontSize" class="form-input block w-full" value="9" min="6" max="12">
                                     </div>
                                     <div>
                                         <label for="barcodeHeight" class="block text-sm mb-1">Barcode Height (mm):</label>
                                         <input type="number" id="barcodeHeight" class="form-input block w-full" value="15" min="5" max="30">
-                                    </div>
-                                </div>
-                                
-                                <h3 class="text-lg font-semibold mb-3 mt-6">Printer Settings</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="printFormat" class="block text-sm mb-1">Printer Type:</label>
-                                        <select id="printFormat" class="form-select block w-full">
-                                            <option value="pdf">PDF (Regular Printer)</option>
-                                            <option value="thermal">Thermal Printer (ESC/POS)</option>
-                                        </select>
-                                    </div>
-                                    <div id="thermalPrinterSettings" class="space-y-4 hidden">
-                                        <div>
-                                            <label for="printerIp" class="block text-sm mb-1">Printer IP Address:</label>
-                                            <input type="text" id="printerIp" class="form-input block w-full" placeholder="192.168.1.100">
-                                        </div>
-                                        <div>
-                                            <label for="printerPort" class="block text-sm mb-1">Printer Port:</label>
-                                            <input type="number" id="printerPort" class="form-input block w-full" value="9100">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h3 class="text-lg font-semibold mb-3">Content Settings</h3>
+                    </div>
+                </div>
+
+                                <h3 class="text-lg font-semibold mb-3 mt-6">Content Settings</h3>
                                 <div class="space-y-4">
                                     <div class="flex items-center gap-2">
                                         <input type="checkbox" id="showShopName" class="form-checkbox">
-                                        <label for="showShopName">Shop Name</label>
-                                    </div>
+                            <label for="showShopName">Shop Name</label>
+                        </div>
                                     <div id="shopNameField" class="ml-6 hidden">
                                         <input type="text" id="shopName" class="form-input w-full hidden"
-                                            value="<?php echo $ERP_COMPANY_NAME; ?>"
-                                            placeholder="Enter shop name">
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showProductName" class="form-checkbox" checked>
-                                        <label for="showProductName">Product Name</label>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showPrice" class="form-checkbox" checked>
-                                        <label for="showPrice">Price</label>
-                                    </div>
-                                    <div class="flex items-center gap-2">
+                                value="<?php echo $ERP_COMPANY_NAME; ?>"
+                                placeholder="Enter shop name">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showProductName" class="form-checkbox" checked>
+                            <label for="showProductName">Product Name</label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showPrice" class="form-checkbox" checked>
+                            <label for="showPrice">Price</label>
+                        </div>
+                        <div class="flex items-center gap-2">
                                         <input type="checkbox" id="showPromoPrice" class="form-checkbox">
                                         <label for="showPromoPrice">Promotional Price</label>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showCategory" class="form-checkbox">
-                                        <label for="showCategory">Category</label>
-                                    </div>
-                                    <div class="flex items-center gap-2">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showCategory" class="form-checkbox">
+                            <label for="showCategory">Category</label>
+                        </div>
+                        <div class="flex items-center gap-2">
                                         <input type="checkbox" id="showUnit" class="form-checkbox">
                                         <label for="showUnit">Unit</label>
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
+                </div>
                         </div>
                     </div>
                 </div>
@@ -343,9 +321,9 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
             return {
                 paper_size: parseFloat($('#paperSize').val()),
                 margin: parseFloat($('#margin').val()) || 1,
-                gap_between: parseFloat($('#gapBetween').val()) || 3,
-                font_size: parseFloat($('#fontSize').val()) || 8,
-                barcode_height: parseFloat($('#barcodeHeight').val()) || 10,
+                gap_between: parseFloat($('#gapBetween').val()) || 2.5,
+                font_size: parseFloat($('#fontSize').val()) || 9,
+                barcode_height: parseFloat($('#barcodeHeight').val()) || 15,
                 show_price: $('#showPrice').prop('checked'),
                 show_unit: $('#showUnit').prop('checked'),
                 show_category: $('#showCategory').prop('checked'),
@@ -364,7 +342,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
         // Generate preview HTML function 
         function generatePreviewHTML(items, settings) {
             let html = '<h3 class="text-xl font-semibold mb-4">Live Preview</h3>';
-            html += `<div class="flex flex-wrap gap-2 justify-center">`;
+            html += `<div class="flex flex-wrap gap-2 justify-start">`;
 
             // Determine dimensions based on paper size
             let labelWidth, labelHeight;
@@ -391,7 +369,11 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
             const scale = 3; // Scale for display purposes
             const displayWidth = labelWidth * scale;
             const displayHeight = labelHeight * scale;
-            const margin = settings.margin || 0.1;
+            const margin = Math.max(1, settings.margin) || 1; // Ensure minimum margin
+            
+            // More compact spacing for barcode
+            const compactSpacing = true;
+            const lineSpacing = compactSpacing ? 0.8 : 1.2;
 
             // Generate a unique timestamp for all barcode IDs
             const timestamp = new Date().getTime();
@@ -404,288 +386,321 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                 // Create a barcode preview card for each item
                 html += `
                     <div class="barcode-preview border p-1 relative bg-white" 
-                         style="width: ${displayWidth}px; height: ${displayHeight}px; margin: ${settings.gap_between || 0}px;">
-                        <div class="absolute inset-0 p-${margin}" style="overflow: hidden;">
-                            ${settings.show_shop_name ? 
-                                `<div class="text-center font-bold" style="font-size: ${Math.min(settings.font_size * 0.9, 7)}pt; line-height: 1;">
-                                    ${settings.shop_name || '<?php echo $ERP_COMPANY_NAME; ?>'}
-                                </div>` : ''}
-                                
-                            ${settings.show_product_name ? 
-                                `<div class="text-center overflow-hidden" style="font-size: ${settings.font_size * 0.9}pt; line-height: 1.1; 
-                                white-space: nowrap; text-overflow: ellipsis;">
-                                    ${item.product_name}
-                                </div>` : ''}
-                                
-                            <div class="flex justify-center" style="height: ${settings.barcode_height}px;">
-                                <svg id="${barcodeId}" class="w-full"></svg>
-                            </div>
-                            
-                            <div class="flex justify-between items-center" style="font-size: ${settings.font_size * 0.7}pt; transform: translateY(10px);">
-                                ${settings.show_category && item.category ? 
-                                    `<div class="text-left">${item.category}</div>` : 
-                                    '<div></div>'
-                                }
-                                
-                                <div class="text-center flex-grow">
-                                    ${settings.show_price ? 
-                                        `<div class="font-bold ${settings.show_promo_price && item.discount_price ? 'line-through' : ''}">
-                                            Rs. ${parseFloat(item.price).toFixed(2)}
-                                        </div>` : ''
-                                    }
-                                    ${settings.show_promo_price && item.discount_price ? 
-                                        `<div class="font-bold text-green-600">
-                                            Rs. ${parseFloat(item.discount_price).toFixed(2)}
-                                        </div>` : ''
-                                    }
-                                </div>
-                                
-                                ${settings.show_unit ? 
-                                    `<div class="text-right">${item.unit || 'pcs'}</div>` : 
-                                    '<div></div>'
-                                }
+                         style="width: ${displayWidth}px; height: ${displayHeight}px; margin: ${settings.gap_between || 0}px; page-break-inside: avoid;">
+                        <div class="absolute inset-0 p-1" style="overflow: hidden;">
+                    `;
+                    
+                    let contentHeight = 0;
+                    
+                    // Shop name (smaller size and less margin)
+                    if (settings.show_shop_name) {
+                        const fontSize = Math.min(settings.font_size * 0.85, 6);
+                        html += `<div class="text-center font-bold" style="font-size: ${fontSize}pt; line-height: ${lineSpacing};">
+                            ${settings.shop_name || '<?php echo $ERP_COMPANY_NAME; ?>'}
+                        </div>`;
+                        contentHeight += fontSize * lineSpacing;
+                    }
+                    
+                    // Product name (slightly reduced size)
+                    if (settings.show_product_name) {
+                        const fontSize = Math.min(settings.font_size * 0.9, 7);
+                        html += `<div class="text-center overflow-hidden" style="font-size: ${fontSize}pt; line-height: ${lineSpacing}; 
+                        white-space: nowrap; text-overflow: ellipsis;">
+                            ${item.product_name}
+                        </div>`;
+                        contentHeight += fontSize * lineSpacing;
+                    }
+                    
+                    // Barcode (optimized height)
+                    const barcodeHeight = Math.min(settings.barcode_height, labelHeight - contentHeight - 5);
+                    html += `<div class="flex justify-center" style="height: ${barcodeHeight}px; margin: 1px 0;">
+                        <svg id="${barcodeId}" class="w-full"></svg>
+                    </div>`;
+                    
+                    // Price and additional info (more compact)
+                    html += `<div class="flex justify-between items-center text-xs" style="font-size: ${settings.font_size * 0.65}pt; line-height: ${lineSpacing};">`;
+                    
+                    // Left column (category)
+                    if (settings.show_category && item.category) {
+                        html += `<div class="text-left truncate" style="max-width: 30%;">${item.category}</div>`;
+                    } else {
+                        html += '<div></div>';
+                    }
+                    
+                    // Middle column (price)
+                    html += `<div class="text-center flex-grow">`;
+                    if (settings.show_price) {
+                        html += `<div class="font-bold ${settings.show_promo_price && item.discount_price ? 'line-through' : ''}">
+                            Rs. ${parseFloat(item.price).toFixed(0)}
+                        </div>`;
+                        
+                        if (settings.show_promo_price && item.discount_price) {
+                            html += `<div class="font-bold text-green-600">
+                                Rs. ${parseFloat(item.discount_price).toFixed(0)}
+                            </div>`;
+                        }
+                    }
+                    html += `</div>`;
+                    
+                    // Right column (unit)
+                    if (settings.show_unit) {
+                        html += `<div class="text-right" style="max-width: 20%;">${item.unit || 'pcs'}</div>`;
+                    } else {
+                        html += '<div></div>';
+                    }
+                    
+                    html += `</div>`;
+                    
+                    // Close label container
+                    html += `
                             </div>
                         </div>
-                    </div>
-                `;
-            });
-
-            html += '</div>';
-
-            // Add script to render barcodes after HTML is added to DOM
-            html += `
-            <script>
-                function initializeBarcodePreview() {
-                    try {
-                        ${items.map((item, index) => {
-                            const barcode = item.barcode || `PROD${item.product_id}`;
-                            
-                            return `
-                                try {
-                                    const barcodeElement = document.getElementById("barcode-preview-${index}-${timestamp}");
-                                    if (barcodeElement) {
-                                        JsBarcode(barcodeElement, "${barcode}", {
-                                            format: "CODE128",
-                                            width: 1,
-                                            height: ${settings.barcode_height},
-                                            displayValue: true,
-                                            fontSize: ${settings.font_size * 1.5},
-                                            margin: 0,
-                                            background: "#ffffff"
-                                        });
-                                    } else {
-                                        console.error("Barcode element not found for index ${index}");
-                                    }
-                                } catch(e) {
-                                    console.error("Error rendering barcode for ${item.product_name}:", e);
-                                }
-                            `;
-                        }).join('')}
-                    } catch(e) {
-                        console.error("Error in barcode initialization:", e);
-                    }
-                }
-
-                // Initialize barcodes after a short delay to ensure DOM is ready
-                setTimeout(initializeBarcodePreview, 100);
-            <\/script>`;
-
-            return html;
-        }
-
-        // Print barcodes function 
-        async function printBarcodes() {
-            // Get all items from the table
-            const items = [];
-            $('#itemsTable tbody tr').each(function() {
-                const $row = $(this);
-                const qty = parseInt($row.find('.item-qty').val()) || 1;
-                
-                // For each quantity, push item to the items array - this expands items by quantity
-                for (let i = 0; i < qty; i++) {
-                    items.push({
-                        product_id: $row.data('product-id'),
-                        product_name: $row.data('product-name'),
-                        barcode: $row.data('barcode'),
-                        price: $row.data('price'),
-                        discount_price: $row.data('discount-price'),
-                        category: $row.data('category'),
-                        unit: $row.data('unit'),
-                        batch_id: $row.data('batch-id'),
-                        batch_number: $row.find('td:eq(1)').text().trim(),
-                        quantity: 1 // Each item has quantity 1 since we're expanding them
-                    });
-                }
-            });
-            
-            if (items.length === 0) {
-                Swal.fire({
-                    title: 'No Items',
-                    text: 'Please add items to print',
-                    icon: 'warning'
+                    `;
                 });
-                return;
+
+                html += '</div>';
+
+                // Add script to render barcodes after HTML is added to DOM
+                html += `
+                <script>
+                    function initializeBarcodePreview() {
+                        try {
+                            ${items.map((item, index) => {
+                                const barcode = item.barcode || `PROD${item.product_id}`;
+                                
+                                return `
+                                    try {
+                                        const barcodeElement = document.getElementById("barcode-preview-${index}-${timestamp}");
+                                        if (barcodeElement) {
+                                            JsBarcode(barcodeElement, "${barcode}", {
+                                                format: "CODE128",
+                                                width: 1,
+                                                height: ${settings.barcode_height},
+                                                displayValue: true,
+                                                fontSize: ${settings.font_size * 1.2},
+                                                textMargin: 1,
+                                                margin: 0,
+                                                background: "#ffffff"
+                                            });
+                                        } else {
+                                            console.error("Barcode element not found for index ${index}");
+                                        }
+                                    } catch(e) {
+                                        console.error("Error rendering barcode for ${item.product_name}:", e);
+                                    }
+                                `;
+                            }).join('')}
+                        } catch(e) {
+                            console.error("Error in barcode initialization:", e);
+                        }
+                    }
+
+                    // Initialize barcodes after a short delay to ensure DOM is ready
+                    setTimeout(initializeBarcodePreview, 100);
+                <\/script>`;
+
+                return html;
             }
 
-            // Get the print format
-            const printFormat = $('#printFormat').val();
-            
-            try {
-                // Get settings and ensure paper size is numeric
-                const settings = getSettings();
-                settings.paper_size = parseFloat(settings.paper_size);
-                
-                // Show loading message
-                $('#loadingOverlay').removeClass('hidden').addClass('flex');
-                
-                // For thermal printing
-                if (printFormat === 'thermal') {
-                    // Get printer settings
-                    const printerIp = $('#printerIp').val();
-                    const printerPort = parseInt($('#printerPort').val()) || 9100;
+            // Print barcodes function 
+            async function printBarcodes() {
+                // Get all items from the table
+                const items = [];
+                $('#itemsTable tbody tr').each(function() {
+                    const $row = $(this);
+                    const qty = parseInt($row.find('.item-qty').val()) || 1;
                     
-                    if (!printerIp) {
-                        $('#loadingOverlay').removeClass('flex').addClass('hidden');
-                        Swal.fire({
-                            title: 'Missing Information',
-                            text: 'Printer IP address is required for thermal printing',
-                            icon: 'warning'
+                    // For each quantity, push item to the items array - this expands items by quantity
+                    for (let i = 0; i < qty; i++) {
+                        items.push({
+                            product_id: $row.data('product-id'),
+                            product_name: $row.data('product-name'),
+                            barcode: $row.data('barcode'),
+                            price: $row.data('price'),
+                            discount_price: $row.data('discount-price'),
+                            category: $row.data('category'),
+                            unit: $row.data('unit'),
+                            batch_id: $row.data('batch-id'),
+                            batch_number: $row.find('td:eq(1)').text().trim(),
+                            quantity: 1 // Each item has quantity 1 since we're expanding them
                         });
+                    }
+                });
+                
+                if (items.length === 0) {
+                    Swal.fire({
+                        title: 'No Items',
+                        text: 'Please add items to print',
+                        icon: 'warning'
+                    });
+                    return;
+                }
+
+                // Get the print format
+                const printFormat = $('#printerType').val();
+                
+                try {
+                    // Get settings and ensure paper size is numeric
+                    const settings = getSettings();
+                    settings.paper_size = parseFloat(settings.paper_size);
+                    
+                    // Show loading message
+                    $('#loadingOverlay').removeClass('hidden').addClass('flex');
+                    
+                    // For thermal printing
+                    if (printFormat === 'network') {
+                        // Get printer settings
+                        const printerIp = $('#printerIp').val();
+                        const printerPort = parseInt($('#printerPort').val()) || 9100;
+                        
+                        if (!printerIp) {
+                            $('#loadingOverlay').removeClass('flex').addClass('hidden');
+                            Swal.fire({
+                                title: 'Missing Information',
+                                text: 'Printer IP address is required for thermal printing',
+                                icon: 'warning'
+                            });
+                            return;
+                        }
+                        
+                        // Send to thermal printer
+                        const response = await fetch('./api/thermal_print.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                action: 'thermal_print',
+                                printer_ip: printerIp,
+                                printer_port: printerPort,
+                                settings: settings,
+                                items: items
+                            })
+                        });
+                        
+                        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to send to thermal printer');
+                        }
+                        
+                        const result = await response.json();
+                        
+                        if (!result.success) {
+                            throw new Error(result.message || 'Failed to send to thermal printer');
+                        }
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success',
+                            text: 'Labels sent to thermal printer',
+                            icon: 'success'
+                        });
+                        
                         return;
                     }
                     
-                    // Send to thermal printer
-                    const response = await fetch('./api/thermal_print.php', {
+                    // For regular PDF printing
+                    const response = await fetch('./api/barcode.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            action: 'thermal_print',
-                            printer_ip: printerIp,
-                            printer_port: printerPort,
+                            action: 'print',
                             settings: settings,
                             items: items
                         })
                     });
-                    
+
                     $('#loadingOverlay').removeClass('flex').addClass('hidden');
-                    
+
                     if (!response.ok) {
-                        throw new Error('Failed to send to thermal printer');
+                        throw new Error('Failed to generate barcodes');
                     }
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
                     
-                    const result = await response.json();
-                    
-                    if (!result.success) {
-                        throw new Error(result.message || 'Failed to send to thermal printer');
+                    // Open in new window for printing
+                    const printWindow = window.open(url);
+
+                    if (printWindow) {
+                        printWindow.onload = function() {
+                            printWindow.print();
+                            setTimeout(() => {
+                                URL.revokeObjectURL(url);
+                            }, 2000);
+                        };
+                    } else {
+                        // If popup blocked, show direct link
+                        Swal.fire({
+                            title: 'Popup Blocked',
+                            text: 'Unable to open print window. Please allow popups or click below to open PDF.',
+                            icon: 'warning',
+                            confirmButtonText: 'Open PDF',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.open(url, '_blank');
+                            }
+                        });
                     }
-                    
-                    // Show success message
+                } catch (error) {
+                    $('#loadingOverlay').removeClass('flex').addClass('hidden');
                     Swal.fire({
-                        title: 'Success',
-                        text: 'Labels sent to thermal printer',
-                        icon: 'success'
-                    });
-                    
-                    return;
-                }
-                
-                // For regular PDF printing
-                const response = await fetch('./api/barcode.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        action: 'print',
-                        settings: settings,
-                        items: items
-                    })
-                });
-
-                $('#loadingOverlay').removeClass('flex').addClass('hidden');
-
-                if (!response.ok) {
-                    throw new Error('Failed to generate barcodes');
-                }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                
-                // Open in new window for printing
-                const printWindow = window.open(url);
-
-                if (printWindow) {
-                    printWindow.onload = function() {
-                        printWindow.print();
-                        setTimeout(() => {
-                            URL.revokeObjectURL(url);
-                        }, 2000);
-                    };
-                } else {
-                    // If popup blocked, show direct link
-                    Swal.fire({
-                        title: 'Popup Blocked',
-                        text: 'Unable to open print window. Please allow popups or click below to open PDF.',
-                        icon: 'warning',
-                        confirmButtonText: 'Open PDF',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.open(url, '_blank');
-                        }
+                        title: 'Error',
+                        text: error.message || 'An error occurred while generating barcodes',
+                        icon: 'error'
                     });
                 }
-            } catch (error) {
-                $('#loadingOverlay').removeClass('flex').addClass('hidden');
-                Swal.fire({
-                    title: 'Error',
-                    text: error.message || 'An error occurred while generating barcodes',
-                    icon: 'error'
+            }
+            
+            $(document).ready(function() {
+                // Add loading overlay
+                const loadingOverlay = $('<div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center"><div class="bg-white p-4 rounded shadow-lg"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div><div class="mt-2 text-center">Loading...</div></div></div>');
+                $('body').append(loadingOverlay);
+
+                // Toggle shop name field visibility
+                $('#showShopName').on('change', function() {
+                    if($(this).is(':checked')) {
+                        $('#shopNameField').removeClass('hidden');
+                        $('#shopName').removeClass('hidden');
+                    } else {
+                        $('#shopNameField').addClass('hidden');
+                        $('#shopName').addClass('hidden');
+                    }
                 });
-            }
-        }
-        
-        $(document).ready(function() {
-            // Add loading overlay
-            const loadingOverlay = $('<div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center"><div class="bg-white p-4 rounded shadow-lg"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div><div class="mt-2 text-center">Loading...</div></div></div>');
-            $('body').append(loadingOverlay);
+                
+                // Trigger shop name field visibility on initial load
+                $('#showShopName').trigger('change');
 
-            // Toggle shop name field visibility
-            $('#showShopName').on('change', function() {
-                if($(this).is(':checked')) {
-                    $('#shopNameField').removeClass('hidden');
-                    $('#shopName').removeClass('hidden');
-                } else {
-                    $('#shopNameField').addClass('hidden');
-                    $('#shopName').addClass('hidden');
+                // Show/hide thermal printer settings based on print format
+                $('#printerType').on('change', function() {
+                    const printerType = $(this).val();
+                    
+                    // Hide all printer settings first
+                    $('.network-printer-settings, .windows-printer-settings').hide();
+                    
+                    // Show the relevant settings based on selection
+                    if (printerType === 'network') {
+                        $('.network-printer-settings').show();
+                    } else if (printerType === 'windows') {
+                        $('.windows-printer-settings').show();
+                    }
+                });
+                
+                // Trigger print format change on initial load
+                $('#printerType').trigger('change');
+
+                // Function to show loading overlay
+                function showLoading() {
+                    $('#loadingOverlay').removeClass('hidden').addClass('flex');
                 }
-            });
-            
-            // Trigger shop name field visibility on initial load
-            $('#showShopName').trigger('change');
 
-            // Show/hide thermal printer settings based on print format
-            $('#printFormat').on('change', function() {
-                if ($(this).val() === 'thermal') {
-                    $('#thermalPrinterSettings').removeClass('hidden');
-                } else {
-                    $('#thermalPrinterSettings').addClass('hidden');
+                // Function to hide loading overlay
+                function hideLoading() {
+                    $('#loadingOverlay').removeClass('flex').addClass('hidden');
                 }
-            });
-            
-            // Trigger print format change on initial load
-            $('#printFormat').trigger('change');
-
-            // Function to show loading overlay
-            function showLoading() {
-                $('#loadingOverlay').removeClass('hidden').addClass('flex');
-            }
-
-            // Function to hide loading overlay
-            function hideLoading() {
-                $('#loadingOverlay').removeClass('flex').addClass('hidden');
-            }
 
             // Initialize Select2 for product search with proper width and display
             setTimeout(function() {
@@ -698,16 +713,16 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                         url: '../../inc/fetch_product.php',
                         dataType: 'json',
                         delay: 250,
-                        beforeSend: function() {
-                            showLoading();
-                        },
+                            beforeSend: function() {
+                                showLoading();
+                            },
                         data: function(params) {
                             return {
                                 search: params.term
                             };
                         },
                         processResults: function(data) {
-                            hideLoading();
+                                hideLoading();
                             if (data && data.products && Array.isArray(data.products)) {
                                 return {
                                     results: data.products.map(product => ({
@@ -727,9 +742,9 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                                 };
                             }
                         },
-                        error: function() {
-                            hideLoading();
-                        },
+                            error: function() {
+                                hideLoading();
+                            },
                         cache: true
                     },
                     minimumInputLength: 2
@@ -764,13 +779,13 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                 // Remove disabled attribute from all checkboxes
                 $('#showShopName, #showProductName, #showPrice, #showUnit, #showCategory, #showPromoPrice').prop('disabled', false);
 
-                // Add change event listeners to all content setting checkboxes and inputs
-                $('#showShopName, #showProductName, #showPrice, #showUnit, #showCategory, #showPromoPrice').on('change', function() {
+                    // Add change event listeners to all content setting checkboxes and inputs
+                    $('#showShopName, #showProductName, #showPrice, #showUnit, #showCategory, #showPromoPrice').on('change', function() {
                     updatePreview();
                 });
 
-                // Add input event for shop name text field
-                $('#shopName').on('input', function() {
+                    // Add input event for shop name text field
+                    $('#shopName').on('input', function() {
                     updatePreview();
                 });
 
@@ -784,7 +799,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
             function fetchBatches(product) {
                 if (!product || !product.id) return;
 
-                showLoading();
+                    showLoading();
                 $.ajax({
                     url: '../../inc/fetch_product.php',
                     method: 'GET',
@@ -792,7 +807,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                         search: product.text // Use product name for exact match
                     },
                     success: function(response) {
-                        hideLoading();
+                            hideLoading();
                         if (response && response.batches && Array.isArray(response.batches)) {
                             displayBatchModal(product, response.batches);
                         } else {
@@ -804,7 +819,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                         }
                     },
                     error: function(xhr, status, error) {
-                        hideLoading();
+                            hideLoading();
                         console.error('Error fetching batches:', error);
                         Swal.fire({
                             title: 'Error',
@@ -826,15 +841,15 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                     return;
                 }
 
-                // Get barcode for display
-                const barcode = product.barcode || product.sku || '';
-                const barcodeInfo = barcode ? `<div class="mb-3 text-center">
-                    <span class="font-semibold">Barcode:</span> ${barcode}
-                </div>` : '';
+                    // Get barcode for display
+                    const barcode = product.barcode || product.sku || '';
+                    const barcodeInfo = barcode ? `<div class="mb-3 text-center">
+                        <span class="font-semibold">Barcode:</span> ${barcode}
+                    </div>` : '';
 
                 // Prepare HTML for batch selection
                 let batchesHtml = `
-                    ${barcodeInfo}
+                        ${barcodeInfo}
                     <table class="w-full mt-4 mb-2">
                         <thead>
                             <tr class="bg-gray-100">
@@ -905,7 +920,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                     // Store additional needed data as data attributes
                     const hasDiscountPrice = batch.discount_price && parseFloat(batch.discount_price) > 0 && parseFloat(batch.discount_price) < parseFloat(batch.selling_price);
                     const unit = product.unit || 'pcs'; // Default to 'pcs' if no unit specified
-                    const barcode = product.barcode || product.sku || ''; // Use barcode or SKU if available
+                        const barcode = product.barcode || product.sku || ''; // Use barcode or SKU if available
 
                     // Add new row
                     const newRow = `
@@ -913,7 +928,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                             data-batch-id="${batch.batch_id}" 
                             data-product-id="${batch.product_id}"
                             data-product-name="${product.text}"
-                            data-barcode="${barcode}"
+                                data-barcode="${barcode}"
                             data-category="${product.category || ''}"
                             data-unit="${unit}"
                             data-price="${parseFloat(batch.selling_price).toFixed(2)}"
@@ -975,16 +990,20 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                 const items = [];
                 $('#itemsTable tbody tr').each(function() {
                     const $row = $(this);
-                    items.push({
-                        product_id: $row.data('product-id'),
-                        product_name: $row.data('product-name'),
+                    const qty = parseInt($row.find('.item-qty').val()) || 1;
+
+                    // For each quantity, add an item entry
+                    for (let i = 0; i < qty; i++) {
+                        items.push({
+                            product_id: $row.data('product-id'),
+                            product_name: $row.data('product-name'),
                         barcode: $row.data('barcode') || '',
-                        price: $row.data('price'),
-                        discount_price: $row.data('discount-price'),
-                        category: $row.data('category'),
-                        unit: $row.data('unit'),
-                        quantity: parseInt($row.find('.item-qty').val()) || 1
-                    });
+                            price: $row.data('price'),
+                            discount_price: $row.data('discount-price'),
+                            category: $row.data('category'),
+                            unit: $row.data('unit')
+                        });
+                    }
                 });
 
                 // If no items, don't update preview
@@ -993,69 +1012,20 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                 }
 
                 // Get settings
-                const settings = getSettings();
+                    const settings = getSettings();
+
+                // Generate HTML preview
+                const previewHtml = generatePreviewHTML(items, settings);
 
                 // Remove any existing preview
                 $('#livePreview').remove();
 
-                // Create a new container for the preview
-                const previewContainer = $('<div id="livePreview" class="mt-4 p-4 border rounded bg-white"></div>');
-                
+                    // Create a new container for the preview
+                    const previewContainer = $('<div id="livePreview" class="mt-4 p-4 border rounded bg-white"></div>');
+                    previewContainer.html(previewHtml);
+
                 // Add the new preview after the Template Actions card
                 $('.card:last').after(previewContainer);
-                
-                // Get current items from table for preview
-                const previewItems = [];
-                $('#itemsTable tbody tr').each(function() {
-                    const $row = $(this);
-                    const qty = parseInt($row.find('.item-qty').val()) || 1;
-                    
-                    // Add each item according to quantity
-                    for (let i = 0; i < qty; i++) {
-                        previewItems.push({
-                            product_id: $row.data('product-id'),
-                            product_name: $row.data('product-name'),
-                            barcode: $row.data('barcode') || '',
-                            price: $row.data('price'),
-                            discount_price: $row.data('discount-price'),
-                            category: $row.data('category'),
-                            unit: $row.data('unit')
-                        });
-                    }
-                });
-                
-                // Render a simple preview without using the complex generatePreviewHTML
-                let previewHtml = '<h3 class="text-xl font-semibold mb-4">Live Preview</h3>';
-                previewHtml += '<p class="mb-4">Items ready to print: ' + previewItems.length + '</p>';
-                previewHtml += '<div class="flex flex-wrap gap-2">';
-                
-                // Show first 5 items as simple boxes
-                const maxPreview = Math.min(previewItems.length, 5);
-                for (let i = 0; i < maxPreview; i++) {
-                    const item = previewItems[i];
-                    previewHtml += `
-                        <div class="border p-2 rounded" style="width: 150px; overflow: hidden;">
-                            <p class="font-bold truncate">${item.product_name}</p>
-                            <p class="text-sm truncate">Barcode: ${item.barcode || 'N/A'}</p>
-                            <p class="text-sm">Rs. ${parseFloat(item.price).toFixed(2)}</p>
-                        </div>
-                    `;
-                }
-                
-                // If there are more items than shown in preview
-                if (previewItems.length > maxPreview) {
-                    previewHtml += `
-                        <div class="border p-2 rounded flex items-center justify-center" style="width: 150px;">
-                            <p class="font-bold">+${previewItems.length - maxPreview} more</p>
-                        </div>
-                    `;
-                }
-                
-                previewHtml += '</div>';
-                previewHtml += '<p class="mt-4">Click "Preview" button for detailed preview</p>';
-                
-                // Set the preview container content
-                previewContainer.html(previewHtml);
             }
 
             // Add event handler for preview button
@@ -1093,7 +1063,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                     return;
                 }
 
-                const settings = getSettings();
+                    const settings = getSettings();
 
                 // Use the modal for detailed preview
                 const previewHtml = generatePreviewHTML(items, settings);
@@ -1180,7 +1150,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                 }
 
                 // Get settings
-                const settings = getSettings();
+                    const settings = getSettings();
 
                 // Save template data to server
                 $.ajax({
@@ -1236,20 +1206,20 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                     const settings = template.settings;
 
                     // Set paper settings
-                    $('#paperSize').val(settings.paper_size || '36').trigger('change');
-                    $('#margin').val(settings.margin || 2);
-                    $('#gapBetween').val(settings.gap_between || 0);
-                    $('#fontSize').val(settings.font_size || 8);
-                    $('#barcodeHeight').val(settings.barcode_height || 10);
+                        $('#paperSize').val(settings.paper_size || '36').trigger('change');
+                    $('#margin').val(settings.margin || 1);
+                        $('#gapBetween').val(settings.gap_between || 2.5);
+                        $('#fontSize').val(settings.font_size || 9);
+                        $('#barcodeHeight').val(settings.barcode_height || 15);
 
                     // Set content settings
-                    $('#showShopName').prop('checked', settings.show_shop_name !== false).trigger('change');
-                    $('#shopName').val(settings.shop_name || '<?php echo $ERP_COMPANY_NAME; ?>');
-                    $('#showProductName').prop('checked', settings.show_product_name !== false).trigger('change');
-                    $('#showPrice').prop('checked', settings.show_price !== false).trigger('change');
-                    $('#showUnit').prop('checked', settings.show_unit === true).trigger('change');
-                    $('#showCategory').prop('checked', settings.show_category === true).trigger('change');
-                    $('#showPromoPrice').prop('checked', settings.show_promo_price === true).trigger('change');
+                        $('#showShopName').prop('checked', settings.show_shop_name !== false).trigger('change');
+                        $('#shopName').val(settings.shop_name || '<?php echo $ERP_COMPANY_NAME; ?>');
+                        $('#showProductName').prop('checked', settings.show_product_name !== false).trigger('change');
+                        $('#showPrice').prop('checked', settings.show_price !== false).trigger('change');
+                        $('#showUnit').prop('checked', settings.show_unit === true).trigger('change');
+                        $('#showCategory').prop('checked', settings.show_category === true).trigger('change');
+                        $('#showPromoPrice').prop('checked', settings.show_promo_price === true).trigger('change');
                 }
 
                 // Load items
@@ -1291,8 +1261,18 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                     updatePreview();
                 }
             }
+
+            // Show/hide shop name input based on checkbox
+            $('#showShopName').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('.shop-name-container').show();
+                } else {
+                    $('.shop-name-container').hide();
+                }
+            });
         });
-    </script>
+        </script>
+                    </div>
 </body>
 
 </html>

@@ -3,12 +3,14 @@ require_once '../../../inc/config.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['employee_id'])) {
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'User not authenticated']);
     exit;
 }
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
@@ -18,25 +20,26 @@ $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
 // Validate input data
-if (!$data || !isset($data['name']) || !isset($data['settings']) || !isset($data['items']) || empty($data['items'])) {
+if (!$data || !isset($data['template_name']) || !isset($data['settings'])) {
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Invalid template data']);
     exit;
 }
 
 // Sanitize template name
-$templateName = mysqli_real_escape_string($con, $data['name']);
+$templateName = mysqli_real_escape_string($con, $data['template_name']);
 $userId = $_SESSION['employee_id'];
 
 // Extract settings
 $settings = $data['settings'];
-$paperSize = floatval($settings['paperSize'] ?? $settings['paper_size'] ?? 30);
-$paperHeight = ($paperSize === 30) ? 15 : $paperSize; // Default height for 30mm width is 15mm
-$showShopName = isset($settings['showShopName']) ? (bool)$settings['showShopName'] : true;
-$showProductName = isset($settings['showProductName']) ? (bool)$settings['showProductName'] : true;
-$showPrice = isset($settings['showPrice']) ? (bool)$settings['showPrice'] : true;
-$showUnit = isset($settings['showUnit']) ? (bool)$settings['showUnit'] : false;
-$showCategory = isset($settings['showCategory']) ? (bool)$settings['showCategory'] : false;
-$showPromoPrice = isset($settings['showPromoPrice']) ? (bool)$settings['showPromoPrice'] : false;
+$paperSize = floatval($settings['paper_size'] ?? 30);
+$paperHeight = ($paperSize === 30) ? 15 : $paperSize / 2; // Default height for 30mm width is 15mm
+$showShopName = isset($settings['show_shop_name']) ? (int)$settings['show_shop_name'] : 1;
+$showProductName = isset($settings['show_product_name']) ? (int)$settings['show_product_name'] : 1;
+$showPrice = isset($settings['show_price']) ? (int)$settings['show_price'] : 1;
+$showUnit = isset($settings['show_unit']) ? (int)$settings['show_unit'] : 0;
+$showCategory = isset($settings['show_category']) ? (int)$settings['show_category'] : 0;
+$showPromoPrice = isset($settings['show_promo_price']) ? (int)$settings['show_promo_price'] : 0;
 
 // Check if template with the same name already exists
 $checkQuery = "SELECT template_id FROM barcode_templates WHERE template_name = ?";
@@ -65,7 +68,7 @@ if ($existingTemplate) {
     mysqli_stmt_bind_param($stmt, 'ddiiiiiii', 
         $paperSize, 
         $paperHeight,
-        $showShopName, 
+        $showShopName,
         $showProductName, 
         $showPrice, 
         $showUnit, 
@@ -74,13 +77,6 @@ if ($existingTemplate) {
         $templateId
     );
     $success = mysqli_stmt_execute($stmt);
-    
-    // Delete existing items for this template
-    $deleteItemsQuery = "DELETE FROM barcode_print_items WHERE job_id IN 
-                         (SELECT job_id FROM barcode_print_jobs WHERE template_id = ?)";
-    $stmt = mysqli_prepare($con, $deleteItemsQuery);
-    mysqli_stmt_bind_param($stmt, 'i', $templateId);
-    mysqli_stmt_execute($stmt);
     
     $message = 'Template updated successfully';
 } else {
@@ -96,7 +92,7 @@ if ($existingTemplate) {
         $templateName, 
         $paperSize, 
         $paperHeight,
-        $showShopName, 
+        $showShopName,
         $showProductName, 
         $showPrice, 
         $showUnit, 
@@ -109,8 +105,8 @@ if ($existingTemplate) {
     $message = 'Template saved successfully';
 }
 
-// Create a print job for the template items
-if ($success && !empty($data['items'])) {
+// Create a print job for the template items if items are provided
+if ($success && isset($data['items']) && !empty($data['items'])) {
     // Insert a print job
     $jobQuery = "INSERT INTO barcode_print_jobs 
                 (template_id, created_by, status, created_at) 
@@ -141,10 +137,6 @@ if ($success && !empty($data['items'])) {
                 break;
             }
         }
-        
-        $success = $itemSuccess;
-    } else {
-        $success = false;
     }
 }
 

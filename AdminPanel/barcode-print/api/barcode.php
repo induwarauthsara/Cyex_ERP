@@ -34,13 +34,22 @@ if (!$action) {
 }
 
 // Handle different actions
-switch ($action) {
+        switch ($action) {
     case 'print':
         handleBarcodeGeneration($data);
         break;
     case 'preview':
         handleBarcodeGeneration($data);
         break;
+    case 'save_template':
+        // Redirect to save_template.php instead of including it
+        header('Location: save_template.php');
+        exit;
+            case 'get_template':
+        // This action should be handled via direct GET request to get_template.php
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Template retrieval must be done via GET request to get_template.php']);
+        exit;
     default:
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
@@ -65,7 +74,7 @@ function truncateText($text, $paperWidth, $fontSize = 8) {
     foreach ($maxLengths as $size => $length) {
         if ($paperWidth <= $size) {
             $maxLength = $length;
-            break;
+                break;
         }
     }
     
@@ -93,8 +102,8 @@ function generateBarcodeLabel($pdf, $settings, $product) {
     $margin = isset($settings['margin']) && !empty($settings['margin']) ? $settings['margin'] : 1;
     $paperWidth = isset($settings['paper_size']) && !empty($settings['paper_size']) ? $settings['paper_size'] : 30;
     
-    // Line spacing based on font size
-    $lineSpacing = $fontSize * 0.8; // 80% of font size for spacing
+    // More compact line spacing based on font size (70% of font size)
+    $lineSpacing = $fontSize * 0.7;
     
     // Set font
     $pdf->SetFont('helvetica', '', $fontSize);
@@ -102,11 +111,23 @@ function generateBarcodeLabel($pdf, $settings, $product) {
     // Start Y position
     $yPos = $margin;
     
+    // Calculate total available height
+    $paperHeight = $paperWidth === 30 ? 15 : $paperWidth / 2;
+    $availableHeight = $paperHeight - (2 * $margin);
+    
     // Add shop name if enabled
     if (isset($settings['show_shop_name']) && $settings['show_shop_name'] && isset($settings['shop_name']) && !empty($settings['shop_name'])) {
         $shopName = $settings['shop_name'];
+        // Use a smaller font for shop name
+        $pdf->SetFont('helvetica', 'B', $fontSize * 0.9);
         $pdf->Text($margin, $yPos, truncateText($shopName, $paperWidth, $fontSize));
         $yPos += $lineSpacing;
+        // Reset font
+        $pdf->SetFont('helvetica', '', $fontSize);
+        // Adjust Space for shop name
+        $space_adjustment_for_shop_name = 2;
+    }else{
+        $space_adjustment_for_shop_name = 0;
     }
     
     // Add product name if available
@@ -116,73 +137,101 @@ function generateBarcodeLabel($pdf, $settings, $product) {
         $yPos += $lineSpacing;
     }
     
-    // Add barcode
+    // Add barcode - calculate appropriate height based on remaining space
     $barcode = $product['barcode'] ?? $product['product_id'];
     if (empty($barcode)) $barcode = $product['product_id'];
     
     // Determine barcode type based on content
-    $barcodeType = 'EAN13';
+    $barcodeType = 'CODE128';
     if (strlen($barcode) === 13 && is_numeric($barcode)) {
         $barcodeType = 'EAN13';
-    } else {
-        $barcodeType = 'CODE128';
     }
     
-    // Set barcode height based on paper size
+    // Calculate how much space we've used and what's left for the barcode
+    $usedSpace = $yPos - $margin;
+    $textSpaceNeeded = $lineSpacing * 3; // Space for price, unit, etc.
+    
+    // Set barcode height - use user's setting but ensure it fits
     $barcodeHeight = isset($settings['barcode_height']) && !empty($settings['barcode_height']) 
-        ? $settings['barcode_height'] 
-        : min(10, $paperWidth / 3);
+        ? min($settings['barcode_height'], $availableHeight - $usedSpace - $textSpaceNeeded)
+        : min(10, $availableHeight - $usedSpace - $textSpaceNeeded);
     
     // Calculate barcode width - leave some margin
     $barcodeWidth = $paperWidth - (2 * $margin);
     
     // Generate and place barcode
+    $style = [
+        'position' => 'N', 
+        'stretch' => true,
+        'fitwidth' => true,
+        'cellfitalign' => '',
+        'hpadding' => 0,
+        'vpadding' => 0,
+        'fgcolor' => [0, 0, 0],
+        'bgcolor' => false,
+        'text' => true,
+        'font' => 'helvetica',
+        'fontsize' => $fontSize * 1.2, // Larger text for barcode
+        'stretchtext' => 0,
+        'textposition' => 'bottom'
+    ];
+    
     $pdf->write1DBarcode(
         $barcode,
         $barcodeType,
         $margin,
-        $yPos,
+        $yPos - $space_adjustment_for_shop_name,
         $barcodeWidth,
         $barcodeHeight,
         0.4,
-        ['position' => 'N', 'stretch' => true]
+        $style
     );
     
-    // Move position down after barcode
-    $yPos += $barcodeHeight + $lineSpacing;
+    // Move position down after barcode - account for barcode text
+    $yPos += $barcodeHeight + $fontSize - $space_adjustment_for_shop_name;
     
-    // Add price if available
+    // Use smaller font for remaining text
+    $pdf->SetFont('helvetica', '', $fontSize * 0.9);
+    
+    // Create a row for price and unit with proper spacing
+    $xPosLeft = $margin;
+    $xPosRight = $paperWidth - $margin - 10; // 10mm reserved for right column
+    $xPosMiddle = $margin + ($paperWidth - 2 * $margin) / 2 - 5; // Middle column with 5mm adjustment
+    
+    // First row - Price and/or Promo price
     if (isset($settings['show_price']) && $settings['show_price'] && isset($product['price']) && !empty($product['price'])) {
-        $price = 'Price: ' . number_format($product['price'], 0, '.', ',');
-        $pdf->Text($margin, $yPos, $price);
+        $price = 'Rs. ' . number_format($product['price'], 0, '.', ',');
+        $pdf->Text($xPosLeft, $yPos + $space_adjustment_for_shop_name, $price);
+        
+        // Add promotional price if available AND if show_promo_price is enabled
+        if (isset($settings['show_promo_price']) && $settings['show_promo_price']) {
+            if (isset($product['discount_price']) && !empty($product['discount_price'])) {
+                $promoPrice = 'Promo: ' . number_format($product['discount_price'], 0, '.', ',');
+                $pdf->Text($xPosMiddle, $yPos, $promoPrice);
+            } elseif (isset($product['promotional_price']) && !empty($product['promotional_price'])) {
+                $promoPrice = 'Promo: ' . number_format($product['promotional_price'], 0, '.', ',');
+                $pdf->Text($xPosMiddle, $yPos, $promoPrice);
+            }
+        }
+        
         $yPos += $lineSpacing;
     }
     
-    // Add promotional price if available
-    if (isset($settings['show_promo_price']) && $settings['show_promo_price'] && isset($product['promotional_price']) && !empty($product['promotional_price'])) {
-        $promoPrice = 'Promo: ' . number_format($product['promotional_price'], 0, '.', ',');
-        $pdf->Text($margin, $yPos, $promoPrice);
+    // Second row - Category and Unit
+    if ((isset($settings['show_category']) && $settings['show_category'] && isset($product['category_name']) && !empty($product['category_name'])) ||
+        (isset($settings['show_unit']) && $settings['show_unit'] && isset($product['unit']) && !empty($product['unit']))) {
+        
+        if (isset($settings['show_category']) && $settings['show_category'] && isset($product['category_name']) && !empty($product['category_name'])) {
+            $category = 'Cat: ' . $product['category_name'];
+            $pdf->Text($xPosLeft, $yPos, truncateText($category, $paperWidth / 2, $fontSize));
+        }
+        
+        if (isset($settings['show_unit']) && $settings['show_unit'] && isset($product['unit']) && !empty($product['unit'])) {
+            $unit = 'Unit: ' . $product['unit'];
+            $pdf->Text($xPosMiddle, $yPos, $unit);
+        }
+        
         $yPos += $lineSpacing;
-    }
-    
-    // Add category if available
-    if (isset($settings['show_category']) && $settings['show_category'] && isset($product['category_name']) && !empty($product['category_name'])) {
-        $category = 'Cat: ' . $product['category_name'];
-        $pdf->Text($margin, $yPos, truncateText($category, $paperWidth, $fontSize));
-        $yPos += $lineSpacing;
-    }
-    
-    // Add unit if available
-    if (isset($settings['show_unit']) && $settings['show_unit'] && isset($product['unit']) && !empty($product['unit'])) {
-        $unit = 'Unit: ' . $product['unit'];
-        $pdf->Text($margin, $yPos, $unit);
-        $yPos += $lineSpacing;
-    }
-    
-    // Add batch number if available
-    if (isset($product['batch_number']) && !empty($product['batch_number'])) {
-        $batch = 'Batch: ' . $product['batch_number'];
-        $pdf->Text($margin, $yPos, $batch);
     }
 }
 
@@ -195,7 +244,7 @@ function handleBarcodeGeneration($data) {
     // Get data
     $settings = $data['settings'] ?? [];
     $items = $data['items'] ?? [];
-    
+
     // Validate data
     if (empty($items)) {
         header('Content-Type: application/json');
@@ -206,29 +255,29 @@ function handleBarcodeGeneration($data) {
     // Get paper size
     $paperWidth = isset($settings['paper_size']) && !empty($settings['paper_size']) ? floatval($settings['paper_size']) : 30;
     $paperHeight = $paperWidth === 30 ? 15 : $paperWidth / 2;
-    
+
     // Create PDF
     $pdf = new TCPDF('L', 'mm', [$paperWidth, $paperHeight], true, 'UTF-8', false);
     
     // Set document information
-    $pdf->SetCreator('Srijaya Barcode System');
-    $pdf->SetAuthor('Srijaya');
+    $pdf->SetCreator('CyexTech Solutions Barcode System');
+    $pdf->SetAuthor('CyexTech Solutions');
     $pdf->SetTitle('Barcode Label');
     
     // Set margins
     $margin = isset($settings['margin']) && !empty($settings['margin']) ? floatval($settings['margin']) : 1;
     $pdf->SetMargins($margin, $margin, $margin);
-    
+
     // Remove default header/footer
     $pdf->setPrintHeader(false);
     $pdf->setPrintFooter(false);
-    
+
     // Disable auto page break
     $pdf->SetAutoPageBreak(false, 0);
     
     // Set display mode
     $pdf->SetDisplayMode('fullpage', 'SinglePage', 'UseNone');
-    
+
     // Generate barcodes
     foreach ($items as $item) {
         $quantity = intval($item['quantity']);
@@ -242,7 +291,7 @@ function handleBarcodeGeneration($data) {
             generateBarcodeLabel($pdf, $settings, $item);
         }
     }
-    
+
     // Output PDF
     $pdf->Output('barcodes.pdf', 'I');
     exit;

@@ -345,58 +345,7 @@ async function printBarcodes() {
             }
         });
         
-        // Get the print format
-        const printFormat = $('#printFormat').val();
-        
-        // For thermal printing
-        if (printFormat === 'thermal') {
-            // Get printer settings
-            const printerIp = $('#printerIp').val();
-            const printerPort = parseInt($('#printerPort').val()) || 9100;
-            
-            if (!printerIp) {
-                $('#loadingOverlay').removeClass('flex').addClass('hidden');
-                Swal.fire({
-                    title: 'Missing Information',
-                    text: 'Printer IP address is required for thermal printing',
-                    icon: 'warning'
-                });
-                return;
-            }
-            
-            // Send to thermal printer
-            const response = await fetch('./api/thermal_print.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'thermal_print',
-                    printer_ip: printerIp,
-                    printer_port: printerPort,
-                    settings: settings,
-                    items: expandedItems
-                })
-            });
-            
-            $('#loadingOverlay').removeClass('flex').addClass('hidden');
-            
-            const result = await response.json();
-            
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Failed to send to thermal printer');
-            }
-            
-            // Show success message
-            Swal.fire({
-                title: 'Success',
-                text: 'Labels sent to thermal printer',
-                icon: 'success'
-            });
-            
-            return;
-        }
-        
+        // For PDF printing
         const response = await fetch('./api/barcode.php', {
             method: 'POST',
             headers: {
@@ -464,13 +413,12 @@ async function saveTemplate() {
         $('#loadingOverlay').removeClass('hidden').addClass('flex');
         
         const settings = getSettings();
-        const response = await fetch('../api/barcode.php', {
+        const response = await fetch('./api/save_template.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                action: 'save_template',
                 template_name: templateName,
                 settings: settings
             })
@@ -504,7 +452,7 @@ async function loadTemplate() {
     try {
         $('#loadingOverlay').removeClass('hidden').addClass('flex');
         
-        const response = await fetch(`../api/barcode.php?action=get_template&id=${templateId}`);
+        const response = await fetch(`./api/get_template.php?id=${templateId}`);
         
         $('#loadingOverlay').removeClass('flex').addClass('hidden');
         
@@ -517,10 +465,10 @@ async function loadTemplate() {
         // Apply template settings
         const settings = data.settings;
         $('#paperSize').val(settings.paper_size);
-        $('#margin').val(settings.margin);
-        $('#gapBetween').val(settings.gap_between);
-        $('#fontSize').val(settings.font_size);
-        $('#barcodeHeight').val(settings.barcode_height);
+        $('#margin').val(settings.margin || 1);
+        $('#gapBetween').val(settings.gap_between || 2.5);
+        $('#fontSize').val(settings.font_size || 9);
+        $('#barcodeHeight').val(settings.barcode_height || 15);
         $('#showPrice').prop('checked', settings.show_price);
         $('#showUnit').prop('checked', settings.show_unit);
         $('#showCategory').prop('checked', settings.show_category);
@@ -528,6 +476,8 @@ async function loadTemplate() {
         $('#showShopName').prop('checked', settings.show_shop_name);
         $('#shopName').val(settings.shop_name);
         $('#showProductName').prop('checked', settings.show_product_name);
+
+        showSuccess(`Template "${data.template_name}" loaded successfully`);
 
     } catch (error) {
         $('#loadingOverlay').removeClass('flex').addClass('hidden');
