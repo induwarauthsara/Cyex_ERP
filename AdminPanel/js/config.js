@@ -7,7 +7,7 @@ const CONFIG = {
     DECIMAL_PLACES: 2,
     API_ENDPOINTS: {
         SUPPLIERS: '/AdminPanel/api/suppliers.php',
-        PRODUCTS: '/AdminPanel/api/products.php',
+        PRODUCTS: '/inc/fetch_product.php',
         PURCHASE_ORDERS: '/AdminPanel/purchase/api/purchase_orders.php',
         GRN: '/AdminPanel/purchase3/api/grn.php',
         BARCODE: '/AdminPanel/barcode-print/api/barcode.php'

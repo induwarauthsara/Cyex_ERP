@@ -16,13 +16,12 @@ $(document).ready(async function() {
         placeholder: 'Search products...',
         allowClear: true,
         ajax: {
-            url: CONFIG.API_ENDPOINTS.PRODUCTS,
+            url: '../../../inc/fetch_product.php',
             dataType: 'json',
             delay: 250,
             data: function(params) {
                 return {
-                    search: params.term,
-                    action: 'search'
+                    search: params.term
                 };
             },
             processResults: function(data) {
@@ -31,6 +30,7 @@ $(document).ready(async function() {
                         id: product.product_id,
                         text: product.product_name,
                         price: product.selling_price,
+                        barcode: product.barcode,
                         batches: product.batches
                     }))
                 };
@@ -50,15 +50,61 @@ $(document).ready(async function() {
     $('#printBtn').on('click', printBarcodes);
     $('#saveTemplateBtn').on('click', saveTemplate);
     $('#loadTemplate').on('change', loadTemplate);
-    $('#itemsTable').on('click', '.deleteItem', deleteItem);
-    $('#itemsTable').on('change', '.item-qty', updateQuantity);
-    $('#itemsTable').on('change', '.item-batch', updateBatch);
+
+    // Fix: Use event delegation for dynamic elements
+    $(document).on('click', '.deleteItem', function() {
+        const index = $(this).closest('tr').data('index');
+        items.splice(index, 1);
+        refreshItemsTable();
+    });
+
+    $(document).on('change', '.item-qty', updateQuantity);
+
+    // Define updateBatch function
+    window.updateBatch = function(event) {
+        const index = $(event.target).closest('tr').data('index');
+        const batchId = $(event.target).val();
+
+        if (index >= 0 && index < items.length) {
+            const product = items[index];
+            const batch = product.batches.find(b => b.batch_id === batchId);
+
+            if (batch) {
+                items[index] = {
+                    ...items[index],
+                    batch_id: batch.batch_id,
+                    batch_number: batch.batch_number,
+                    price: batch.selling_price
+                };
+                refreshItemsTable();
+            }
+        }
+    };
 });
+
+// Function to update quantity when changed
+function updateQuantity() {
+    const index = $(this).closest('tr').data('index');
+    const quantity = parseInt($(this).val()) || 1;
+
+    if (quantity < 1) {
+        $(this).val(1);
+        return;
+    }
+
+    if (index >= 0 && index < items.length) {
+        items[index].quantity = quantity;
+    }
+}
 
 async function loadGRNItems() {
     try {
-        const response = await fetch(`${CONFIG.API_ENDPOINTS.GRN}?action=get_items&id=${grnId}`);
+        $('#loadingOverlay').removeClass('hidden').addClass('flex');
+
+        const response = await fetch(`../../api/grn.php?action=get_items&id=${grnId}`);
         const data = await response.json();
+
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
 
         if (!data.success) {
             throw new Error(data.message || 'Failed to load GRN items');
@@ -70,13 +116,15 @@ async function loadGRNItems() {
             batch_id: item.batch_id,
             batch_number: item.batch_number,
             price: item.selling_price,
+            barcode: item.barcode || ('PROD' + item.product_id),
             quantity: item.received_qty
         }));
 
         refreshItemsTable();
 
     } catch (error) {
-        handleError(error);
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        showError(error.message || 'An error occurred while loading GRN items');
     }
 }
 
@@ -93,6 +141,7 @@ function addProduct() {
             product_id: selected.id,
             product_name: selected.text,
             price: selected.price,
+            barcode: selected.barcode || ('PROD' + selected.id),
             quantity: 1
         });
         refreshItemsTable();
@@ -147,6 +196,7 @@ function showBatchModal(product) {
                 batch_id: result.value.batch_id,
                 batch_number: result.value.batch_number,
                 price: result.value.price,
+                barcode: product.barcode || (product.id),
                 quantity: result.value.quantity
             });
             refreshItemsTable();
@@ -181,28 +231,15 @@ function refreshItemsTable() {
         `;
         tbody.append(row);
     });
-}
 
-function updateQuantity() {
-    const index = $(this).closest('tr').data('index');
-    const quantity = parseInt($(this).val());
-
-    if (quantity < 1) {
-        $(this).val(1);
-        return;
-    }
-
-    items[index].quantity = quantity;
-}
-
-function deleteItem() {
-    const index = $(this).closest('tr').data('index');
-    items.splice(index, 1);
-    refreshItemsTable();
+    // Log items count for debugging
+    console.log('Items in table:', items.length);
 }
 
 async function showPreview() {
     if (items.length === 0) {
+                        console.log('Items to print3:', items.length);
+
         Swal.fire({
             title: 'No Items',
             text: 'Please add items to print',
@@ -212,8 +249,10 @@ async function showPreview() {
     }
 
     try {
+        $('#loadingOverlay').removeClass('hidden').addClass('flex');
+        
         const settings = getSettings();
-        const response = await fetch(CONFIG.API_ENDPOINTS.BARCODE, {
+        const response = await fetch('../api/barcode.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -225,6 +264,8 @@ async function showPreview() {
             })
         });
 
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        
         if (!response.ok) {
             throw new Error('Failed to generate preview');
         }
@@ -238,7 +279,8 @@ async function showPreview() {
         $('#previewModal').removeClass('hidden');
 
     } catch (error) {
-        handleError(error);
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        showError(error.message || 'An error occurred while generating preview');
     }
 }
 
@@ -248,6 +290,8 @@ function closePreviewModal() {
 
 async function printBarcodes() {
     if (items.length === 0) {
+        console.log('Items to print4:', items.length);
+
         Swal.fire({
             title: 'No Items',
             text: 'Please add items to print',
@@ -257,8 +301,13 @@ async function printBarcodes() {
     }
 
     try {
+        // Show loading overlay
+        $('#loadingOverlay').removeClass('hidden').addClass('flex');
+        
+        // Get settings
         const settings = getSettings();
-        const response = await fetch(CONFIG.API_ENDPOINTS.BARCODE, {
+        
+        const response = await fetch('../api/barcode.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -270,21 +319,29 @@ async function printBarcodes() {
             })
         });
 
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+
         if (!response.ok) {
             throw new Error('Failed to generate barcodes');
         }
 
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
+        
+        // Open in new window for printing
         const printWindow = window.open(url);
 
         printWindow.onload = function () {
             printWindow.print();
-            URL.revokeObjectURL(url);
+            // Revoke URL after a delay to ensure print dialog is shown
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 2000);
         };
 
     } catch (error) {
-        handleError(error);
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        showError(error.message || 'An error occurred while generating barcodes');
     }
 }
 
@@ -300,8 +357,10 @@ async function saveTemplate() {
     }
 
     try {
+        $('#loadingOverlay').removeClass('hidden').addClass('flex');
+        
         const settings = getSettings();
-        const response = await fetch(CONFIG.API_ENDPOINTS.BARCODE, {
+        const response = await fetch('../api/barcode.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -313,6 +372,8 @@ async function saveTemplate() {
             })
         });
 
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        
         const data = await response.json();
 
         if (!data.success) {
@@ -327,7 +388,8 @@ async function saveTemplate() {
         templateSelect.append(new Option(templateName, data.template_id));
 
     } catch (error) {
-        handleError(error);
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        showError(error.message || 'An error occurred while saving template');
     }
 }
 
@@ -336,7 +398,12 @@ async function loadTemplate() {
     if (!templateId) return;
 
     try {
-        const response = await fetch(`${CONFIG.API_ENDPOINTS.BARCODE}?action=get_template&id=${templateId}`);
+        $('#loadingOverlay').removeClass('hidden').addClass('flex');
+        
+        const response = await fetch(`../api/barcode.php?action=get_template&id=${templateId}`);
+        
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        
         const data = await response.json();
 
         if (!data.success) {
@@ -354,26 +421,50 @@ async function loadTemplate() {
         $('#showUnit').prop('checked', settings.show_unit);
         $('#showCategory').prop('checked', settings.show_category);
         $('#showPromoPrice').prop('checked', settings.show_promo_price);
+        $('#showShopName').prop('checked', settings.show_shop_name);
+        $('#shopName').val(settings.shop_name);
+        $('#showProductName').prop('checked', settings.show_product_name);
 
     } catch (error) {
-        handleError(error);
+        $('#loadingOverlay').removeClass('flex').addClass('hidden');
+        showError(error.message || 'An error occurred while loading template');
     }
 }
 
 function getSettings() {
     return {
-        paper_size: $('#paperSize').val(),
-        margin: parseFloat($('#margin').val()),
-        gap_between: parseFloat($('#gapBetween').val()),
-        font_size: parseFloat($('#fontSize').val()),
-        barcode_height: parseFloat($('#barcodeHeight').val()),
+        paper_size: parseFloat($('#paperSize').val()),
+        margin: parseFloat($('#margin').val()) || 1,
+        gap_between: parseFloat($('#gapBetween').val()) || 3,
+        font_size: parseFloat($('#fontSize').val()) || 8,
+        barcode_height: parseFloat($('#barcodeHeight').val()) || 10,
         show_price: $('#showPrice').prop('checked'),
         show_unit: $('#showUnit').prop('checked'),
         show_category: $('#showCategory').prop('checked'),
-        show_promo_price: $('#showPromoPrice').prop('checked')
+        show_promo_price: $('#showPromoPrice').prop('checked'),
+        show_shop_name: $('#showShopName').prop('checked'),
+        shop_name: $('#shopName').val(),
+        show_product_name: $('#showProductName').prop('checked')
     };
 }
 
 function formatCurrency(amount) {
     return 'Rs. ' + parseFloat(amount).toFixed(2);
+}
+
+// Error handling functions
+function showError(message) {
+    Swal.fire({
+        title: 'Error',
+        text: message,
+        icon: 'error'
+    });
+}
+
+function showSuccess(message) {
+    Swal.fire({
+        title: 'Success',
+        text: message,
+        icon: 'success'
+    });
 }
