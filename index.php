@@ -283,6 +283,11 @@
                 text: 'Quick Search Cache Cleared Successfully',
                 icon: 'success',
                 confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Refresh the page after clicking OK
+                    window.location.reload();
+                }
             });
         }
 
