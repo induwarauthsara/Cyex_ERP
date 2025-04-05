@@ -945,6 +945,15 @@
                 const productType = $(this).val();
                 toggleProductTypeSections(productType);
             });
+            
+            // Detect barcode symbology automatically
+            $('#productCode').on('input', function() {
+                const barcode = $(this).val().trim();
+                if (barcode) {
+                    const symbology = detectBarcodeSymbology(barcode);
+                    $('#barcodeSymbology').val(symbology);
+                }
+            });
 
             // Add variant button click
             $('#addVariantBtn').on('click', function() {
@@ -976,6 +985,35 @@
                     $('#imageUploadSection').addClass('hidden');
                 }
             });
+        }
+        
+        // Function to detect barcode symbology based on input
+        function detectBarcodeSymbology(barcode) {
+            // Remove any whitespace
+            barcode = barcode.replace(/\s/g, '');
+            
+            // Check for EAN-13 (13 digits)
+            if (/^\d{13}$/.test(barcode)) {
+                return 'EAN13';
+            }
+            
+            // Check for EAN-8 (8 digits)
+            if (/^\d{8}$/.test(barcode)) {
+                return 'EAN8';
+            }
+            
+            // Check for UPC-A (12 digits)
+            if (/^\d{12}$/.test(barcode)) {
+                return 'UPC';
+            }
+            
+            // Check for CODE39 (uppercase letters, digits, and some special chars starting and ending with *)
+            if (/^[A-Z0-9\-\.\$\/\+\%\s]+$/.test(barcode) && barcode.indexOf('*') !== -1) {
+                return 'CODE39';
+            }
+            
+            // Default to CODE128 (most versatile)
+            return 'CODE128';
         }
 
         function setupFormValidation() {
@@ -1051,6 +1089,38 @@
                 });
             });
         }
+        
+        // Auto detect barcode symbology when the barcode field changes
+        function setupBarcodeSymbologyDetection() {
+            $('#productCode').on('change', function() {
+                const barcode = $(this).val();
+                if (!barcode) return;
+                
+                $.ajax({
+                    url: 'API/detect_barcode_symbology.php',
+                    method: 'GET',
+                    data: { barcode: barcode },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#barcodeSymbology').val(response.symbology);
+                            console.log('Detected barcode symbology: ' + response.symbology);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error detecting barcode symbology:', error);
+                    }
+                });
+            });
+        }
+        
+        // Initialize everything when document is ready
+        $(document).ready(function() {
+            // loadProductData();
+            setupFormValidation();
+            setupBarcodeSymbologyDetection();
+            setupEventHandlers();
+        });
     </script>
 </body>
 

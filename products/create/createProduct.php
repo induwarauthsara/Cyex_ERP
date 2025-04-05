@@ -176,6 +176,14 @@ try {
     $showInEcommerce = $productData['showInEcommerce'] ? '1' : '0';
     $categoryId = !empty($productData['categoryId']) ? (int)$productData['categoryId'] : null;
     $brandId = !empty($productData['brandId']) ? (int)$productData['brandId'] : null;
+    
+    // Determine barcode symbology if not provided
+    if (empty($productData['barcodeSymbology'])) {
+        require_once '../API/detect_barcode_symbology.php';
+        $barcodeSymbology = detectBarcodeSymbology($productCode);
+    } else {
+        $barcodeSymbology = $con->real_escape_string($productData['barcodeSymbology']);
+    }
 
     // Handle image upload
     $imagePath = null;
@@ -197,8 +205,8 @@ try {
     }
 
     // Insert into products table
-    $sql = "INSERT INTO products (product_name, product_type, barcode, sku, show_in_landing_page, 
-            category_id, brand_id, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO products (product_name, product_type, barcode, barcode_symbology, sku, show_in_landing_page, 
+            category_id, brand_id, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $con->prepare($sql);
     if (!$stmt) {
@@ -206,10 +214,11 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssiis",
+        "sssssiiis",
         $productName,
         $productType,
         $productCode,
+        $barcodeSymbology,
         $sku,
         $showInEcommerce,
         $categoryId,

@@ -3,11 +3,11 @@
 session_start();
 
 // Check if user is logged in
-if (!isset($_SESSION['employee_id'])) {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    exit;
-}
+// if (!isset($_SESSION['employee_id'])) {
+//     header('Content-Type: application/json');
+//     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
+//     exit;
+// }
 
 // Include Composer autoloader
 require '../../../vendor/autoload.php';
@@ -50,7 +50,7 @@ if (!$action) {
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Template retrieval must be done via GET request to get_template.php']);
         exit;
-    default:
+            default:
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
         exit;
@@ -68,7 +68,7 @@ function truncateText($text, $paperWidth, $fontSize = 6) {
     ];
     
     // Default max length
-    $maxLength = 20;
+    $maxLength = 30;
     
     // Find the closest paper size
     foreach ($maxLengths as $size => $length) {
@@ -133,7 +133,7 @@ function generateBarcodeLabel($pdf, $settings, $product) {
     // Add product name if available
     if (isset($settings['show_product_name']) && $settings['show_product_name'] && isset($product['product_name']) && !empty($product['product_name'])) {
         $productName = $product['product_name'];
-        $pdf->Text($margin, $yPos, truncateText($productName, $paperWidth, $fontSize));
+        $pdf->Text($margin, $yPos, truncateText($productName, $paperWidth, $fontSize*0.5));
         $yPos += $lineSpacing;
     }
     
@@ -141,10 +141,72 @@ function generateBarcodeLabel($pdf, $settings, $product) {
     $barcode = $product['barcode'] ?? $product['product_id'];
     if (empty($barcode)) $barcode = $product['product_id'];
     
-    // Determine barcode type based on content
+    // Determine barcode type based on symbology in product data or content
     $barcodeType = 'CODE128';
-    if (strlen($barcode) === 13 && is_numeric($barcode)) {
-        $barcodeType = 'EAN13';
+    
+    // First check if a specific symbology was provided
+    if (isset($product['barcode_symbology']) && !empty($product['barcode_symbology'])) {
+        $barcodeType = $product['barcode_symbology'];
+    } else {
+        // Auto-detect symbology based on barcode content
+        if (is_numeric($barcode)) {
+            if (strlen($barcode) === 13) {
+                $barcodeType = 'EAN13';
+            } else if (strlen($barcode) === 8) {
+                $barcodeType = 'EAN8';
+            } else if (strlen($barcode) === 12) {
+                $barcodeType = 'UPC';
+            }
+        }
+    }
+    
+    // Validate and prepare barcode based on type
+    switch ($barcodeType) {
+        case 'EAN13':
+            // EAN13 must be exactly 13 digits
+            if (!is_numeric($barcode) || strlen($barcode) !== 13) {
+                // If invalid for EAN13, fall back to CODE128
+                $barcodeType = 'CODE128';
+            }
+            break;
+            
+        case 'EAN8':
+            // EAN8 must be exactly 8 digits
+            if (!is_numeric($barcode) || strlen($barcode) !== 8) {
+                // If invalid for EAN8, fall back to CODE128
+                $barcodeType = 'CODE128';
+            }
+            break;
+            
+        case 'UPC':
+            // UPC must be exactly 12 digits
+            if (!is_numeric($barcode) || strlen($barcode) !== 12) {
+                // If invalid for UPC, fall back to CODE128
+                $barcodeType = 'CODE128';
+            }
+            break;
+            
+        case 'CODE39':
+            // CODE39 supports alphanumeric characters and some special chars
+            // No special validation needed, as CODE39 is quite flexible
+            break;
+            
+        default:
+            // Default to CODE128 for any other type or if no specific type is provided
+            $barcodeType = 'CODE128';
+    }
+    
+    // Ensure barcode data isn't empty
+    if (empty($barcode)) {
+        $barcode = 'NOPRODUCT';
+    }
+    
+    // Sanitize barcode data (remove any characters that might cause issues)
+    $barcode = preg_replace('/[^\w\-\.]/', '', $barcode);
+    
+    // Double check to make sure barcode isn't empty after sanitization
+    if (empty($barcode)) {
+        $barcode = 'NOPRODUCT';
     }
     
     // Calculate how much space we've used and what's left for the barcode
@@ -158,6 +220,27 @@ function generateBarcodeLabel($pdf, $settings, $product) {
     
     // Calculate barcode width - leave some margin
     $barcodeWidth = $paperWidth - (2 * $margin);
+    
+    // Convert barcode type to TCPDF format if needed
+    $tcpdfBarcodeType = $barcodeType;
+    switch ($barcodeType) {
+        case 'EAN13':
+            $tcpdfBarcodeType = 'EAN13';
+            break;
+        case 'EAN8':
+            $tcpdfBarcodeType = 'EAN8';
+            break;
+        case 'UPC':
+            $tcpdfBarcodeType = 'UPCA';
+            break;
+        case 'CODE39':
+            $tcpdfBarcodeType = 'C39';
+            break;
+        case 'CODE128':
+        default:
+            $tcpdfBarcodeType = 'C128';
+            break;
+    }
     
     // Generate and place barcode
     $style = [
@@ -176,16 +259,35 @@ function generateBarcodeLabel($pdf, $settings, $product) {
         'textposition' => 'bottom'
     ];
     
-    $pdf->write1DBarcode(
-        $barcode,
-        $barcodeType,
-        $margin,
-        $yPos - $space_adjustment_for_shop_name,
-        $barcodeWidth,
-        $barcodeHeight,
-        0.4,
-        $style
-    );
+    try {
+        $pdf->write1DBarcode(
+            $barcode,
+            $tcpdfBarcodeType,
+            $margin,
+            $yPos - $space_adjustment_for_shop_name,
+            $barcodeWidth,
+            $barcodeHeight,
+            0.4,
+            $style
+        );
+    } catch (Exception $e) {
+        // If barcode generation fails, try with CODE128 as a fallback
+        try {
+            $pdf->write1DBarcode(
+                $barcode,
+                'C128',
+                $margin,
+                $yPos - $space_adjustment_for_shop_name,
+                $barcodeWidth,
+                $barcodeHeight,
+                0.4,
+                $style
+            );
+        } catch (Exception $e) {
+            // If still fails, add text instead of barcode
+            $pdf->Text($margin, $yPos, "Barcode: " . $barcode);
+        }
+    }
     
     // Move position down after barcode - account for barcode text
     $yPos += $barcodeHeight + $fontSize - $space_adjustment_for_shop_name;

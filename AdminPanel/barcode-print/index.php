@@ -63,12 +63,12 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
             }
 
             #printArea {
-                width: 100%;
-            }
+            width: 100%;
+        }
 
-            .no-print {
-                display: none !important;
-            }
+        .no-print {
+            display: none !important;
+        }
         }
 
         .barcode-preview {
@@ -152,24 +152,24 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <h3 class="text-lg font-semibold mb-3">Paper Settings</h3>
-                                <div class="space-y-4">
-                                    <div>
+                    <div class="space-y-4">
+                        <div>
                                         <label for="paperSize" class="block text-sm mb-1">Paper Size (mm):</label>
                                         <select id="paperSize" class="form-select block w-full">
                                             <option value="30">30×15 mm (Small Label)</option>
                                             <option value="36">36×13 mm</option>
                                             <option value="24">24×12 mm</option>
                                             <option value="18">18×10 mm</option>
-                                        </select>
-                                    </div>
-                                    <div>
+                            </select>
+                        </div>
+                        <div>
                                         <label for="margin" class="block text-sm mb-1">Margin (mm):</label>
                                         <input type="number" id="margin" class="form-input block w-full" value="1" min="0" step="0.5">
-                                    </div>
-                                    <div>
+                        </div>
+                        <div>
                                         <label for="gapBetween" class="block text-sm mb-1">Gap Between Labels (mm):</label>
                                         <input type="number" id="gapBetween" class="form-input block w-full" value="2.5" min="0" step="0.5">
-                                    </div>
+                        </div>
                                     <div>
                                         <label for="fontSize" class="block text-sm mb-1">Font Size (pt):</label>
                                         <input type="number" id="fontSize" class="form-input block w-full" value="9" min="6" max="12">
@@ -177,43 +177,43 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                                     <div>
                                         <label for="barcodeHeight" class="block text-sm mb-1">Barcode Height (mm):</label>
                                         <input type="number" id="barcodeHeight" class="form-input block w-full" value="15" min="5" max="30">
-                                    </div>
-                                </div>
+                    </div>
+                </div>
 
                                 <h3 class="text-lg font-semibold mb-3 mt-6">Content Settings</h3>
-                                <div class="space-y-4">
-                                    <div class="flex items-center gap-2">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2">
                                         <input type="checkbox" id="showShopName" class="form-checkbox">
-                                        <label for="showShopName">Shop Name</label>
-                                    </div>
+                            <label for="showShopName">Shop Name</label>
+                        </div>
                                     <div id="shopNameField" class="ml-6 hidden">
                                         <input type="text" id="shopName" class="form-input w-full hidden"
-                                            value="<?php echo $ERP_COMPANY_NAME; ?>"
-                                            placeholder="Enter shop name">
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showProductName" class="form-checkbox" checked>
-                                        <label for="showProductName">Product Name</label>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showPrice" class="form-checkbox" checked>
-                                        <label for="showPrice">Price</label>
-                                    </div>
+                                value="<?php echo $ERP_COMPANY_NAME; ?>"
+                                placeholder="Enter shop name">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showProductName" class="form-checkbox" checked>
+                            <label for="showProductName">Product Name</label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="showPrice" class="form-checkbox" checked>
+                            <label for="showPrice">Price</label>
+                        </div>
                                     <!-- Hidden/Disabled Options -->
                                     <div class="flex items-center gap-2 hidden">
                                         <input type="checkbox" id="showPromoPrice" class="form-checkbox" disabled>
                                         <label for="showPromoPrice" class="text-gray-400">Promotional Price (Disabled)</label>
-                                    </div>
+                        </div>
                                     <div class="flex items-center gap-2 hidden">
                                         <input type="checkbox" id="showCategory" class="form-checkbox" disabled>
                                         <label for="showCategory" class="text-gray-400">Category (Disabled)</label>
-                                    </div>
+                        </div>
                                     <div class="flex items-center gap-2 hidden">
                                         <input type="checkbox" id="showUnit" class="form-checkbox" disabled>
                                         <label for="showUnit" class="text-gray-400">Unit (Disabled)</label>
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
+                </div>
                         </div>
                     </div>
                 </div>
@@ -516,7 +516,8 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                     items.push({
                         product_id: $row.data('product-id'),
                         product_name: $row.data('product-name'),
-                        barcode: $row.data('barcode'),
+                        barcode: $row.data('barcode') || '',
+                        barcode_symbology: $row.data('barcode-symbology') || 'CODE128',
                         price: $row.data('price'),
                         discount_price: $row.data('discount-price'),
                         category: $row.data('category'),
@@ -929,7 +930,8 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                             data-batch-id="${batch.batch_id}" 
                             data-product-id="${batch.product_id}"
                             data-product-name="${product.text}"
-                                data-barcode="${barcode}"
+                            data-barcode="${barcode}"
+                            data-barcode-symbology="${batch.barcode_symbology || 'CODE128'}"
                             data-category="${product.category || ''}"
                             data-unit="${unit}"
                             data-price="${parseFloat(batch.selling_price).toFixed(2)}"
@@ -999,6 +1001,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                             product_id: $row.data('product-id'),
                             product_name: $row.data('product-name'),
                             barcode: $row.data('barcode') || '',
+                            barcode_symbology: $row.data('barcode-symbology') || 'CODE128',
                             price: $row.data('price'),
                             discount_price: $row.data('discount-price'),
                             category: $row.data('category'),
@@ -1047,6 +1050,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                             product_id: $row.data('product-id'),
                             product_name: $row.data('product-name'),
                             barcode: $row.data('barcode'),
+                            barcode_symbology: $row.data('barcode-symbology') || 'CODE128',
                             price: $row.data('price'),
                             discount_price: $row.data('discount-price'),
                             category: $row.data('category'),
@@ -1132,6 +1136,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                         product_id: $row.data('product-id'),
                         product_name: $row.data('product-name'),
                         barcode: $row.data('barcode'),
+                        barcode_symbology: $row.data('barcode-symbology') || 'CODE128',
                         price: $row.data('price'),
                         discount_price: $row.data('discount-price'),
                         category: $row.data('category'),
@@ -1243,6 +1248,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                                 data-product-id="${item.product_id}"
                                 data-product-name="${item.product_name}"
                                 data-barcode="${item.barcode || ''}"
+                                data-barcode-symbology="${item.barcode_symbology || 'CODE128'}"
                                 data-category="${item.category || ''}"
                                 data-unit="${item.unit || 'pcs'}"
                                 data-price="${parseFloat(item.price).toFixed(2)}"
@@ -1268,8 +1274,8 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                 }
 
                 // Always update preview with current settings
-                updatePreview();
-            }
+                    updatePreview();
+                }
 
             // Show/hide shop name input based on checkbox
             $('#showShopName').on('change', function() {
@@ -1284,7 +1290,7 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
             $(document).on('keydown', function(event) {
                 if (event.key === "Insert") {
                     // After adding product, focus on the search field for quick entry of the next product
-                    setTimeout(function() {
+                            setTimeout(function() {
                         $('#productSearch').select2('open');
                     }, 1);
                 }

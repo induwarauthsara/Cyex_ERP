@@ -190,7 +190,15 @@ try {
     $productType = $con->real_escape_string($productData['productType']);
     $productName = $con->real_escape_string($productData['productName']);
     $productCode = $con->real_escape_string($productData['productCode']);
-    $barcodeSymbology = $con->real_escape_string($productData['barcodeSymbology'] ?? 'CODE128');
+    
+    // Determine barcode symbology if not provided
+    if (empty($productData['barcodeSymbology'])) {
+        require_once 'detect_barcode_symbology.php';
+        $barcodeSymbology = detectBarcodeSymbology($productCode);
+    } else {
+        $barcodeSymbology = $con->real_escape_string($productData['barcodeSymbology']);
+    }
+    
     $sku = $con->real_escape_string($productData['sku']);
     $showInEcommerce = $productData['showInEcommerce'] ? '1' : '0';
     $categoryId = !empty($productData['categoryId']) ? (int)$productData['categoryId'] : null;

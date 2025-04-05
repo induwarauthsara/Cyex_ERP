@@ -19,6 +19,7 @@ try {
             p.stock_qty,
             p.rate,
             p.barcode,
+            p.barcode_symbology,
             p.sku,
             c.category_name,
             b.brand_name
@@ -48,6 +49,7 @@ try {
             'stock_qty' => $row['stock_qty'],
             'rate' => $row['rate'],
             'barcode' => $row['barcode'],
+            'barcode_symbology' => $row['barcode_symbology'] ?? 'CODE128',
             'sku' => $row['sku'],
             'category_name' => $row['category_name'],
             'brand_name' => $row['brand_name']

@@ -31,6 +31,7 @@ $(document).ready(async function() {
                         text: product.product_name,
                         price: product.selling_price,
                         barcode: product.barcode,
+                        barcode_symbology: product.barcode_symbology || 'CODE128',
                         batches: product.batches
                     }))
                 };
@@ -93,6 +94,85 @@ $(document).ready(async function() {
 
     // Trigger change on page load to set initial state
     $('#printFormat').trigger('change');
+
+    // When a product is selected
+    $('#productSearch').on('select2:select', function(e) {
+        let data = e.params.data;
+
+        // Make sure barcode is valid
+        if (!data.barcode || data.barcode.trim() === '') {
+            // If barcode is empty, use product ID as fallback
+            data.barcode = 'PROD' + data.id;
+        }
+
+        $("#barcode").val(data.barcode);
+        $("#price").val(data.price);
+
+        // Set the barcode symbology if available
+        if (data.barcode_symbology) {
+            $("#barcode_symbology").val(data.barcode_symbology);
+        }
+
+        if (data.batches && data.batches.length > 0) {
+            $("#batchSelectContainer").show();
+            let batchSelect = $("#batchSelect");
+            batchSelect.empty();
+            batchSelect.append('<option value="">Select Batch</option>');
+
+            data.batches.forEach(batch => {
+                // Ensure we have valid values for all fields
+                const discountPrice = batch.discount_price || '';
+                const promotionalPrice = batch.promotional_price || '';
+                const cost = batch.cost || 0;
+                const expiry = batch.expiry_date || '';
+
+                batchSelect.append(`<option value="${batch.id}" 
+                    data-discount_price="${discountPrice}" 
+                    data-promotional_price="${promotionalPrice}"
+                    data-cost="${cost}" 
+                    data-expire="${expiry}">
+                    ${batch.batch_code} (${batch.stock} units)
+                </option>`);
+            });
+        } else {
+            $("#batchSelectContainer").hide();
+        }
+    });
+
+    // When a batch is selected
+    $('#batchSelect').change(function() {
+        let selectedOption = $(this).find('option:selected');
+
+        // Check if the option is not the default "Select Batch" option
+        if (selectedOption.val()) {
+            // Check for discount price first, then promotional price
+            let discountPrice = selectedOption.data('discount_price');
+            let promotionalPrice = selectedOption.data('promotional_price');
+
+            if (discountPrice) {
+                $("#promotional_price").val(discountPrice);
+            } else if (promotionalPrice) {
+                $("#promotional_price").val(promotionalPrice);
+            } else {
+                $("#promotional_price").val('');
+            }
+
+            // Set cost price if available
+            if (selectedOption.data('cost')) {
+                $("#cost").val(selectedOption.data('cost'));
+            }
+
+            // Set expiry date if available
+            if (selectedOption.data('expire')) {
+                $("#expiry").val(selectedOption.data('expire'));
+            }
+        } else {
+            // Clear fields if no batch is selected
+            $("#promotional_price").val('');
+            $("#cost").val('');
+            $("#expiry").val('');
+        }
+    });
 });
 
 // Function to update quantity when changed
@@ -130,7 +210,8 @@ async function loadGRNItems() {
             batch_number: item.batch_number,
             price: item.selling_price,
             barcode: item.barcode || (item.product_id),
-            quantity: item.received_qty
+            quantity: item.received_qty,
+            barcode_symbology: item.barcode_symbology || 'CODE128'
         }));
 
         refreshItemsTable();
@@ -145,6 +226,12 @@ function addProduct() {
     const selected = $('#productSearch').select2('data')[0];
     if (!selected) return;
 
+    // Validate barcode
+    let barcode = selected.barcode || '';
+    if (!barcode.trim()) {
+        barcode = 'PROD' + selected.id;
+    }
+
     // If product has batches, show batch selection modal
     if (selected.batches && selected.batches.length > 0) {
         showBatchModal(selected);
@@ -154,8 +241,9 @@ function addProduct() {
             product_id: selected.id,
             product_name: selected.text,
             price: selected.price,
-            barcode: selected.barcode || (selected.id),
-            quantity: 1
+            barcode: barcode,
+            quantity: 1,
+            barcode_symbology: selected.barcode_symbology || 'CODE128'
         });
         refreshItemsTable();
     }
@@ -164,6 +252,12 @@ function addProduct() {
 }
 
 function showBatchModal(product) {
+    // Validate barcode
+    let barcode = product.barcode || '';
+    if (!barcode.trim()) {
+        barcode = 'PROD' + product.id;
+    }
+
     Swal.fire({
                 title: 'Select Batch',
                 html: `
@@ -198,7 +292,8 @@ function showBatchModal(product) {
                 batch_id: select.value,
                 batch_number: option.dataset.number,
                 price: parseFloat(option.dataset.price),
-                quantity: quantity
+                quantity: quantity,
+                barcode_symbology: product.barcode_symbology || 'CODE128'
             };
         }
     }).then((result) => {
@@ -209,8 +304,9 @@ function showBatchModal(product) {
                 batch_id: result.value.batch_id,
                 batch_number: result.value.batch_number,
                 price: result.value.price,
-                barcode: product.barcode || (product.id),
-                quantity: result.value.quantity
+                barcode: barcode,
+                quantity: result.value.quantity,
+                barcode_symbology: result.value.barcode_symbology
             });
             refreshItemsTable();
         }

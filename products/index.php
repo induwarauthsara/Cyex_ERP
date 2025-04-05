@@ -504,6 +504,10 @@
                                         <div class="product-meta">
                                             <p><strong>SKU:</strong> ${product.sku}</p>
                                             <p><strong>Barcode:</strong> ${product.barcode}</p>
+                                            <p>
+                                                <strong>Barcode Symbology:</strong> 
+                                                <span class="badge bg-info">${product.barcode_symbology || 'CODE128'}</span>
+                                            </p>
                                             <p><strong>Category:</strong> ${product.category_name || '-'}</p>
                                             <p><strong>Brand:</strong> ${product.brand_name || '-'}</p>
                                             <p>

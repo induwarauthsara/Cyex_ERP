@@ -259,14 +259,11 @@
                                             data-bs-placement="top"
                                             title="Select the barcode type that fits your scanning equipment"></i>
                                     </label>
-                                    <select class="form-select" id="barcodeSymbology">
+                                    <select class="form-select" id="barcodeSymbology" name="barcodeSymbology">
+                                        <option value="CODE128">Code 128</option>
                                         <option value="EAN13">EAN-13</option>
                                         <option value="EAN8">EAN-8</option>
                                         <option value="UPC">UPC</option>
-                                        <option value="CODE128">Code 128</option>
-                                        <option value="QR">QR Code</option>
-                                        <option value="ISBN13">ISBN-13</option>
-                                        <option value="DATAMATRIX">Data Matrix</option>
                                         <option value="CODE39">Code 39</option>
                                     </select>
                                 </div>
@@ -690,8 +687,8 @@
                 }
             });
 
-            // Initialize Select2 for dropdowns
-            $('select').select2();
+            // Initialize Select2 for all selects except barcode symbology
+            $('select:not(#barcodeSymbology)').select2();
             
             // Initialize product type based on default selection
             handleProductTypeChange($('#productType').val());
@@ -1817,6 +1814,103 @@
                     // Focus the first input in the new row
                     lastRow.find('.variant-name').focus();
                 }, 100);
+            });
+        });
+    </script>
+
+    <!-- Add this JavaScript before the closing body tag -->
+    <script>
+        // Auto-detect barcode symbology based on the barcode format
+        $(document).ready(function() {
+            console.log('Initializing barcode symbology detection...');
+            
+            // Local detection function for immediate feedback
+            function localDetectSymbology(barcode) {
+                if (!barcode) return 'CODE128';
+                
+                // Remove any whitespace
+                barcode = barcode.trim();
+                
+                // Check if it's numeric only
+                const isNumeric = /^\d+$/.test(barcode);
+                
+                if (isNumeric) {
+                    // Check length for standard symbologies
+                    const length = barcode.length;
+                    
+                    switch (length) {
+                        case 8:
+                            return 'EAN8';
+                        case 12:
+                            return 'UPC';
+                        case 13:
+                            return 'EAN13';
+                    }
+                }
+                
+                // Check for CODE39 patterns (alphanumeric and limited special chars)
+                if (/^[A-Z0-9\-\.\$\/\+\%\s]+$/i.test(barcode)) {
+                    return 'CODE39';
+                }
+                
+                // Default to CODE128 for anything else
+                return 'CODE128';
+            }
+            
+            // Function to detect barcode symbology using the API
+            function detectBarcodeSymbology(barcode) {
+                if (!barcode) return;
+                
+                // First apply local detection for immediate feedback
+                const localSymbology = localDetectSymbology(barcode);
+                document.getElementById('barcodeSymbology').value = localSymbology;
+                console.log('Local detection: ' + localSymbology + ' for barcode: ' + barcode);
+                
+                // Then verify with the API
+                $.ajax({
+                    url: '../API/detect_barcode_symbology.php',
+                    method: 'GET',
+                    data: { barcode: barcode },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Direct DOM manipulation instead of using Select2 methods
+                            document.getElementById('barcodeSymbology').value = response.symbology;
+                            console.log('API detection: ' + response.symbology + ' for barcode: ' + barcode);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error detecting barcode symbology:', error);
+                    }
+                });
+            }
+            
+            // Detect symbology when barcode field changes - use input event for immediate feedback
+            $('#productCode').on('input', function() {
+                const barcode = $(this).val();
+                if (barcode) {
+                    // Use local detection for immediate feedback during typing
+                    const localSymbology = localDetectSymbology(barcode);
+                    document.getElementById('barcodeSymbology').value = localSymbology;
+                }
+            });
+            
+            // Use the API when the user completes their input
+            $('#productCode').on('change blur', function() {
+                const barcode = $(this).val();
+                if (barcode) {
+                    detectBarcodeSymbology(barcode);
+                }
+            });
+            
+            // Also detect when barcode is generated
+            $('#generateCodeBtn').on('click', function() {
+                setTimeout(function() {
+                    const barcode = $('#productCode').val();
+                    if (barcode) {
+                        detectBarcodeSymbology(barcode);
+                    }
+                }, 100); // Small delay to allow the field to be populated
             });
         });
     </script>
