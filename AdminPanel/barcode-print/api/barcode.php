@@ -57,10 +57,10 @@ if (!$action) {
 }
 
 // Function to truncate text based on paper size
-function truncateText($text, $paperWidth, $fontSize = 8) {
+function truncateText($text, $paperWidth, $fontSize = 6) {
     // Define max characters based on paper size
     $maxLengths = [
-        30 => 12, // 30mm width
+        30 => 15, // 30mm width
         40 => 16, // 40mm width
         50 => 20, // 50mm width
         60 => 24, // 60mm width
@@ -193,43 +193,19 @@ function generateBarcodeLabel($pdf, $settings, $product) {
     // Use smaller font for remaining text
     $pdf->SetFont('helvetica', '', $fontSize * 0.9);
     
-    // Create a row for price and unit with proper spacing
-    $xPosLeft = $margin;
-    $xPosRight = $paperWidth - $margin - 10; // 10mm reserved for right column
-    $xPosMiddle = $margin + ($paperWidth - 2 * $margin) / 2 - 5; // Middle column with 5mm adjustment
+    // Create a row for price with proper spacing - centered
+    $xPosCenter = $margin + ($paperWidth - 2 * $margin) / 2;
     
-    // First row - Price and/or Promo price
+    // Show only regular price - centered on the label for better visibility
     if (isset($settings['show_price']) && $settings['show_price'] && isset($product['price']) && !empty($product['price'])) {
         $price = 'Rs. ' . number_format($product['price'], 0, '.', ',');
-        $pdf->Text($xPosLeft, $yPos + $space_adjustment_for_shop_name, $price);
         
-        // Add promotional price if available AND if show_promo_price is enabled
-        if (isset($settings['show_promo_price']) && $settings['show_promo_price']) {
-            if (isset($product['discount_price']) && !empty($product['discount_price'])) {
-                $promoPrice = 'Promo: ' . number_format($product['discount_price'], 0, '.', ',');
-                $pdf->Text($xPosMiddle, $yPos, $promoPrice);
-            } elseif (isset($product['promotional_price']) && !empty($product['promotional_price'])) {
-                $promoPrice = 'Promo: ' . number_format($product['promotional_price'], 0, '.', ',');
-                $pdf->Text($xPosMiddle, $yPos, $promoPrice);
-            }
-        }
+        // Calculate text width to center it properly
+        $textWidth = $pdf->GetStringWidth($price);
+        $centerX = ($paperWidth - $textWidth) / 2;
         
-        $yPos += $lineSpacing;
-    }
-    
-    // Second row - Category and Unit
-    if ((isset($settings['show_category']) && $settings['show_category'] && isset($product['category_name']) && !empty($product['category_name'])) ||
-        (isset($settings['show_unit']) && $settings['show_unit'] && isset($product['unit']) && !empty($product['unit']))) {
-        
-        if (isset($settings['show_category']) && $settings['show_category'] && isset($product['category_name']) && !empty($product['category_name'])) {
-            $category = 'Cat: ' . $product['category_name'];
-            $pdf->Text($xPosLeft, $yPos, truncateText($category, $paperWidth / 2, $fontSize));
-        }
-        
-        if (isset($settings['show_unit']) && $settings['show_unit'] && isset($product['unit']) && !empty($product['unit'])) {
-            $unit = 'Unit: ' . $product['unit'];
-            $pdf->Text($xPosMiddle, $yPos, $unit);
-        }
+        // Display the price centered
+        $pdf->Text($centerX, $yPos + $space_adjustment_for_shop_name, $price);
         
         $yPos += $lineSpacing;
     }

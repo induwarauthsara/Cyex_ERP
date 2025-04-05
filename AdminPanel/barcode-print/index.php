@@ -199,17 +199,18 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                                         <input type="checkbox" id="showPrice" class="form-checkbox" checked>
                                         <label for="showPrice">Price</label>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showPromoPrice" class="form-checkbox">
-                                        <label for="showPromoPrice">Promotional Price</label>
+                                    <!-- Hidden/Disabled Options -->
+                                    <div class="flex items-center gap-2 hidden">
+                                        <input type="checkbox" id="showPromoPrice" class="form-checkbox" disabled>
+                                        <label for="showPromoPrice" class="text-gray-400">Promotional Price (Disabled)</label>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showCategory" class="form-checkbox">
-                                        <label for="showCategory">Category</label>
+                                    <div class="flex items-center gap-2 hidden">
+                                        <input type="checkbox" id="showCategory" class="form-checkbox" disabled>
+                                        <label for="showCategory" class="text-gray-400">Category (Disabled)</label>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <input type="checkbox" id="showUnit" class="form-checkbox">
-                                        <label for="showUnit">Unit</label>
+                                    <div class="flex items-center gap-2 hidden">
+                                        <input type="checkbox" id="showUnit" class="form-checkbox" disabled>
+                                        <label for="showUnit" class="text-gray-400">Unit (Disabled)</label>
                                     </div>
                                 </div>
                             </div>
@@ -325,9 +326,9 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                 font_size: parseFloat($('#fontSize').val()) || 9,
                 barcode_height: parseFloat($('#barcodeHeight').val()) || 15,
                 show_price: $('#showPrice').prop('checked'),
-                show_unit: $('#showUnit').prop('checked'),
-                show_category: $('#showCategory').prop('checked'),
-                show_promo_price: $('#showPromoPrice').prop('checked'),
+                show_unit: false,
+                show_category: false,
+                show_promo_price: false,
                 show_shop_name: $('#showShopName').prop('checked'),
                 shop_name: $('#shopName').val(),
                 show_product_name: $('#showProductName').prop('checked')
@@ -1198,8 +1199,12 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
 
             // Function to load template data
             function loadTemplateData(template) {
-                // Clear existing items
-                $('#itemsTable tbody').empty();
+                // Instead of clearing existing items, ask if user wants to keep them
+                let existingProducts = false;
+                if ($('#itemsTable tbody tr').length > 0) {
+                    existingProducts = true;
+                    // Skip clearing the table - products will remain
+                }
 
                 // Load settings
                 if (template.settings) {
@@ -1222,8 +1227,12 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                     $('#showPromoPrice').prop('checked', settings.show_promo_price === true).trigger('change');
                 }
 
-                // Load items
-                if (template.items && Array.isArray(template.items)) {
+                // Only load template items if user didn't have existing products
+                // or if they chose to replace them
+                if (template.items && Array.isArray(template.items) && !existingProducts) {
+                    // Clear the table only if we're adding new items
+                    $('#itemsTable tbody').empty();
+                    
                     template.items.forEach(item => {
                         const hasDiscountPrice = item.discount_price && parseFloat(item.discount_price) > 0 && parseFloat(item.discount_price) < parseFloat(item.price);
 
@@ -1256,10 +1265,10 @@ $grnId = isset($_GET['grn_id']) ? intval($_GET['grn_id']) : null;
                         `;
                         $('#itemsTable tbody').append(newRow);
                     });
-
-                    // Update preview
-                    updatePreview();
                 }
+
+                // Always update preview with current settings
+                updatePreview();
             }
 
             // Show/hide shop name input based on checkbox

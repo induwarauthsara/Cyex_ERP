@@ -477,6 +477,13 @@ async function loadTemplate() {
         $('#shopName').val(settings.shop_name);
         $('#showProductName').prop('checked', settings.show_product_name);
 
+        // Don't clear or modify the existing products
+        
+        // Update the preview with new settings but keep existing products
+        if (typeof updatePreview === 'function') {
+            updatePreview();
+        }
+
         showSuccess(`Template "${data.template_name}" loaded successfully`);
 
     } catch (error) {
