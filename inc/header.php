@@ -1,4 +1,6 @@
     <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <meta charset="utf-8">
+
     <?php
     // Check session_start
     if (session_status() == PHP_SESSION_NONE) {
