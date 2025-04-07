@@ -4,7 +4,7 @@ const CONFIG = {
     DATE_FORMAT: 'YYYY-MM-DD',
     DATETIME_FORMAT: 'YYYY-MM-DD HH:mm:ss',
     CURRENCY_SYMBOL: 'Rs.',
-    DECIMAL_PLACES: 2,
+    DECIMAL_PLACES: 3,
     API_ENDPOINTS: {
         SUPPLIERS: '/AdminPanel/api/suppliers.php',
         PRODUCTS: '/inc/fetch_product.php',

@@ -247,13 +247,13 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label for="initialStock" class="form-label">Stock Quantity</label>
-                                            <input type="number" class="form-control" id="initialStock" name="initialStock" min="0" value="0">
+                                            <input type="number" class="form-control" id="initialStock" name="initialStock" min="0" value="0" step="0.001">
                                         </div>
                                     </div>
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label for="alertQuantity" class="form-label">Alert Quantity</label>
-                                            <input type="number" class="form-control" id="alertQuantity" name="alertQuantity" min="0" value="5">
+                                            <input type="number" class="form-control" id="alertQuantity" name="alertQuantity" min="0" value="5" step="0.001">
                                         </div>
                                     </div>
                                 </div>
@@ -621,11 +621,11 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Stock Quantity</label>
-                            <input type="number" class="form-control variant-qty" name="variants[${variantIndex}][quantity]" min="0" value="${data ? data.quantity || 0 : 0}">
+                            <input type="number" class="form-control variant-qty" name="variants[${variantIndex}][quantity]" min="0" value="${data ? data.quantity || 0 : 0}" step="0.001">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Alert Quantity</label>
-                            <input type="number" class="form-control variant-alert" name="variants[${variantIndex}][alert]" min="0" value="${data ? data.alert || 5 : 5}">
+                            <input type="number" class="form-control variant-alert" name="variants[${variantIndex}][alert]" min="0" value="${data ? data.alert || 5 : 5}" step="0.001">
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <button type="button" class="btn btn-danger remove-variant-btn" onclick="removeVariantRow(this)">
@@ -887,8 +887,8 @@
                     formData.cost = parseFloat($('#cost').val());
                     formData.sellingPrice = parseFloat($('#sellingPrice').val());
                     formData.discountPrice = $('#discountPrice').val() ? parseFloat($('#discountPrice').val()) : null;
-                    formData.initialStock = parseInt($('#initialStock').val());
-                    formData.alertQuantity = parseInt($('#alertQuantity').val());
+                    formData.initialStock = parseFloat(parseFloat($('#initialStock').val()).toFixed(3));
+                    formData.alertQuantity = parseFloat(parseFloat($('#alertQuantity').val()).toFixed(3));
                 } else {
                     // Multiple variants
                     formData.variants = [];
@@ -906,8 +906,8 @@
                             variantCost: parseFloat($(this).find('.variant-cost').val()),
                             variantPrice: parseFloat($(this).find('.variant-price').val()),
                             variantDiscountPrice: discountValue ? parseFloat(discountValue) : null,
-                            variantQuantity: parseInt($(this).find('.variant-qty').val()),
-                            variantAlertQty: parseInt($(this).find('.variant-alert').val())
+                            variantQuantity: parseFloat(parseFloat($(this).find('.variant-qty').val()).toFixed(3)),
+                            variantAlertQty: parseFloat(parseFloat($(this).find('.variant-alert').val()).toFixed(3))
                         };
                         console.log('Variant object:', variant);
                         formData.variants.push(variant);

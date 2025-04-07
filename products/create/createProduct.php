@@ -250,16 +250,19 @@ try {
                     }
 
                     $variantName = $variant['variantValue'];
+                    $variantQuantity = floatval($variant['variantQuantity']);
+                    $variantAlertQty = floatval($variant['variantAlertQty']);
+                    
                     $stmt->bind_param(
-                        "isdddisi",
+                        "isddddsd",
                         $productId,
                         $batchNumber,
                         $variant['variantCost'],
                         $variant['variantPrice'],
                         $discountPrice,
-                        $variant['variantQuantity'],
+                        $variantQuantity,
                         $variantName,
-                        $variant['variantAlertQty']
+                        $variantAlertQty
                     );
 
                     if (!$stmt->execute()) {
@@ -270,7 +273,7 @@ try {
                 // Single variant/batch
                 $batchNumber = generateBatchNumber();
                 $discountPrice = !empty($productData['discountPrice']) ? $productData['discountPrice'] : null;
-                $alertQuantity = isset($productData['alertQuantity']) ? intval($productData['alertQuantity']) : 5;
+                $alertQuantity = isset($productData['alertQuantity']) ? floatval($productData['alertQuantity']) : 5.000;
 
                 $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity, alert_quantity) 
                         VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -281,7 +284,7 @@ try {
                 }
 
                 $stmt->bind_param(
-                    "isdddii",
+                    "isddddd",
                     $productId,
                     $batchNumber,
                     $productData['cost'],
@@ -313,7 +316,7 @@ try {
 
                     $variantName = $variant['variantValue'];
                     $stmt->bind_param(
-                        "isddis",
+                        "isddds",
                         $productId,
                         $batchNumber,
                         $variant['variantCost'],
@@ -330,7 +333,7 @@ try {
                 // Single variant/batch
                 $batchNumber = generateBatchNumber();
                 $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
-                    VALUES (?, ?, ?, ?, 0)";
+                    VALUES (?, ?, ?, ?, ?)";
 
                 $stmt = $con->prepare($sql);
                 if (!$stmt) {
@@ -338,11 +341,12 @@ try {
                 }
 
                 $stmt->bind_param(
-                    "isdd",
+                    "isddd",
                     $productId,
                     $batchNumber,
                     $productData['cost'],
-                    $productData['sellingPrice']
+                    $productData['sellingPrice'],
+                    $productData['initialStock']
                 );
 
                 if (!$stmt->execute()) {
@@ -409,7 +413,7 @@ try {
 
                     $variantName = $variant['variantValue'];
                     $stmt->bind_param(
-                        "isddis",
+                        "isddds",
                         $productId,
                         $batchNumber,
                         $variant['variantCost'],
@@ -426,7 +430,7 @@ try {
                 // Single variant/batch
                 $batchNumber = generateBatchNumber();
                 $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
-                    VALUES (?, ?, ?, ?, 0)";
+                    VALUES (?, ?, ?, ?, ?)";
 
                 $stmt = $con->prepare($sql);
                 if (!$stmt) {
@@ -434,11 +438,12 @@ try {
                 }
 
                 $stmt->bind_param(
-                    "isdd",
+                    "isddd",
                     $productId,
                     $batchNumber,
                     $productData['cost'],
-                    $productData['sellingPrice']
+                    $productData['sellingPrice'],
+                    $productData['initialStock']
                 );
 
                 if (!$stmt->execute()) {

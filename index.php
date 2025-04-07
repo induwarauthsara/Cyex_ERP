@@ -566,7 +566,7 @@
                 let row = `<tr>
                     <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input id="quantity-${index}" type="text" min="1" value="${product.quantity}" 
+                        <input id="quantity-${index}" type="number" min="0.001" step="0.001" value="${product.quantity}" 
                             onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
                     </td>`;
 
@@ -603,7 +603,7 @@
         }
 
         function updateQuantity(index, value) {
-            productList[index].quantity = parseInt(value);
+            productList[index].quantity = parseFloat(value);
 
             // Update subtotal based on current mode
             productList[index].subtotal = productList[index].quantity *
@@ -838,6 +838,11 @@
         }
     </script>
 
+    <!-- External Scripts -->
+    <script src="https://kit.fontawesome.com/2dccbd7e96.js" crossorigin="anonymous"></script>
+    <!-- Include confirmed feature scripts -->
+    <script src="inc/confirm_payment_feature/confirm_payment_feature.js"></script>
+    <script src="inc/confirm_payment_feature/receipt_printer.js"></script>
 </body>
 
 </html>
@@ -849,3 +854,5 @@
 
 <!-- JavaScript Code for Confirm Payment Feature -->
 <script src="inc/confirm_payment_feature/confirm_payment_feature.js"></script>
+<!-- Receipt Printer Module -->
+<script src="inc/confirm_payment_feature/receipt_printer.js"></script>

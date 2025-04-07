@@ -319,7 +319,7 @@
                             <div class="card-body">
                                 <div class="mb-3" id="initialStockSection">
                                     <label for="initialStock" class="form-label">Initial Stock Quantity</label>
-                                    <input type="number" class="form-control" id="initialStock">
+                                    <input type="number" class="form-control" id="initialStock" step="0.001">
                                 </div>
 
                                 <!-- Add Alert Quantity field here -->
@@ -331,7 +331,7 @@
                                             data-bs-placement="top"
                                             title="System will send notifications when stock falls below this value"></i>
                                     </label>
-                                    <input type="number" class="form-control" id="alertQuantity" min="0" value="5">
+                                    <input type="number" class="form-control" id="alertQuantity" min="0" value="5" step="0.001">
                                     <small class="text-muted">System will alert when stock falls below this value</small>
                                 </div>
 
@@ -896,7 +896,7 @@
                             <input type="text" class="form-control variant-value" required placeholder="e.g., Red, Large">
                         </td>
                         <td>
-                            <input type="number" class="form-control variant-stock" value="0" min="0">
+                            <input type="number" class="form-control variant-stock" value="0" min="0" step="0.001">
                         </td>
                         <td>
                             <div class="input-group">
@@ -918,7 +918,7 @@
                             <div class="variant-discount-indicator text-success small mt-1"></div>
                         </td>
                         <td>
-                            <input type="number" class="form-control variant-alert" value="5" min="0">
+                            <input type="number" class="form-control variant-alert" value="5" min="0" step="0.001">
                         </td>
                         <td>
                             <div class="btn-group">
@@ -1383,26 +1383,32 @@
                     data.saleUnit = $('#saleUnit').val();
                     data.purchaseUnit = $('#purchaseUnit').val();
                     data.pcsPerBox = $('#pcsPerBox').val();
-                    data.initialStock = parseFloat($('#initialStock').val()) || 0;
-                    data.alertQuantity = parseFloat($('#alertQuantity').val()) || 5; // Add alert quantity
+                    data.initialStock = parseFloat(parseFloat($('#initialStock').val()).toFixed(3)) || 0;
+                    data.alertQuantity = parseFloat(parseFloat($('#alertQuantity').val()).toFixed(3)) || 5; // Add alert quantity
                     data.cost = parseFloat($('#cost').val()) || 0;
                 }
 
                 // Collect variants if enabled
                 if (data.hasVariant) {
-                    // Fix the variant collection in collectProductData
-                    $('#variantTableBody tr').each(function(index) {
-                        const variant = {
-                            variantName: $(this).find('.variant-name').val(),
-                            variantValue: $(this).find('.variant-value').val(),
-                            variantQuantity: parseInt($(this).find('.variant-stock').val()) || 0,
-                            variantCost: parseFloat($(this).find('.variant-cost').val()) || 0,
-                            variantPrice: parseFloat($(this).find('.variant-price').val()) || 0,
-                            variantDiscountPrice: $(this).find('.variant-discount-price').val().trim() === '' ?
-                                null : parseFloat($(this).find('.variant-discount-price').val()),
-                            variantAlert: parseInt($(this).find('.variant-alert').val()) || 5
-                        };
-                        data.variants.push(variant);
+                    $('.variant-row').each(function () {
+                        // Check if all required fields are filled
+                        const variantName = $(this).find('.variant-name').val().trim();
+                        const variantValue = $(this).find('.variant-value').val().trim();
+                        const variantCost = parseFloat($(this).find('.variant-cost').val()) || 0;
+                        const variantPrice = parseFloat($(this).find('.variant-price').val()) || 0;
+                        
+                        // Only add if name and price are valid
+                        if (variantName && variantPrice > 0) {
+                            data.variants.push({
+                                variantName: variantName,
+                                variantValue: variantValue,
+                                variantCost: variantCost,
+                                variantPrice: variantPrice,
+                                variantDiscountPrice: parseFloat($(this).find('.variant-discount').val()) || null,
+                                variantQuantity: parseFloat(parseFloat($(this).find('.variant-stock').val()).toFixed(3)) || 0,
+                                variantAlertQty: parseFloat(parseFloat($(this).find('.variant-alert').val()).toFixed(3)) || 5
+                            });
+                        }
                     });
                 }
 

@@ -281,8 +281,8 @@ try {
                     $variantValue = $variant['variantValue'];
                     $cost = $variant['variantCost'];
                     $price = $variant['variantPrice'];
-                    $quantity = $variant['variantQuantity'];
-                    $alertQty = $variant['variantAlertQty'];
+                    $quantity = floatval($variant['variantQuantity']);
+                    $alertQty = floatval($variant['variantAlertQty']);
                     $discountPrice = !empty($variant['variantDiscountPrice']) ? $variant['variantDiscountPrice'] : null;
                     
                     // Debug log for discount price
@@ -307,7 +307,7 @@ try {
                         
                         $batchId = $variant['batchId'];
                         $stmt->bind_param(
-                            "sdddissii",
+                            "sddddssii",
                             $batchNumber,
                             $cost,
                             $price,
@@ -329,7 +329,7 @@ try {
                         }
                         
                         $stmt->bind_param(
-                            "isdddisi",
+                            "isddddsd",
                             $productId,
                             $batchNumber,
                             $cost,
@@ -367,7 +367,7 @@ try {
                 if (isset($productData['batchId']) && $productData['batchId'] > 0) {
                     // Update existing batch
                     $discountPrice = !empty($productData['discountPrice']) ? $productData['discountPrice'] : null;
-                    $alertQuantity = isset($productData['alertQuantity']) ? intval($productData['alertQuantity']) : 5;
+                    $alertQuantity = isset($productData['alertQuantity']) ? floatval($productData['alertQuantity']) : 5.000;
                     
                     $sql = "UPDATE product_batch SET 
                             cost = ?, 
@@ -384,7 +384,7 @@ try {
                     
                     $batchId = $productData['batchId'];
                     $stmt->bind_param(
-                        "dddiiii",
+                        "dddddii",
                         $productData['cost'],
                         $productData['sellingPrice'],
                         $discountPrice,
@@ -401,7 +401,7 @@ try {
                     // Create a new batch
                     $batchNumber = 'BATCH-' . date('Ymd') . '-' . substr(uniqid(), -5);
                     $discountPrice = !empty($productData['discountPrice']) ? $productData['discountPrice'] : null;
-                    $alertQuantity = isset($productData['alertQuantity']) ? intval($productData['alertQuantity']) : 5;
+                    $alertQuantity = isset($productData['alertQuantity']) ? floatval($productData['alertQuantity']) : 5.000;
                     
                     $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity, alert_quantity) 
                             VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -412,7 +412,7 @@ try {
                     }
                     
                     $stmt->bind_param(
-                        "isdddii",
+                        "isddddd",
                         $productId,
                         $batchNumber,
                         $productData['cost'],
