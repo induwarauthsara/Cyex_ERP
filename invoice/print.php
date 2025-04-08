@@ -231,7 +231,6 @@ if (isset($_GET['invoice'])) {
             </div>
         </div>
     </div>
-    <hr>
     <table>
         <tr>
             <th style="width: 40%">Product</th>
@@ -262,7 +261,7 @@ if (isset($_GET['invoice'])) {
 
                     echo '<tr class="product-row">
                             <td colspan="4">' . $sales["product"] . '</td></tr>
-                            <tr> <td colspan="2" style="text-align: right;">' . $sales["qty"] . '</td>
+                            <tr> <td colspan="2" style="text-align: center;">' . $sales["qty"] . '</td>
                             <td class="price">';
 
                     if ($is_promotional) {
@@ -344,14 +343,14 @@ if (isset($_GET['invoice'])) {
 </div>
 
 <script>
-    window.print();
-    // after print, close the page 
-    window.onafterprint = function() {
-        window.close();
-    };
+    // window.print();
+    // // after print, close the page 
+    // window.onafterprint = function() {
+    //     window.close();
+    // };
 
-    // Fallback for browsers that don't support onafterprint
-    setTimeout(function() {
-        window.close();
-    }, 5000);
+    // // Fallback for browsers that don't support onafterprint
+    // setTimeout(function() {
+    //     window.close();
+    // }, 5000);
 </script>
