@@ -324,9 +324,10 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Product List</h4>
-                <a href="create/" class="btn btn-light">
-                    <i class="fas fa-plus"></i> Add New Product
-                </a>
+                <div class="float-end">
+                    <a href="create/" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Product</a>
+                    <a href="../view_one_time_products.php" class="btn btn-info"><i class="fas fa-list"></i> View One-Time Products</a>
+                </div>
             </div>
             <div class="card-body">
                 <table id="productTable" class="table table-striped display responsive nowrap" style="width:100%">
