@@ -291,31 +291,18 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                                 timerProgressBar: true
                             });
                             
-                            // After processing notification closes, show success with print button
-                            // This helps avoid popup blockers by tying the window.open to a user click
-                            const printResult = await Swal.fire({
+                            // After processing, show success message and open print window automatically
+                            window.open(`invoice/print.php?id=${result.invoiceNumber}`, '_blank');
+                            
+                            // Show success message
+                            Swal.fire({
                                 icon: 'success',
                                 title: 'Payment Complete',
                                 text: 'Invoice #' + result.invoiceNumber + ' has been processed successfully.',
-                                confirmButtonText: 'Print Receipt',
-                                showCancelButton: true,
-                                cancelButtonText: 'Close'
+                                confirmButtonText: 'OK',
+                                timer: 2000,
+                                timerProgressBar: true
                             });
-                            
-                            // Only open print window if user clicks Print Receipt
-                            if (printResult.isConfirmed) {
-                                const printWindow = window.open(`invoice/print.php?id=${result.invoiceNumber}`, '_blank');
-                                
-                                // If popup was blocked, show instruction to user
-                                if (!printWindow || printWindow.closed || typeof printWindow.closed === 'undefined') {
-                                    Swal.fire({
-                                        icon: 'warning',
-                                        title: 'Popup Blocked',
-                                        text: 'It seems your browser blocked the print window. Please allow popups for this site to print receipts.',
-                                        confirmButtonText: 'OK'
-                                    });
-                                }
-                            }
                         } catch (printError) {
                             console.error("Printing error:", printError);
                             Swal.fire({
