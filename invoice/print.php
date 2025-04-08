@@ -343,14 +343,14 @@ if (isset($_GET['invoice'])) {
 </div>
 
 <script>
-    // window.print();
-    // // after print, close the page 
-    // window.onafterprint = function() {
-    //     window.close();
-    // };
+    window.print();
+    // after print, close the page 
+    window.onafterprint = function() {
+        window.close();
+    };
 
-    // // Fallback for browsers that don't support onafterprint
-    // setTimeout(function() {
-    //     window.close();
-    // }, 5000);
+    // Fallback for browsers that don't support onafterprint
+    setTimeout(function() {
+        window.close();
+    }, 5000);
 </script>
