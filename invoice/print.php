@@ -55,8 +55,8 @@ if (isset($_GET['invoice'])) {
     }
 
     th,
-    td {
-        border-bottom: 1px dashed black;
+    tr.product-row {
+        border-top: 1px dashed black;
         padding: 8px 5px;
         text-align: left;
         color: #000;
@@ -69,7 +69,7 @@ if (isset($_GET['invoice'])) {
     }
 
     td {
-        border-bottom: 1px dashed #aaa;
+        /* border-top: 1px dashed #aaa; */
         font-size: 12pt;
     }
 
@@ -260,9 +260,9 @@ if (isset($_GET['invoice'])) {
                         $total_savings += $item_savings;
                     }
 
-                    echo '<tr>
-                            <td>' . $sales["product"] . '</td>
-                            <td>' . $sales["qty"] . '</td>
+                    echo '<tr class="product-row">
+                            <td colspan="4">' . $sales["product"] . '</td></tr>
+                            <tr> <td colspan="2" style="text-align: right;">' . $sales["qty"] . '</td>
                             <td class="price">';
 
                     if ($is_promotional) {
@@ -335,7 +335,7 @@ if (isset($_GET['invoice'])) {
     </div>
 
     <div class="thank-you">
-        Thank you! Come again. 
+        Thank you! Come again.
     </div>
 
     <div class="footer">
