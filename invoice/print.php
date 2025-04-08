@@ -12,38 +12,41 @@ if (isset($_GET['invoice'])) {
     .bill {
         width: 80mm;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 10pt;
+        font-size: 12pt;
         margin: 0 auto;
         height: auto;
+        color: #000;
     }
 
     .header,
     .details,
     .content {
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
     }
 
     .logo-img {
-        margin-bottom: 5px;
+        margin-bottom: 10px;
         text-align: center;
     }
 
     .logo-img img {
-        height: 120px;
+        height: 130px;
     }
 
     .topic h1 {
-        margin: 0;
+        margin: 5px 0;
+        font-size: 18pt;
     }
 
     .topic h2 {
-        margin: 5px 0;
-        font-size: 12pt;
+        margin: 8px 0;
+        font-size: 14pt;
     }
 
     hr {
         border: 1px dashed black;
+        margin: 15px 0;
     }
 
     table {
@@ -54,17 +57,20 @@ if (isset($_GET['invoice'])) {
     th,
     td {
         border-bottom: 1px dashed black;
-        padding: 5px;
+        padding: 8px 5px;
         text-align: left;
+        color: #000;
     }
 
     th {
         font-weight: bold;
         text-align: left;
+        font-size: 13pt;
     }
 
     td {
-        border-bottom: 1px dashed #eee;
+        border-bottom: 1px dashed #aaa;
+        font-size: 12pt;
     }
 
     .price,
@@ -82,49 +88,68 @@ if (isset($_GET['invoice'])) {
     }
 
     .total-summary {
-        margin-top: 10px;
+        margin-top: 15px;
+        border-top: 2px solid black;
+        border-bottom: none;
     }
 
     .total-summary td {
-        padding: 5px 0;
+        padding: 8px 0;
+        font-size: 13pt;
+        border-bottom: none;
+    }
+
+    .final-total td {
+        font-size: 15pt;
+        font-weight: bold;
+        border-top: 1px solid black;
+        padding-top: 10px;
     }
 
     .bill_sum {
         font-weight: bold;
     }
 
-    .savings {
+    .savings-highlight {
+        margin: 15px 0;
+        padding: 10px;
+        border: 2px dashed #000;
+        text-align: center;
+        font-size: 14pt;
         font-weight: bold;
     }
 
     .footer {
         text-align: center;
-        margin-top: 20px;
-        font-size: 10pt;
+        margin-top: 25px;
+        font-size: 12pt;
+        line-height: 1.5;
     }
 
     .Innerdetails {
         display: flex;
         justify-content: space-between;
-        margin: 5px 0;
-        font-size: 9pt;
+        margin: 8px 0;
+        font-size: 12pt;
     }
 
     .bill-no {
-        font-size: 11pt;
-        margin-bottom: 5px;
+        font-size: 14pt;
+        margin-bottom: 10px;
+        font-weight: bold;
     }
 
     .thank-you {
-        margin-top: 10px;
+        margin-top: 15px;
         font-weight: bold;
-        font-size: 10pt;
+        font-size: 13pt;
+        text-align: center;
     }
 
     .payment-method {
-        margin-top: 5px;
-        font-size: 9pt;
-        font-style: italic;
+        margin-top: 10px;
+        font-size: 12pt;
+        text-align: center;
     }
 
     @media print {
@@ -175,7 +200,7 @@ if (isset($_GET['invoice'])) {
             $balance = $invoice['balance'];
             $full_paid = $invoice['full_paid'];
             $payment_method = $invoice['payment_method'] ?? 'Cash';
-            
+
             // Get individual_discount_mode for this invoice from the sales table
             $mode_query = "SELECT individual_discount_mode FROM sales WHERE invoice_number = '$id' LIMIT 1";
             $mode_result = mysqli_query($con, $mode_query);
@@ -192,7 +217,7 @@ if (isset($_GET['invoice'])) {
     }
     ?>
     <div class="details">
-        <div class="bill-no">Invoice No: <b><?php echo $bill_no; ?></b></div>
+        <div class="bill-no">Invoice No: <?php echo $bill_no; ?></div>
         <div class="bill-details Innerdetails">
             <div class="date">Date: <b><?php echo $date; ?></b></div>
             <div class="biller">Cashier: <b><?php echo $biller; ?></b></div>
@@ -224,7 +249,7 @@ if (isset($_GET['invoice'])) {
                     $regular_price = $sales["rate"];
                     $discount_price = $sales["discount_price"];
                     $qty = $sales["qty"];
-                    
+
                     // Only show discount price if individual discount mode was active
                     // or if discount price is less than regular price (for cases like promotional items)
                     $is_promotional = $individual_discount_mode && ($discount_price < $regular_price && $discount_price > 0);
@@ -242,7 +267,7 @@ if (isset($_GET['invoice'])) {
 
                     if ($is_promotional) {
                         echo '<div class="promotion">' . number_format($regular_price, 2) . '</div>' .
-                             '<span class="discount-price">' . number_format($discount_price, 2) . '</span>';
+                            '<span class="discount-price">' . number_format($discount_price, 2) . '</span>';
                     } else {
                         echo number_format($regular_price, 2);
                     }
@@ -256,6 +281,12 @@ if (isset($_GET['invoice'])) {
 
         // Add promotional savings to the discount value for total savings calculation
         $total_savings += $discount;
+
+        // Calculate change if payment was made
+        $change = 0;
+        if ($advance > 0 && $advance > ($total - $discount) && $balance <= 0) {
+            $change = $advance - ($total - $discount);
+        }
         ?>
     </table>
 
@@ -264,12 +295,6 @@ if (isset($_GET['invoice'])) {
             <td colspan="3" class="bill_sum">Subtotal</td>
             <td class="price"><?php echo number_format($total, 2); ?></td>
         </tr>
-        <?php if ($total_savings > 0) { ?>
-            <tr>
-                <td colspan="3" class="bill_sum savings">Total Savings</td>
-                <td class="price savings"><?php echo number_format($total_savings, 2); ?></td>
-            </tr>
-        <?php } ?>
         <tr>
             <td colspan="3" class="bill_sum">Discount</td>
             <td class="price"><?php echo number_format($discount, 2); ?></td>
@@ -285,24 +310,36 @@ if (isset($_GET['invoice'])) {
                 <td colspan="3" class="bill_sum">Balance Due</td>
                 <td class="price"><?php echo number_format($balance, 2); ?></td>
             </tr>
-        <?php } else { ?>
+        <?php } ?>
+        <tr class="final-total">
+            <td colspan="3" class="bill_sum">TOTAL</td>
+            <td class="price"><?php echo number_format($total - $discount, 2); ?></td>
+        </tr>
+        <?php if ($change > 0) { ?>
             <tr>
-                <td colspan="3" class="bill_sum">TOTAL</td>
-                <td class="price" style="font-size: 12pt;"><?php echo number_format($total - $discount, 2); ?></td>
+                <td colspan="3" class="bill_sum">Change</td>
+                <td class="price"><?php echo number_format($change, 2); ?></td>
             </tr>
         <?php } ?>
+
     </table>
+
+    <?php if ($total_savings > 0) { ?>
+        <div class="savings-highlight">
+            Total Savings: <?php echo number_format($total_savings, 2); ?>
+        </div>
+    <?php } ?>
 
     <div class="payment-method">
         Payment Method: <?php echo $payment_method; ?>
     </div>
 
     <div class="thank-you">
-        Thank you for your business!
+        Thank you! Come again. 
     </div>
 
     <div class="footer">
-        Powered by <b>CyexTech Solutions</b> <br> <b>CyexTech.com</b>
+        Software by <b>CyexTech Solutions</b> <br> <b>CyexTech.com</b>
     </div>
 </div>
 
@@ -312,7 +349,7 @@ if (isset($_GET['invoice'])) {
     window.onafterprint = function() {
         window.close();
     };
-    
+
     // Fallback for browsers that don't support onafterprint
     setTimeout(function() {
         window.close();
