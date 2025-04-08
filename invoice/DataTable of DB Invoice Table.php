@@ -16,7 +16,7 @@
             echo "<th>Balance</th>";
             echo "<th>Total Cost</th>";
             echo "<th>Total Profit</th>";
-            echo "<th>Biller</th>";
+            echo "<th>Cashier</th>";
             echo "<th>Full Paid</th>";
             echo "<th>Payment Method</th>";
             echo "<th>Actions</th>";
@@ -36,7 +36,7 @@
                 $balance = $row['balance'];
                 $cost = $row['cost'];
                 $profit = $row['profit'];
-                $biller = $row['biller'];
+                $biller = $row['emp_name'];
                 $paided = $row['full_paid'];
                 $paymentMethod = $row['paymentMethod'];
                 echo "<tr>";

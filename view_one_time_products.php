@@ -132,7 +132,7 @@ require 'inc/header.php';
                         <th>Cost</th>
                         <th>Profit</th>
                         <th>Status</th>
-                        <th>Worker</th>
+                        <th>Cashier</th>
                         <th>Date</th>
                         <th>Time</th>
                         <th>Change Status</th>
@@ -141,9 +141,10 @@ require 'inc/header.php';
                 <tbody>
                     <?php
                     // Query to get one-time products with invoice date and time
-                    $sql = "SELECT o.*, i.invoice_date, i.time 
+                    $sql = "SELECT o.*, i.invoice_date, i.time, e.emp_name
                            FROM oneTimeProducts_sales o 
                            INNER JOIN invoice i ON o.invoice_number = i.invoice_number 
+                           INNER JOIN employees e ON i.biller = e.employ_id
                            ORDER BY i.invoice_date DESC, i.time DESC";
                     
                     $result = mysqli_query($con, $sql);
@@ -161,7 +162,7 @@ require 'inc/header.php';
                             echo "<td>Rs. " . ($row['cost'] ? number_format($row['cost'], 2) : '-') . "</td>";
                             echo "<td>Rs. " . ($row['profit'] ? number_format($row['profit'], 2) : '-') . "</td>";
                             echo "<td class='status-cell " . $statusClass . "'>" . ucfirst(htmlspecialchars($row['status'])) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['worker']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['emp_name']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['invoice_date']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['time']) . "</td>";
                             echo "<td>
