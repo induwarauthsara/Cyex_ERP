@@ -92,12 +92,7 @@ if (!empty($errors)) {
 // Start database transaction
 mysqli_begin_transaction($con);
 
-// Ensure credit_payment column exists in invoice table
-require_once(__DIR__ . '/inc/confirm_payment_feature/add_invoice_credit_payment_column.php');
 
-// Ensure account_transactions and fund_transactions tables exist
-require_once(__DIR__ . '/inc/confirm_payment_feature/create_account_transactions_table.php');
-require_once(__DIR__ . '/inc/confirm_payment_feature/create_fund_transactions_table.php');
 
 try {
     // Check if customer exists and get or create customer ID
@@ -397,6 +392,9 @@ try {
         
         $profit = $amount - ($cost * $quantity);
         $individual_discount_mode_int = $individualDiscountMode ? 1 : 0;
+        
+        // Check if this is a one-time product
+        $isOneTimeProduct = isset($product['isOneTimeProduct']) && $product['isOneTimeProduct'] === true;
 
         // Insert sales record
         $query = "INSERT INTO sales (
@@ -431,6 +429,46 @@ try {
             throw new Exception("Failed to record sales for product: " . $productName);
         }
         mysqli_stmt_close($stmt);
+        
+        // If this is a one-time product, also store in oneTimeProducts_sales table
+        if ($isOneTimeProduct) {
+            // Insert into oneTimeProducts_sales table
+            $oneTimeQuery = "INSERT INTO oneTimeProducts_sales (
+                invoice_number, product, qty, rate, amount, cost, profit, status, worker, regular_price, discount_price
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'uncleared', ?, ?, ?)";
+            
+            $stmt = mysqli_prepare($con, $oneTimeQuery);
+            if (!$stmt) {
+                throw new Exception("Error preparing oneTimeProducts_sales insert query: " . mysqli_error($con));
+            }
+            
+            // Ensure quantity is treated as decimal
+            $qtyDecimal = floatval($quantity);
+            
+            mysqli_stmt_bind_param(
+                $stmt,
+                'isddddssdd',
+                $invoiceNumber,
+                $productName,
+                $qtyDecimal, // Use the decimal version
+                $price, // rate is the price used for calculation (could be discount price)
+                $amount,
+                $cost,
+                $profit,
+                $biller,
+                $regularPrice,
+                $discountPrice
+            );
+            
+            mysqli_stmt_execute($stmt);
+            if (mysqli_affected_rows($con) !== 1) {
+                throw new Exception("Failed to record one-time product sales for: " . $productName);
+            }
+            mysqli_stmt_close($stmt);
+            
+            // Skip stock updates for one-time products
+            continue;
+        }
 
         // Get product type to determine stock update strategy
         $stmt = mysqli_prepare($con, "SELECT product_id, product_type FROM products WHERE product_name = ?");
@@ -443,7 +481,48 @@ try {
         mysqli_stmt_close($stmt);
         
         if (!$productFound) {
-            throw new Exception("Product not found in database: " . $productName);
+            // Product not found - check if it should be treated as a one-time product
+            if ($isOneTimeProduct) {
+                // This was already explicitly marked as a one-time product and handled above
+                continue;
+            } else {
+                // If product not found, automatically mark it as a one-time product
+                $oneTimeQuery = "INSERT INTO oneTimeProducts_sales (
+                    invoice_number, product, qty, rate, amount, cost, profit, status, worker, regular_price, discount_price
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 'uncleared', ?, ?, ?)";
+                
+                $stmt = mysqli_prepare($con, $oneTimeQuery);
+                if (!$stmt) {
+                    throw new Exception("Error preparing oneTimeProducts_sales insert query: " . mysqli_error($con));
+                }
+                
+                // Ensure quantity is treated as decimal
+                $qtyDecimal = floatval($quantity);
+                
+                mysqli_stmt_bind_param(
+                    $stmt,
+                    'isddddssdd',
+                    $invoiceNumber,
+                    $productName,
+                    $qtyDecimal,
+                    $price,
+                    $amount,
+                    $cost,
+                    $profit,
+                    $biller,
+                    $regularPrice,
+                    $discountPrice
+                );
+                
+                mysqli_stmt_execute($stmt);
+                if (mysqli_affected_rows($con) !== 1) {
+                    throw new Exception("Failed to record auto-detected one-time product for: " . $productName);
+                }
+                mysqli_stmt_close($stmt);
+                
+                // Continue to the next product - we don't need to update stock for one-time products
+                continue;
+            }
         }
 
         // Update stock according to product type (standard, combo, service, digital)
@@ -505,7 +584,6 @@ try {
     // Ensure payment_details table exists and insert payment details
     try {
         // Load the table creation script
-        require_once(__DIR__ . '/inc/confirm_payment_feature/create_payment_details_table.php');
         
         // Insert payment details
         $paymentMethod = $data['paymentMethod'] ?? 'Cash';

@@ -1,4 +1,4 @@
-    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
     <meta charset="utf-8">
 
     <?php
@@ -13,7 +13,7 @@
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
     <!-- favicon -->
-    <link rel="shortcut icon" href="../logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../logo.jpg" type="image/x-icon">
 
     <!-- add main css file -->
     <link rel="stylesheet" href="/style.css">

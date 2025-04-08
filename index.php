@@ -9,9 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $ERP_COMPANY_NAME; ?> - POS</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="inc/invoice_main_functions.jsx"></script>
 </head>
 
 
@@ -21,7 +22,7 @@
         <div id="cart-leftSide">
             <!-- Cart Heder -->
             <div id="cart-left-header">
-                <img src="logo.png" alt="Company LOGO">
+                <img src="logo.jpg" alt="Company LOGO">
                 <div class="company-details">
                     <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
                     <h3><?php echo $ERP_COMPANY_ADDRESS; ?><br><?php echo $ERP_COMPANY_PHONE; ?></h3>
@@ -31,6 +32,7 @@
                     <button class="view-held-invoices" onclick="loadHeldInvoices()"><svg style="width: 20px; color: #fff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                             <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75H15a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z" clip-rule="evenodd"></path>
                         </svg> &nbsp; Held Invoices List</button>
+                    <!-- <button class="print-last-invoice" onclick="printLastInvoice()"><i class="fas fa-print"></i> &nbsp; Print Last Invoice</button> -->
                     <button class="clear-search-cache-button" onclick="clearQuickSearch()"><i class="fas fa-broom"></i> &nbsp; Clear Quick Search</button>
                 </div>
             </div>
@@ -198,6 +200,10 @@
                     event.preventDefault(); // Prevent any default action for Shift + C
                     cancelBill(); // Call the cancel bill function
                 }
+                if (event.shiftKey && event.key === 'P') {
+                    event.preventDefault(); // Prevent any default action for Shift + P
+                    printLastInvoice(); // Call the print last invoice function
+                }
             });
 
             // Apply discount from localStorage on load
@@ -221,7 +227,23 @@
                 } else {
                     // $('#search-results').hide();
                     // show as no product found
-                    $('#search-results').html(`<div style="padding: 10px; border-bottom: 1px solid #ddd;">No product found</div>`).show();
+                    $('#search-results').html(`
+                        <div style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>No product found</span>
+                                <button id="add-onetime-product" class="btn-sm btn-success" style="padding: 3px 8px; background-color: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                    <i class="fas fa-plus"></i> Add One-Time Product
+                                </button>
+                            </div>
+                        </div>
+                    `).show();
+                    
+                    // Attach event listener to the Add One-Time Product button
+                    $('#add-onetime-product').off('click').on('click', function() {
+                        const productName = $('#product-input').val().trim();
+                        addonetimeproductModal(productName);
+                        $('#search-results').hide();
+                    });
                 }
             }, 500));
 
@@ -262,6 +284,7 @@
                             <tr> <td><kbd>Shift</kbd> + <kbd>D</kbd></td> <td>Open Discount</td> </tr>
                             <tr> <td><kbd>Shift</kbd> + <kbd>H</kbd></td> <td>Hold Bill</td> </tr>
                             <tr> <td><kbd>Ctrl</kbd> + <kbd>H</kbd></td> <td>Show Held Bill List</td> </tr>
+                            <tr> <td><kbd>Shift</kbd> + <kbd>P</kbd></td> <td>Print Last Invoice</td> </tr>
                             <!-- Additional Shortcuts from the Invoice Confirm -->
                             <tr> <td><kbd>F1</kbd></td> <td><b>Cash Payment </b> </td> </tr>
                             <tr> <td><kbd>F2</kbd></td> <td><b>Card Payment</b> </td> </tr>
@@ -345,13 +368,24 @@
                 // Show search results if multiple products match
                 displaySearchResults(response.products);
             } else if (response.products.length === 0) {
-                // Show single product if only one product matches
+                // Show no product found message with option to add one-time product
+                const query = $('#product-input').val().trim();
                 $('#search-results').hide();
+                
                 Swal.fire({
                     title: 'No Product Found',
-                    text: 'Add This Product',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
+                    html: `
+                        <p>Would you like to add "${query}" as a one-time product?</p>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Add One-Time Product',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        addonetimeproductModal(query);
+                    }
                 });
             } else {
                 $('#search-results').hide();
@@ -836,23 +870,45 @@
                 calculateIndividualDiscountSavings();
             }
         }
+
+        function printLastInvoice() {
+            $.ajax({
+                url: '/inc/get_last_invoice.php',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.invoice_id) {
+                        // Open print window for last invoice
+                        window.open(`invoice/print.php?id=${response.invoice_id}`, '_blank');
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Recent Invoice',
+                            text: 'There is no recent invoice to print.',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Could not retrieve the last invoice. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
     </script>
 
     <!-- External Scripts -->
     <script src="https://kit.fontawesome.com/2dccbd7e96.js" crossorigin="anonymous"></script>
-    <!-- Include confirmed feature scripts -->
+    <!-- Include confirm_payment_feature.js only once -->
     <script src="inc/confirm_payment_feature/confirm_payment_feature.js"></script>
-    <script src="inc/confirm_payment_feature/receipt_printer.js"></script>
+    <!-- <script src="inc/confirm_payment_feature/receipt_printer.js"></script> -->
+
+    <!-- Other scripts -->
+    <script src="inc/searchCustomer function.js"></script>
+    <script src="inc/hold_invoices/hold_invoices_logics.js"></script>
 </body>
 
 </html>
-
-<script src="inc/searchCustomer function.js"></script>
-
-<!-- JS Functions for Hold Invoice -->
-<script src="inc/hold_invoices/hold_invoices_logics.js"></script>
-
-<!-- JavaScript Code for Confirm Payment Feature -->
-<script src="inc/confirm_payment_feature/confirm_payment_feature.js"></script>
-<!-- Receipt Printer Module -->
-<script src="inc/confirm_payment_feature/receipt_printer.js"></script>

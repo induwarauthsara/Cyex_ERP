@@ -103,6 +103,28 @@ body {
 
 .view-held-invoices {
     background-color: rgb(251, 86, 7);
+    color: white;
+    margin-right: 5px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.print-last-invoice {
+    background-color: #F1C40F;
+    color: white;
+    margin-right: 5px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
 }
 
 .clear-search-cache-button {

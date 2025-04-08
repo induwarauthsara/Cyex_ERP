@@ -1,5 +1,11 @@
 // onload, fetch customer customer_extra_fund.php it's number. (ex: 520.00) if it's not '0.00', get it to the 'extraPaidAmount' variable.
-let useCustomerExtraFundAmount = 0;
+// Check if useCustomerExtraFundAmount already exists in the global scope
+if (typeof useCustomerExtraFundAmount === 'undefined') {
+    let useCustomerExtraFundAmount = 0;
+} else {
+    // Reset the value if already declared
+    useCustomerExtraFundAmount = 0;
+}
 
 function customerSavedExtraFund() {
     // window.addEventListener('load', () => {
@@ -226,7 +232,27 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 balance,
                 printReceipt,
                 quickCashCounts,
-                productList,
+                productList: productList.map(product => {
+                    // Check if this is a one-time product by name matching
+                    const isOneTimeProduct = window.oneTimeProducts && 
+                        window.oneTimeProducts.find(otp => otp.name === product.name);
+                        
+                    if (isOneTimeProduct) {
+                        return {
+                            ...product,
+                            isOneTimeProduct: true,
+                            quantity: parseFloat(product.quantity),
+                            regular_price: parseFloat(isOneTimeProduct.regularPrice),
+                            discount_price: parseFloat(isOneTimeProduct.discountPrice)
+                        };
+                    }
+                    
+                    // For regular products, ensure quantity is also decimal
+                    return {
+                        ...product,
+                        quantity: parseFloat(product.quantity)
+                    };
+                }),
                 paymentMethod,
                 extraPaidAddToCustomerFund,
                 extraPaidAmount,
@@ -251,14 +277,64 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 if (response.ok && result.success) {
                     clearCart();
                     clearQuickCash();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Invoice Submitted',
-                        text: 'The invoice has been successfully submitted.',
-                        confirmButtonText: 'OK',
-                        timer: 1000,
-                        timerProgressBar: true                        
-                    });
+                    
+                    // Handle receipt printing if requested
+                    if (printReceipt) {
+                        try {
+                            // Show processing notification first
+                            const processingResult = await Swal.fire({
+                                title: 'Processing Payment',
+                                text: 'Finalizing payment...',
+                                icon: 'info',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true
+                            });
+                            
+                            // After processing notification closes, show success with print button
+                            // This helps avoid popup blockers by tying the window.open to a user click
+                            const printResult = await Swal.fire({
+                                icon: 'success',
+                                title: 'Payment Complete',
+                                text: 'Invoice #' + result.invoiceNumber + ' has been processed successfully.',
+                                confirmButtonText: 'Print Receipt',
+                                showCancelButton: true,
+                                cancelButtonText: 'Close'
+                            });
+                            
+                            // Only open print window if user clicks Print Receipt
+                            if (printResult.isConfirmed) {
+                                const printWindow = window.open(`invoice/print.php?id=${result.invoiceNumber}`, '_blank');
+                                
+                                // If popup was blocked, show instruction to user
+                                if (!printWindow || printWindow.closed || typeof printWindow.closed === 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Popup Blocked',
+                                        text: 'It seems your browser blocked the print window. Please allow popups for this site to print receipts.',
+                                        confirmButtonText: 'OK'
+                                    });
+                                }
+                            }
+                        } catch (printError) {
+                            console.error("Printing error:", printError);
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Payment Complete',
+                                text: 'Invoice processed but printing failed: ' + printError.message,
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Payment Complete',
+                            text: 'Invoice #' + result.invoiceNumber + ' has been processed successfully.',
+                            confirmButtonText: 'OK',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                    }
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -316,79 +392,98 @@ function showPaymentTab(tabId) {
 }
 
 function calculateBalance() {
-    const totalPayable = parseFloat($('#modal-total-payable').text().replace(/,/g, ''));
-    const cashAmount = parseFloat(document.getElementById('cash-amount-received').value || '0');
-    const cardAmount = parseFloat(document.getElementById('card-amount').value || '0');
-    const bankAmount = parseFloat(document.getElementById('bank-amount').value || '0');
-    const totalPaid = cashAmount + cardAmount + bankAmount;
+    const modalTotalPayable = document.getElementById('modal-total-payable');
+    const cashAmountReceived = document.getElementById('cash-amount-received');
+    const cardAmount = document.getElementById('card-amount');
+    const bankAmount = document.getElementById('bank-amount');
+    const balanceAmount = document.getElementById('balance-amount');
+    const changeAmount = document.getElementById('change-amount');
+    const extraPaidCheckboxContainer = document.getElementById('extra-paid-checkbox-container');
+    
+    // Check if we have the necessary elements (in case the modal is not open)
+    if (!modalTotalPayable || !balanceAmount) {
+        return; // Exit early if essential elements are missing
+    }
+    
+    const totalPayable = parseFloat(modalTotalPayable.textContent.replace(/,/g, ''));
+    const cashAmount = cashAmountReceived ? parseFloat(cashAmountReceived.value || '0') : 0;
+    const cardAmountValue = cardAmount ? parseFloat(cardAmount.value || '0') : 0;
+    const bankAmountValue = bankAmount ? parseFloat(bankAmount.value || '0') : 0;
+    const totalPaid = cashAmount + cardAmountValue + bankAmountValue;
 
     const balance = totalPayable - totalPaid;
-    document.getElementById('balance-amount').innerText = `Rs. ${formatCurrency(balance)}`;
+    balanceAmount.innerText = `Rs. ${formatCurrency(balance)}`;
 
-    if (balance < 0) {
+    if (balance < 0 && extraPaidCheckboxContainer) {
         // Customer paid extra, show the "Customer Extra Paid" checkbox
         const extraPaidAmount = Math.abs(balance).toFixed(2);
-        document.getElementById('extra-paid-checkbox-container').innerHTML = `
+        extraPaidCheckboxContainer.innerHTML = `
             <label>
                 <input type="checkbox" id="extra-paid-checkbox">
                 Customer Extra Paid. Add Rs. ${extraPaidAmount} Fund to Customer Account
             </label>
         `;
-        document.getElementById('extra-paid-checkbox-container').style.display = 'block';
-    } else {
+        extraPaidCheckboxContainer.style.display = 'block';
+    } else if (extraPaidCheckboxContainer) {
         // Balance is zero or positive, hide the checkbox
-        document.getElementById('extra-paid-checkbox-container').style.display = 'none';
+        extraPaidCheckboxContainer.style.display = 'none';
     }
 
-    if (balance <= 0) {
-        document.getElementById('change-amount').innerText = `Rs. ${formatCurrency(-balance)}`;
-    } else {
-        document.getElementById('change-amount').innerText = '0.00';
+    if (changeAmount) {
+        if (balance <= 0) {
+            changeAmount.innerText = `Rs. ${formatCurrency(-balance)}`;
+        } else {
+            changeAmount.innerText = '0.00';
+        }
     }
 }
 
 function handleKeyShortcuts(event) {
-    if (modalOpen) {
-        if (event.key === 'F1') {
-            event.preventDefault();
-            showPaymentTab('cash-tab');
-        }
-        if (event.key === 'F2') {
-            event.preventDefault();
-            showPaymentTab('card-tab');
-        }
-        if (event.key === 'F3') {
-            event.preventDefault();
-            incrementQuickCash(10);
-        }
-        if (event.key === 'F4') {
-            event.preventDefault();
-            incrementQuickCash(20);
-        }
-        if (event.key === 'F5') {
-            event.preventDefault();
-            incrementQuickCash(50);
-        }
-        if (event.key === 'F6') {
-            event.preventDefault();
-            incrementQuickCash(100);
-        }
-        if (event.key === 'F7') {
-            event.preventDefault();
-            incrementQuickCash(500);
-        }
-        if (event.key === 'F8') {
-            event.preventDefault();
-            incrementQuickCash(1000);
-        }
-        if (event.key === 'F9') {
-            event.preventDefault();
-            incrementQuickCash(5000);
-        }
-        if (event.key === 'F10') {
-            event.preventDefault();
-            clearQuickCash();
-        }
+    if (!modalOpen) {
+        return; // Exit early if modal is not open
+    }
+    
+    if (event.key === 'F1') {
+        event.preventDefault();
+        const cashTab = document.getElementById('cash-tab');
+        if (cashTab) showPaymentTab('cash-tab');
+    }
+    if (event.key === 'F2') {
+        event.preventDefault();
+        const cardTab = document.getElementById('card-tab');
+        if (cardTab) showPaymentTab('card-tab');
+    }
+    if (event.key === 'F3') {
+        event.preventDefault();
+        incrementQuickCash(10);
+    }
+    if (event.key === 'F4') {
+        event.preventDefault();
+        incrementQuickCash(20);
+    }
+    if (event.key === 'F5') {
+        event.preventDefault();
+        incrementQuickCash(50);
+    }
+    if (event.key === 'F6') {
+        event.preventDefault();
+        incrementQuickCash(100);
+    }
+    if (event.key === 'F7') {
+        event.preventDefault();
+        incrementQuickCash(500);
+    }
+    if (event.key === 'F8') {
+        event.preventDefault();
+        incrementQuickCash(1000);
+    }
+    if (event.key === 'F9') {
+        event.preventDefault();
+        incrementQuickCash(5000);
+    }
+    if (event.key === 'F10') {
+        event.preventDefault();
+        clearQuickCash();
     }
 }
 
@@ -426,9 +521,6 @@ function generateQuickCashButtons() {
     return buttonsHtml;
 }
 
-
-
-
 // Function to increment Quick Cash by denomination
 function incrementQuickCash(denomination) {
     quickCashCounts[denomination] = (quickCashCounts[denomination] || 0) + 1;
@@ -443,7 +535,7 @@ function calculateQuickCashTotal() {
 
     // Check if the modal is open and update the Amount Received field if it is
     if (modalOpen) {
-        const amountReceivedInput = document.getElementById('cash-amount-received'); // Corrected ID
+        const amountReceivedInput = document.getElementById('cash-amount-received'); 
         if (amountReceivedInput) {
             amountReceivedInput.value = totalQuickCash.toFixed(2);
         }
@@ -451,8 +543,10 @@ function calculateQuickCashTotal() {
 
     // Update the displayed change amount only if the element exists
     const changeDisplay = document.getElementById('change-amount');
-    if (changeDisplay) {
-        const totalPayable = parseFloat($('#modal-total-payable').text().replace(/,/g, ''));
+    const modalTotalPayable = document.getElementById('modal-total-payable');
+    
+    if (changeDisplay && modalTotalPayable) {
+        const totalPayable = parseFloat(modalTotalPayable.textContent.replace(/,/g, ''));
         const change = totalQuickCash - totalPayable;
         changeDisplay.innerText = change >= 0 ? formatCurrency(change.toFixed(2)) : '0.00';
     }
@@ -484,7 +578,7 @@ function clearQuickCash() {
         5000: 0
     };
     updateQuickCashDisplay();
-    const amountReceivedInput = document.getElementById('cash-amount-received'); // Corrected ID
+    const amountReceivedInput = document.getElementById('cash-amount-received');
     if (amountReceivedInput) {
         amountReceivedInput.value = '';
     }
@@ -506,7 +600,10 @@ $(document).on('keydown', function(event) {
         if (event.key === 'Enter') {
             enterPressCount++;
             if (enterPressCount === 2) {
-                $('.swal2-confirm').click();
+                const confirmButton = document.querySelector('.swal2-confirm');
+                if (confirmButton) {
+                    confirmButton.click();
+                }
                 enterPressCount = 0;
             }
             setTimeout(() => {
@@ -514,6 +611,7 @@ $(document).on('keydown', function(event) {
             }, 500);
         }
     } else {
+        // Handle global keydown events when modal is not open
         if (event.key === 'F1') {
             event.preventDefault();
             openConfirmPaymentModal('Cash');
