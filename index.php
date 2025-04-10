@@ -1310,10 +1310,6 @@
                         <label for="description">Description</label>
                         <input type="text" id="description" class="swal2-input" placeholder="Purpose of cash out">
                     </div>
-                    <div class="form-group">
-                        <label for="cash_out_notes">Additional Notes (Optional)</label>
-                        <textarea id="cash_out_notes" class="swal2-textarea" placeholder="Any additional details..."></textarea>
-                    </div>
                 `,
                 focusConfirm: false,
                 showCancelButton: true,
@@ -1335,7 +1331,6 @@
                     return {
                         amount: parseFloat(amount),
                         description: description,
-                        notes: document.getElementById('cash_out_notes').value
                     };
                 }
             }).then((result) => {

@@ -6,7 +6,6 @@ include 'nav.php';
 
 <!-- Add Refresh Button -->
 <button id="refreshPage" class="smallIcon" onclick="location.reload()"><i class="fa-solid fa-sync"></i> &nbsp; Refresh Page</button>
-<button class="smallIcon" onclick="window.location.href='install_cash_register.php'"><i class="fa-solid fa-cash-register"></i> &nbsp; Install Cash Register</button>
 
 <div id="errors">
     <!-- Database Erros -->
