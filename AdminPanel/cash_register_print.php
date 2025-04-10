@@ -15,7 +15,8 @@ if (mysqli_num_rows($result) !== 1) {
 
 $register = mysqli_fetch_assoc($result);
 $opening_balance = $register['opening_balance'];
-$actual_cash = $register['actual_cash'];
+$cash_out = $register['cash_out'];
+$cash_drawer_balance = $register['cash_drawer_balance'];
 $bank_deposit = $register['bank_deposit'];
 $opened_at = new DateTime($register['opened_at']);
 $closed_at = $register['closed_at'] ? new DateTime($register['closed_at']) : null;
@@ -59,17 +60,16 @@ $avg_transaction = $sales['avg_transaction'] ?? 0;
 $petty_sql = "SELECT SUM(amount) as total_cash_out FROM pettycash WHERE register_id = $register_id";
 $petty_result = mysqli_query($con, $petty_sql);
 $petty = mysqli_fetch_assoc($petty_result);
-$cash_out = $petty['total_cash_out'] ?? 0;
+$pettycash_out = $petty['total_cash_out'] ?? 0;
 
 // Get detailed petty cash records for display
 $petty_details_sql = "SELECT * FROM pettycash WHERE register_id = $register_id ORDER BY date, time";
 $petty_details_result = mysqli_query($con, $petty_details_sql);
 
 // Calculate cash drawer amount
-$cash_drawer_amount = $opening_balance + $cash_sales - $cash_out;
 
 // Calculate cash difference
-$cash_difference = $actual_cash - $cash_drawer_amount;
+$cash_difference = $opening_balance + $cash_sales - $pettycash_out - $cash_out - $cash_drawer_balance;
 
 // Get top selling items for today
 $top_items_sql = "SELECT 
@@ -406,16 +406,16 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
             </div>
             <div class="detail-row">
                 <span class="detail-label">Petty Cash:</span>
-                <span class="amount">Rs. <?php echo number_format($cash_out, 2); ?></span>
-            </div>
-            <div class="detail-row highlight">
-                <span class="detail-label">Cash Drawer Amount:</span>
-                <span class="amount">Rs. <?php echo number_format($cash_drawer_amount, 2); ?></span>
+                <span class="amount">Rs. <?php echo number_format($pettycash_out, 2); ?></span>
             </div>
             <?php if ($closed_at): ?>
                 <div class="detail-row">
                     <span class="detail-label">Cash Out:</span>
-                    <span class="amount">Rs. <?php echo number_format($actual_cash, 2); ?></span>
+                    <span class="amount">Rs. <?php echo number_format($cash_out, 2); ?></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Cash Drawer Balance:</span>
+                    <span class="amount">Rs. <?php echo number_format($cash_drawer_balance, 2); ?></span>
                 </div>
                 <div class="detail-row" style="<?php echo $cash_difference < 0 ? 'color: red;' : ($cash_difference > 0 ? 'color: green;' : ''); ?>">
                     <span class="detail-label">Cash Difference:</span>

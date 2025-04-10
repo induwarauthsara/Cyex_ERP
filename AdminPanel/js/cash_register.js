@@ -243,8 +243,12 @@ function closeRegisterModal() {
                                 </div>
                                 <input type="hidden" id="register_id" value="${summary.register_id}">
                                 <div class="form-group">
-                                    <label for="actual_cash">Cash Out:</label>
-                                    <input type="number" id="actual_cash" class="swal2-input" placeholder="Enter actual cash" step="0.01" min="0">
+                                    <label for="cash_out">Cash Out:</label>
+                                    <input type="number" id="cash_out" class="swal2-input" placeholder="Enter cash out amount" step="0.01" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="cash_drawer_balance">Cash Drawer Balance:</label>
+                                    <input type="number" id="cash_drawer_balance" class="swal2-input" placeholder="Enter cash drawer balance" step="0.01" min="0">
                                 </div>
                                 <div class="form-group">
                                     <label for="bank_deposit">Bank Deposit Amount:</label>
@@ -261,17 +265,23 @@ function closeRegisterModal() {
                         focusConfirm: false,
                         preConfirm: () => {
                             // Get form values
-                            const actual_cash = document.getElementById('actual_cash').value;
+                            const cash_out = document.getElementById('cash_out').value;
+                            const cash_drawer_balance = document.getElementById('cash_drawer_balance').value;
                             const bank_deposit = document.getElementById('bank_deposit').value;
                             const notes = document.getElementById('closing_notes').value;
                             const register_id = document.getElementById('register_id').value;
                             
-                            if (!actual_cash) {
-                                Swal.showValidationMessage('Please enter actual cash amount');
+                            if (!cash_out) {
+                                Swal.showValidationMessage('Please enter cash out amount');
                                 return false;
                             }
                             
-                            return { actual_cash, bank_deposit, notes, register_id };
+                            if (!cash_drawer_balance) {
+                                Swal.showValidationMessage('Please enter cash drawer balance');
+                                return false;
+                            }
+                            
+                            return { cash_out, cash_drawer_balance, bank_deposit, notes, register_id };
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
@@ -290,7 +300,8 @@ function closeRegisterModal() {
                                 data: {
                                     action: 'close_register',
                                     register_id: parsedRegisterID,
-                                    actual_cash: result.value.actual_cash,
+                                    cash_out: result.value.cash_out,
+                                    cash_drawer_balance: result.value.cash_drawer_balance,
                                     bank_deposit: result.value.bank_deposit,
                                     notes: result.value.notes
                                 },

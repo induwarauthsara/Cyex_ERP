@@ -122,7 +122,8 @@ function closeRegister() {
     $register_id = $register['id'];
     // Get parameters
     // $register_id = isset($_POST['register_id']) ? intval($_POST['register_id']) : 0;
-    $actual_cash = isset($_POST['actual_cash']) ? floatval($_POST['actual_cash']) : 0;
+    $cash_out = isset($_POST['cash_out']) ? floatval($_POST['cash_out']) : 0;
+    $cash_drawer_balance = isset($_POST['cash_drawer_balance']) ? floatval($_POST['cash_drawer_balance']) : 0;
     $bank_deposit = isset($_POST['bank_deposit']) ? floatval($_POST['bank_deposit']) : 0;
     $notes = mysqli_real_escape_string($con, $_POST['notes'] ?? '');
     
@@ -160,7 +161,8 @@ function closeRegister() {
     
     // Close register session
     $update_sql = "UPDATE cash_register SET 
-                    actual_cash = '$actual_cash',
+                    cash_out = '$cash_out',
+                    cash_drawer_balance = '$cash_drawer_balance',
                     bank_deposit = '$bank_deposit',
                     closing_notes = '$notes',
                     closed_at = NOW()

@@ -238,7 +238,7 @@
                             </div>
                         </div>
                     `).show();
-                    
+
                     // Attach event listener to the Add One-Time Product button
                     $('#add-onetime-product').off('click').on('click', function() {
                         const productName = $('#product-input').val().trim();
@@ -372,7 +372,7 @@
                 // Show no product found message with option to add one-time product
                 const query = $('#product-input').val().trim();
                 $('#search-results').hide();
-                
+
                 Swal.fire({
                     title: 'No Product Found',
                     html: `
@@ -922,7 +922,7 @@
                     Swal.showLoading();
                 }
             });
-            
+
             // Check register status first
             $.ajax({
                 url: '/AdminPanel/api/cash_register.php',
@@ -934,18 +934,18 @@
                     try {
                         // Close loading animation
                         Swal.close();
-                        
+
                         // Try to parse as JSON if it's a string
                         const data = typeof response === 'object' ? response : JSON.parse(response);
-                        
+
                         if (data.success) {
                             const registerData = data.data;
                             const isOpen = registerData.is_open;
-                            
+
                             // Build the content based on register status
                             let content = '<div class="register-details">';
                             let buttonsHtml = '';
-                            
+
                             if (registerData.details) {
                                 // Register is open, show details
                                 const details = registerData.details;
@@ -978,7 +978,7 @@
                                         </div>
                                     </div>
                                 `;
-                                
+
                                 // Only show cash out and close register buttons if the register is open
                                 buttonsHtml += `
                                     <button class="swal2-confirm swal2-styled cash-out-btn" onclick="cashOut()">Petty Cash</button>
@@ -993,15 +993,15 @@
                                         <p>You need to open the cash register before processing sales.</p>
                                     </div>
                                 `;
-                                
+
                                 buttonsHtml += `
                                     <button class="swal2-confirm swal2-styled open-register-btn" onclick="openRegister()">Open Register</button>
                                     <button class="swal2-confirm swal2-styled print-last-register-btn" onclick="printLastClosedRegister()">Print Last Register</button>
                                 `;
                             }
-                            
+
                             content += '</div>';
-                            
+
                             // Show the modal with register details
                             Swal.fire({
                                 title: 'Cash Register',
@@ -1014,7 +1014,7 @@
                                     container: 'cash-register-modal'
                                 }
                             });
-                            
+
                             // Add styles for the details
                             const style = document.createElement('style');
                             style.textContent = `
@@ -1051,7 +1051,7 @@
                                 }
                             `;
                             document.head.appendChild(style);
-                            
+
                         } else {
                             Swal.fire({
                                 title: 'Error!',
@@ -1084,7 +1084,7 @@
         function printRegister(registerId) {
             // Open the print page in a new window
             const printWindow = window.open(`/AdminPanel/cash_register_print.php?id=${registerId}`, '_blank');
-            
+
             // Focus on the new window and print after it loads
             if (printWindow) {
                 printWindow.focus();
@@ -1101,7 +1101,7 @@
                     Swal.showLoading();
                 }
             });
-            
+
             // Fetch the last closed register
             $.ajax({
                 url: '/AdminPanel/api/cash_register.php',
@@ -1111,7 +1111,7 @@
                 },
                 success: function(response) {
                     Swal.close();
-                    
+
                     try {
                         const data = typeof response === 'object' ? response : JSON.parse(response);
                         if (data.success && data.data) {
@@ -1136,7 +1136,7 @@
                 },
                 error: function(xhr, status, error) {
                     Swal.close();
-                    
+
                     Swal.fire({
                         title: 'Error',
                         text: 'Server error: ' + error,
@@ -1232,8 +1232,12 @@
                 title: 'Close Cash Register',
                 html: `
                     <div class="form-group">
-                        <label for="closing_balance">Cash Out (Rs.)</label>
-                        <input type="number" id="closing_balance" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                        <label for="cash_out">Cash Out (Rs.)</label>
+                        <input type="number" id="cash_out" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="cash_drawer_balance">Cash Drawer Balance (Rs.)</label>
+                        <input type="number" id="cash_drawer_balance" class="swal2-input" placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="form-group">
                         <label for="closing_notes">Notes (Optional)</label>
@@ -1244,13 +1248,19 @@
                 showCancelButton: true,
                 confirmButtonText: 'Close Register',
                 preConfirm: () => {
-                    const closingBalance = document.getElementById('closing_balance').value;
-                    if (!closingBalance || isNaN(parseFloat(closingBalance))) {
-                        Swal.showValidationMessage('Please enter the actual cash count');
+                    const cash_out = document.getElementById('cash_out').value;
+                    const cash_drawer_balance = document.getElementById('cash_drawer_balance').value;
+                    if (!cash_out || isNaN(parseFloat(cash_out))) {
+                        Swal.showValidationMessage('Please enter the actual cash Out Amount');
+                        return false;
+                    }
+                    if (!cash_drawer_balance || isNaN(parseFloat(cash_drawer_balance))) {
+                        Swal.showValidationMessage('Please enter the actual cash Drawer Balance');
                         return false;
                     }
                     return {
-                        closing_balance: parseFloat(closingBalance),
+                        cash_out: parseFloat(cash_out),
+                        cash_drawer_balance: parseFloat(cash_drawer_balance),
                         notes: document.getElementById('closing_notes').value
                     };
                 }
@@ -1267,20 +1277,21 @@
                             Swal.showLoading();
                         }
                     });
-                    
+
                     const formData = result.value;
                     $.ajax({
                         url: '/AdminPanel/api/cash_register.php',
                         method: 'POST',
                         data: {
                             action: 'close_register',
-                            closing_balance: formData.closing_balance,
+                            cash_out: formData.cash_out,
+                            cash_drawer_balance: formData.cash_drawer_balance,
                             notes: formData.notes
                         },
                         success: function(response) {
                             // Close loading animation
                             Swal.close();
-                            
+
                             try {
                                 const data = typeof response === 'object' ? response : JSON.parse(response);
                                 if (data.success) {
@@ -1318,7 +1329,7 @@
                         error: function(xhr, status, error) {
                             // Close loading animation
                             Swal.close();
-                            
+
                             console.error('AJAX error:', error);
                             Swal.fire({
                                 title: 'Error!',
@@ -1350,17 +1361,17 @@
                 preConfirm: () => {
                     const amount = document.getElementById('amount').value;
                     const description = document.getElementById('description').value;
-                    
+
                     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
                         Swal.showValidationMessage('Please enter a valid amount greater than zero');
                         return false;
                     }
-                    
+
                     if (!description.trim()) {
                         Swal.showValidationMessage('Please enter a description');
                         return false;
                     }
-                    
+
                     return {
                         amount: parseFloat(amount),
                         description: description,
@@ -1379,7 +1390,7 @@
                             Swal.showLoading();
                         }
                     });
-                    
+
                     const formData = result.value;
                     $.ajax({
                         url: '/AdminPanel/api/cash_register.php',
@@ -1393,7 +1404,7 @@
                         success: function(response) {
                             // Close loading animation
                             Swal.close();
-                            
+
                             try {
                                 const data = typeof response === 'object' ? response : JSON.parse(response);
                                 if (data.success) {
@@ -1424,7 +1435,7 @@
                         error: function(xhr, status, error) {
                             // Close loading animation
                             Swal.close();
-                            
+
                             console.error('AJAX error:', error);
                             Swal.fire({
                                 title: 'Error!',
@@ -1453,10 +1464,15 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </body>
