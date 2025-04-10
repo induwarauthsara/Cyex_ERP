@@ -261,7 +261,7 @@ if (isset($_GET['invoice'])) {
 
                     echo '<tr class="product-row">
                             <td colspan="4">' . $sales["product"] . '</td></tr>
-                            <tr> <td colspan="2" style="text-align: center;">' . $sales["qty"] . '</td>
+                            <tr> <td colspan="2" style="text-align: right;">' . $sales["qty"] . '</td>
                             <td class="price">';
 
                     if ($is_promotional) {
