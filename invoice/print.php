@@ -22,7 +22,7 @@ if (isset($_GET['invoice'])) {
     .details,
     .content {
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
 
     .logo-img {
@@ -41,12 +41,12 @@ if (isset($_GET['invoice'])) {
 
     .topic h2 {
         margin: 8px 0;
-        font-size: 14pt;
+        font-size: 12pt;
     }
 
     hr {
         border: 1px dashed black;
-        margin: 15px 0;
+        margin: 10px 0;
     }
 
     table {
@@ -88,13 +88,13 @@ if (isset($_GET['invoice'])) {
     }
 
     .total-summary {
-        margin-top: 15px;
+        margin-top: 10px;
         border-top: 2px solid black;
         border-bottom: none;
     }
 
     .total-summary td {
-        padding: 8px 0;
+        /* padding: 8px 0; */
         font-size: 13pt;
         border-bottom: none;
     }
@@ -140,7 +140,7 @@ if (isset($_GET['invoice'])) {
     }
 
     .thank-you {
-        margin-top: 15px;
+        margin-top: 10px;
         font-weight: bold;
         font-size: 13pt;
         text-align: center;

@@ -30,7 +30,7 @@ function end_db_con()
 <?php
 
 $ERP_COMPANY_NAME = "Global Mart";
-$ERP_COMPANY_ADDRESS = "298/2/A, Borella Road, Homagama.";
+$ERP_COMPANY_ADDRESS = "298/2/A, Borella Road, Habarakada.";
 $ERP_COMPANY_PHONE = "0112 474 947";
 // Start Session if not started
 if (session_status() === PHP_SESSION_ACTIVE) {
