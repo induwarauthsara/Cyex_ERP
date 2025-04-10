@@ -6,6 +6,7 @@ include 'nav.php';
 
 <!-- Add Refresh Button -->
 <button id="refreshPage" class="smallIcon" onclick="location.reload()"><i class="fa-solid fa-sync"></i> &nbsp; Refresh Page</button>
+<button class="smallIcon" onclick="window.location.href='install_cash_register.php'"><i class="fa-solid fa-cash-register"></i> &nbsp; Install Cash Register</button>
 
 <div id="errors">
     <!-- Database Erros -->
@@ -373,4 +374,58 @@ Answer: apexcharts
 
     var chart = new ApexCharts(document.querySelector("#chart"), options);
     chart.render();
+
+    // Function to print the last closed cash register report
+    function printLastClosedRegister() {
+        // Show loading animation
+        showLoadingAnimation('Finding last closed register...');
+        
+        // Fetch the last closed register
+        $.ajax({
+            url: 'api/cash_register.php',
+            method: 'POST',
+            data: {
+                action: 'get_last_closed_register'
+            },
+            success: function(response) {
+                // Hide loading animation
+                hideLoadingAnimation();
+                
+                try {
+                    const data = typeof response === 'object' ? response : JSON.parse(response);
+                    if (data.success && data.data) {
+                        const registerId = data.data.id;
+                        // Open print window
+                        window.open(`/AdminPanel/cash_register_print.php?id=${registerId}`, '_blank');
+                    } else {
+                        Swal.fire({
+                            title: 'No Closed Register Found',
+                            text: data.message || 'No closed cash register session found.',
+                            icon: 'info'
+                        });
+                    }
+                } catch (e) {
+                    console.error('JSON Parse error:', e);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to parse server response.',
+                        icon: 'error'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                // Hide loading animation
+                hideLoadingAnimation();
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Server error: ' + error,
+                    icon: 'error'
+                });
+            }
+        });
+    }
 </script>
+
+<!-- Include the cash register functionality -->
+<script src="js/cash_register.js"></script>

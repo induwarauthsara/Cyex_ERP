@@ -981,6 +981,7 @@
                                 
                                 buttonsHtml += `
                                     <button class="swal2-confirm swal2-styled open-register-btn" onclick="openRegister()">Open Register</button>
+                                    <button class="swal2-confirm swal2-styled print-last-register-btn" onclick="printLastClosedRegister()">Print Last Register</button>
                                 `;
                             }
                             
@@ -1073,6 +1074,61 @@
             if (printWindow) {
                 printWindow.focus();
             }
+        }
+
+        // Function to print the last closed register
+        function printLastClosedRegister() {
+            // Show loading animation
+            Swal.fire({
+                title: 'Finding last closed register...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Fetch the last closed register
+            $.ajax({
+                url: '/AdminPanel/api/cash_register.php',
+                method: 'POST',
+                data: {
+                    action: 'get_last_closed_register'
+                },
+                success: function(response) {
+                    Swal.close();
+                    
+                    try {
+                        const data = typeof response === 'object' ? response : JSON.parse(response);
+                        if (data.success && data.data) {
+                            const registerId = data.data.id;
+                            // Open print window
+                            printRegister(registerId);
+                        } else {
+                            Swal.fire({
+                                title: 'No Closed Register Found',
+                                text: data.message || 'No closed cash register session found.',
+                                icon: 'info'
+                            });
+                        }
+                    } catch (e) {
+                        console.error('JSON Parse error:', e);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to parse server response.',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.close();
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Server error: ' + error,
+                        icon: 'error'
+                    });
+                }
+            });
         }
 
         // After the printRegister function
@@ -1201,9 +1257,16 @@
                                     Swal.fire({
                                         title: 'Success!',
                                         text: 'Cash register closed successfully',
-                                        icon: 'success'
-                                    }).then(() => {
-                                        // Refresh the cash register view or redirect
+                                        icon: 'success',
+                                        showCancelButton: true,
+                                        confirmButtonText: 'Print Report',
+                                        cancelButtonText: 'Close'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            // Print the report
+                                            printRegister(data.data.register_id);
+                                        }
+                                        // Refresh the cash register view
                                         openCashRegister();
                                     });
                                 } else {

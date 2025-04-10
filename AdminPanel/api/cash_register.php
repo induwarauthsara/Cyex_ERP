@@ -41,6 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             getRegisterStatus();
             break;
             
+        case 'get_last_closed_register':
+            getLastClosedRegister();
+            break;
+            
         default:
             $response['message'] = 'Invalid action';
             break;
@@ -103,9 +107,21 @@ function openRegister() {
  */
 function closeRegister() {
     global $con, $response;
-    
+
+
+    // Get the current open register session
+    $sql = "SELECT * FROM cash_register WHERE closed_at IS NULL ORDER BY id DESC LIMIT 1";
+    $result = mysqli_query($con, $sql);
+
+    if (mysqli_num_rows($result) === 0) {
+        $response['message'] = 'No open cash register session found';
+        return;
+    }
+
+    $register = mysqli_fetch_assoc($result);
+    $register_id = $register['id'];
     // Get parameters
-    $register_id = isset($_POST['register_id']) ? intval($_POST['register_id']) : 0;
+    // $register_id = isset($_POST['register_id']) ? intval($_POST['register_id']) : 0;
     $actual_cash = isset($_POST['actual_cash']) ? floatval($_POST['actual_cash']) : 0;
     $bank_deposit = isset($_POST['bank_deposit']) ? floatval($_POST['bank_deposit']) : 0;
     $notes = mysqli_real_escape_string($con, $_POST['notes'] ?? '');
@@ -398,4 +414,22 @@ function getRegisterStatus() {
     
     $response['success'] = true;
     $response['data'] = $register_data;
+}
+
+/**
+ * Gets the last closed register session
+ */
+function getLastClosedRegister() {
+    global $con, $response;
+    
+    $sql = "SELECT * FROM cash_register WHERE closed_at IS NOT NULL ORDER BY closed_at DESC LIMIT 1";
+    $result = mysqli_query($con, $sql);
+    
+    if (mysqli_num_rows($result) > 0) {
+        $register = mysqli_fetch_assoc($result);
+        $response['success'] = true;
+        $response['data'] = $register;
+    } else {
+        $response['message'] = 'No closed register sessions found';
+    }
 } 
