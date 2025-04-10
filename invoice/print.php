@@ -300,7 +300,7 @@ if (isset($_GET['invoice'])) {
         </tr>
         <?php if ($advance > 0) { ?>
             <tr>
-                <td colspan="3" class="bill_sum">Paid Amount</td>
+                <td colspan="3" class="bill_sum"><?php echo $payment_method; ?></td>
                 <td class="price"><?php echo number_format($advance, 2); ?></td>
             </tr>
         <?php } ?>

@@ -65,11 +65,11 @@ $cash_out = $petty['total_cash_out'] ?? 0;
 $petty_details_sql = "SELECT * FROM pettycash WHERE register_id = $register_id ORDER BY date, time";
 $petty_details_result = mysqli_query($con, $petty_details_sql);
 
-// Calculate expected cash
-$expected_cash = $opening_balance + $cash_sales - $cash_out;
+// Calculate cash drawer amount
+$cash_drawer_amount = $opening_balance + $cash_sales - $cash_out;
 
 // Calculate cash difference
-$cash_difference = $actual_cash - $expected_cash;
+$cash_difference = $actual_cash - $cash_drawer_amount;
 
 // Get top selling items for today
 $top_items_sql = "SELECT 
@@ -98,7 +98,7 @@ $top_items_result = mysqli_query($con, $top_items_sql);
 $payment_methods_sql = "SELECT 
                         pd.payment_method, 
                         COUNT(*) as count, 
-                        SUM(i.advance) as total
+                        SUM(i.total) as total
                     FROM 
                         invoice i
                     JOIN 
@@ -132,7 +132,6 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
             background-color: #f8f9fa;
             color: #000;
         }
-        
         .report {
             width: 80mm;
             margin: 0 auto;
@@ -140,32 +139,32 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
             padding: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .header {
             text-align: center;
             /*margin-bottom: 15px;*/
         }
-        
+
         .logo-img {
             text-align: center;
             margin-bottom: 10px;
         }
-        
+
         .logo-img img {
             height: 100px;
         }
-        
+
         .company-name {
             font-size: 18pt;
             font-weight: bold;
             margin: 5px 0;
         }
-        
+
         .company-address {
             font-size: 10pt;
             margin: 5px 0;
         }
-        
+
         .report-title {
             font-size: 14pt;
             font-weight: bold;
@@ -174,70 +173,71 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
             border-bottom: 1px dashed #000;
             padding-bottom: 5px;
         }
-        
+
         .section {
             margin: 15px 0;
             padding-bottom: 10px;
             border-bottom: 1px dashed #000;
         }
-        
+
         .section-title {
             font-size: 12pt;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .detail-row {
             display: flex;
             justify-content: space-between;
             margin: 3px 0;
             font-size: 10pt;
         }
-        
+
         .detail-label {
             font-weight: bold;
         }
-        
+
         .amount {
             text-align: right;
         }
-        
+
         .highlight {
             font-weight: bold;
             font-size: 11pt;
         }
-        
+
         .footer {
             text-align: center;
             font-size: 10pt;
             margin-top: 20px;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 9pt;
         }
-        
-        th, td {
+
+        th,
+        td {
             padding: 3px;
             text-align: left;
         }
-        
+
         th {
             border-bottom: 1px solid #ddd;
         }
-        
+
         .text-right {
             text-align: right;
         }
-        
+
         .notes {
             font-size: 9pt;
             margin-top: 10px;
             font-style: italic;
         }
-        
+
         /* Style for export button */
         .export-btn {
             background-color: #4CAF50;
@@ -249,29 +249,37 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
             margin: 5px;
             font-weight: bold;
         }
-        
+
         .export-btn:hover {
             background-color: #45a049;
         }
-        
+
         @media print {
             body {
                 background-color: white;
             }
-            
+
             .report {
                 width: 80mm;
                 box-shadow: none;
                 padding: 0;
             }
-            
+
             .no-print {
                 display: none;
             }
         }
     </style>
 </head>
+
 <body>
+    <!-- Button to print - only shown on screen, not when printing -->
+    <div class="no-print" style="text-align: center; margin-top: 20px;">
+        <button onclick="window.print()" class="export-btn">Print Report</button>
+        <button onclick="exportToPDF()" class="export-btn">Export as PDF</button>
+        <button onclick="window.close()" class="export-btn">Close</button>
+    </div>
+
     <div class="report" id="report-container">
         <div class="header">
             <div class="logo-img">
@@ -283,9 +291,9 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 <?php echo $ERP_COMPANY_PHONE; ?>
             </div>
         </div>
-        
+
         <div class="report-title">Cash Register Report</div>
-        
+
         <div class="section">
             <div class="detail-row">
                 <span class="detail-label">Register ID:</span>
@@ -304,12 +312,12 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 <span><?php echo $close_time; ?></span>
             </div>
             <?php if ($notes): ?>
-            <div class="notes">
-                <strong>Opening Notes:</strong> <?php echo $notes; ?>
-            </div>
+                <div class="notes">
+                    <strong>Opening Notes:</strong> <?php echo $notes; ?>
+                </div>
             <?php endif; ?>
         </div>
-        
+
         <div class="section">
             <div class="section-title">Sales Summary</div>
             <div class="detail-row">
@@ -333,7 +341,7 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 <span class="amount">Rs. <?php echo number_format($avg_transaction, 2); ?></span>
             </div>
         </div>
-        
+
         <div class="section">
             <div class="section-title">Payment Methods</div>
             <table>
@@ -357,7 +365,7 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 ?>
             </table>
         </div>
-        
+
         <div class="section">
             <div class="section-title">Top 5 Selling Items</div>
             <table>
@@ -369,10 +377,10 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 <?php
                 if ($top_items_result && mysqli_num_rows($top_items_result) > 0) {
                     while ($item = mysqli_fetch_assoc($top_items_result)) {
-                        $product_name = strlen($item['product']) > 15 ? 
-                                        substr($item['product'], 0, 15) . '...' : 
-                                        $item['product'];
-                        
+                        $product_name = strlen($item['product']) > 15 ?
+                            substr($item['product'], 0, 15) . '...' :
+                            $item['product'];
+
                         echo "<tr>
                                 <td title='{$item['product']}'>{$product_name}</td>
                                 <td class='text-right'>{$item['total_qty']}</td>
@@ -385,7 +393,7 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 ?>
             </table>
         </div>
-        
+
         <div class="section">
             <div class="section-title">Cash Summary</div>
             <div class="detail-row">
@@ -397,81 +405,73 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 <span class="amount">Rs. <?php echo number_format($cash_sales, 2); ?></span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Cash Out/Petty Cash:</span>
+                <span class="detail-label">Petty Cash:</span>
                 <span class="amount">Rs. <?php echo number_format($cash_out, 2); ?></span>
             </div>
             <div class="detail-row highlight">
-                <span class="detail-label">Expected Cash:</span>
-                <span class="amount">Rs. <?php echo number_format($expected_cash, 2); ?></span>
+                <span class="detail-label">Cash Drawer Amount:</span>
+                <span class="amount">Rs. <?php echo number_format($cash_drawer_amount, 2); ?></span>
             </div>
             <?php if ($closed_at): ?>
-            <div class="detail-row">
-                <span class="detail-label">Actual Cash:</span>
-                <span class="amount">Rs. <?php echo number_format($actual_cash, 2); ?></span>
-            </div>
-            <div class="detail-row" style="<?php echo $cash_difference < 0 ? 'color: red;' : ($cash_difference > 0 ? 'color: green;' : ''); ?>">
-                <span class="detail-label">Cash Difference:</span>
-                <span class="amount">Rs. <?php echo number_format($cash_difference, 2); ?><?php echo $cash_difference < 0 ? ' (Short)' : ($cash_difference > 0 ? ' (Over)' : ''); ?></span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Bank Deposit:</span>
-                <span class="amount">Rs. <?php echo number_format($bank_deposit, 2); ?></span>
-            </div>
+                <div class="detail-row">
+                    <span class="detail-label">Cash Out:</span>
+                    <span class="amount">Rs. <?php echo number_format($actual_cash, 2); ?></span>
+                </div>
+                <div class="detail-row" style="<?php echo $cash_difference < 0 ? 'color: red;' : ($cash_difference > 0 ? 'color: green;' : ''); ?>">
+                    <span class="detail-label">Cash Difference:</span>
+                    <span class="amount">Rs. <?php echo number_format($cash_difference, 2); ?><?php echo $cash_difference < 0 ? ' (Short)' : ($cash_difference > 0 ? ' (Over)' : ''); ?></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Bank Deposit:</span>
+                    <span class="amount">Rs. <?php echo number_format($bank_deposit, 2); ?></span>
+                </div>
             <?php endif; ?>
             <?php if ($notes): ?>
-            <div class="notes">
-                <strong>Opening Notes:</strong> <?php echo $notes; ?>
-            </div>
+                <div class="notes">
+                    <strong>Opening Notes:</strong> <?php echo $notes; ?>
+                </div>
             <?php endif; ?>
             <?php if ($closing_notes && $closed_at): ?>
-            <div class="notes">
-                <strong>Closing Notes:</strong> <?php echo $closing_notes; ?>
-            </div>
+                <div class="notes">
+                    <strong>Closing Notes:</strong> <?php echo $closing_notes; ?>
+                </div>
             <?php endif; ?>
         </div>
-        
+
         <?php if (mysqli_num_rows($petty_details_result) > 0): ?>
-        <div class="section">
-            <div class="section-title">Cash Out / Petty Cash Records</div>
-            <table>
-                <tr>
-                    <th>Purpose</th>
-                    <th class="text-right">Amount</th>
-                    <th>Time</th>
-                    <th>Employee</th>
-                </tr>
-                <?php while ($petty_item = mysqli_fetch_assoc($petty_details_result)): ?>
-                <tr>
-                    <td><?php echo $petty_item['perrycash']; ?></td>
-                    <td class="text-right">Rs. <?php echo number_format($petty_item['amount'], 2); ?></td>
-                    <td><?php echo $petty_item['time']; ?></td>
-                    <td><?php echo $petty_item['emp_name'] ?: 'N/A'; ?></td>
-                </tr>
-                <?php endwhile; ?>
-            </table>
-        </div>
+            <div class="section">
+                <div class="section-title">Petty Cash Records</div>
+                <table>
+                    <tr>
+                        <th>Purpose</th>
+                        <th class="text-right">Amount</th>
+                        <th>Time</th>
+                        <th>Employee</th>
+                    </tr>
+                    <?php while ($petty_item = mysqli_fetch_assoc($petty_details_result)): ?>
+                        <tr>
+                            <td><?php echo $petty_item['perrycash']; ?></td>
+                            <td class="text-right">Rs. <?php echo number_format($petty_item['amount'], 2); ?></td>
+                            <td><?php echo $petty_item['time']; ?></td>
+                            <td><?php echo $petty_item['emp_name'] ?: 'N/A'; ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </table>
+            </div>
         <?php endif; ?>
-        
+
         <div class="footer">
             Printed: <?php echo date('Y-m-d H:i:s'); ?><br>
             Software by CyexTech Solutions<br>
             CyexTech.com
         </div>
     </div>
-    
-    <!-- Button to print - only shown on screen, not when printing -->
-    <div class="no-print" style="text-align: center; margin-top: 20px;">
-        <button onclick="window.print()" class="export-btn">Print Report</button>
-        <button onclick="exportToPDF()" class="export-btn">Export as PDF</button>
-        <button onclick="window.close()" class="export-btn">Close</button>
-    </div>
-    
     <script>
         // Auto print on load
         window.onload = function() {
             window.print();
         };
-        
+
         // Function to export the report as PDF
         function exportToPDF() {
             // Initialize jsPDF
@@ -488,20 +488,17 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
                 allowTaint: true
             }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
-                
                 // Create PDF document with custom size that matches the receipt width (80mm)
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
                     format: [80, canvas.height * 80 / canvas.width] // Scale height proportionally
                 });
-                
                 pdf.addImage(imgData, 'PNG', 0, 0, 80, canvas.height * 80 / canvas.width);
-                
                 // Save the PDF with date in filename
                 pdf.save('Cash_Register_Report_<?php echo $date; ?>.pdf');
             });
         }
     </script>
 </body>
-</html> 
+</html>

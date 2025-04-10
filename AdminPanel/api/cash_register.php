@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
             
         case 'cash_out':
-            cashOut();
+            recordPettyCash();
             break;
             
         case 'get_register_summary':
@@ -181,9 +181,9 @@ function closeRegister() {
 }
 
 /**
- * Records a cash out / petty cash transaction
+ * Records a petty cash transaction
  */
-function cashOut() {
+function recordPettyCash() {
     global $con, $response;
     
     // Get parameters
@@ -203,7 +203,7 @@ function cashOut() {
     $register_row = mysqli_fetch_assoc($check_result);
     $register_id = $register_row['id'];
     
-    // Insert cash out transaction
+    // Insert petty cash transaction
     $petty_sql = "INSERT INTO pettycash (
                     perrycash, 
                     amount, 
@@ -223,10 +223,10 @@ function cashOut() {
     if (mysqli_query($con, $petty_sql)) {
         $petty_id = mysqli_insert_id($con);
         $response['success'] = true;
-        $response['message'] = 'Cash out recorded successfully';
+        $response['message'] = 'Petty cash recorded successfully';
         $response['data'] = ['petty_id' => $petty_id];
     } else {
-        $response['message'] = 'Error recording cash out: ' . mysqli_error($con);
+        $response['message'] = 'Error recording petty cash: ' . mysqli_error($con);
     }
 }
 
@@ -282,8 +282,8 @@ function getRegisterSummary() {
     $petty = mysqli_fetch_assoc($petty_result);
     $cash_out = $petty['total_cash_out'] ?? 0;
     
-    // Calculate expected cash
-    $expected_cash = $opening_balance + $cash_sales - $cash_out;
+    // Calculate cash drawer amount
+    $cash_drawer_amount = $opening_balance + $cash_sales - $cash_out;
     
     // Prepare response data
     $summary = [
@@ -294,7 +294,7 @@ function getRegisterSummary() {
         'total_sales' => floatval($cash_sales + $card_sales),
         'transaction_count' => intval($transaction_count),
         'cash_out' => floatval($cash_out),
-        'expected_cash' => floatval($expected_cash)
+        'expected_cash' => floatval($cash_drawer_amount)
     ];
     
     $response['success'] = true;

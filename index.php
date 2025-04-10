@@ -911,6 +911,18 @@
     <script>
         // Cash Register Functionality
         function openCashRegister() {
+            // Show loading animation first
+            Swal.fire({
+                title: 'Loading Cash Register...',
+                html: '<div class="loading-spinner"></div>',
+                showConfirmButton: false,
+                showCancelButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
             // Check register status first
             $.ajax({
                 url: '/AdminPanel/api/cash_register.php',
@@ -920,6 +932,9 @@
                 },
                 success: function(response) {
                     try {
+                        // Close loading animation
+                        Swal.close();
+                        
                         // Try to parse as JSON if it's a string
                         const data = typeof response === 'object' ? response : JSON.parse(response);
                         
@@ -950,11 +965,11 @@
                                             <span class="amount">Rs. ${Number(details.card_sales).toFixed(2)}</span>
                                         </div>
                                         <div class="detail-row">
-                                            <span class="detail-label">Cash Out:</span>
+                                            <span class="detail-label">Petty Cash:</span>
                                             <span class="amount">Rs. ${Number(details.cash_out).toFixed(2)}</span>
                                         </div>
                                         <div class="detail-row highlight">
-                                            <span class="detail-label">Expected Cash:</span>
+                                            <span class="detail-label">Cash Drawer Amount:</span>
                                             <span class="amount">Rs. ${Number(details.expected_cash).toFixed(2)}</span>
                                         </div>
                                         <div class="detail-row">
@@ -966,7 +981,7 @@
                                 
                                 // Only show cash out and close register buttons if the register is open
                                 buttonsHtml += `
-                                    <button class="swal2-confirm swal2-styled cash-out-btn" onclick="cashOut()">Cash Out</button>
+                                    <button class="swal2-confirm swal2-styled cash-out-btn" onclick="cashOut()">Petty Cash</button>
                                     <button class="swal2-confirm swal2-styled close-register-btn" onclick="closeRegister()">Close Register</button>
                                     <button class="swal2-confirm swal2-styled print-register-btn" onclick="printRegister(${registerData.register_id})">Print Report</button>
                                 `;
@@ -1217,7 +1232,7 @@
                 title: 'Close Cash Register',
                 html: `
                     <div class="form-group">
-                        <label for="closing_balance">Closing Cash Count (Rs.)</label>
+                        <label for="closing_balance">Cash Out (Rs.)</label>
                         <input type="number" id="closing_balance" class="swal2-input" placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="form-group">
@@ -1241,6 +1256,18 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Show loading animation while processing
+                    Swal.fire({
+                        title: 'Processing...',
+                        html: '<div class="loading-spinner"></div>',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
                     const formData = result.value;
                     $.ajax({
                         url: '/AdminPanel/api/cash_register.php',
@@ -1251,6 +1278,9 @@
                             notes: formData.notes
                         },
                         success: function(response) {
+                            // Close loading animation
+                            Swal.close();
+                            
                             try {
                                 const data = typeof response === 'object' ? response : JSON.parse(response);
                                 if (data.success) {
@@ -1286,6 +1316,9 @@
                             }
                         },
                         error: function(xhr, status, error) {
+                            // Close loading animation
+                            Swal.close();
+                            
                             console.error('AJAX error:', error);
                             Swal.fire({
                                 title: 'Error!',
@@ -1300,7 +1333,7 @@
 
         function cashOut() {
             Swal.fire({
-                title: 'Cash Out / Petty Cash',
+                title: 'Petty Cash',
                 html: `
                     <div class="form-group">
                         <label for="amount">Amount (Rs.)</label>
@@ -1308,12 +1341,12 @@
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <input type="text" id="description" class="swal2-input" placeholder="Purpose of cash out">
+                        <input type="text" id="description" class="swal2-input" placeholder="Purpose of petty cash">
                     </div>
                 `,
                 focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonText: 'Record Cash Out',
+                confirmButtonText: 'Record Petty Cash',
                 preConfirm: () => {
                     const amount = document.getElementById('amount').value;
                     const description = document.getElementById('description').value;
@@ -1335,6 +1368,18 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Show loading animation while processing
+                    Swal.fire({
+                        title: 'Processing...',
+                        html: '<div class="loading-spinner"></div>',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
                     const formData = result.value;
                     $.ajax({
                         url: '/AdminPanel/api/cash_register.php',
@@ -1346,12 +1391,15 @@
                             notes: formData.notes
                         },
                         success: function(response) {
+                            // Close loading animation
+                            Swal.close();
+                            
                             try {
                                 const data = typeof response === 'object' ? response : JSON.parse(response);
                                 if (data.success) {
                                     Swal.fire({
                                         title: 'Success!',
-                                        text: 'Cash out recorded successfully',
+                                        text: 'Petty cash recorded successfully',
                                         icon: 'success'
                                     }).then(() => {
                                         // Refresh the cash register view
@@ -1360,7 +1408,7 @@
                                 } else {
                                     Swal.fire({
                                         title: 'Error!',
-                                        text: data.message || 'Failed to record cash out',
+                                        text: data.message || 'Failed to record petty cash',
                                         icon: 'error'
                                     });
                                 }
@@ -1374,6 +1422,9 @@
                             }
                         },
                         error: function(xhr, status, error) {
+                            // Close loading animation
+                            Swal.close();
+                            
                             console.error('AJAX error:', error);
                             Swal.fire({
                                 title: 'Error!',
@@ -1390,6 +1441,24 @@
     <!-- Other scripts -->
     <script src="inc/searchCustomer function.js"></script>
     <script src="inc/hold_invoices/hold_invoices_logics.js"></script>
+
+    <style>
+        .loading-spinner {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </body>
 
 </html>
