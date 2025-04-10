@@ -34,6 +34,7 @@
                         </svg> &nbsp; Held Invoices List</button>
                     <!-- <button class="print-last-invoice" onclick="printLastInvoice()"><i class="fas fa-print"></i> &nbsp; Print Last Invoice</button> -->
                     <button class="clear-search-cache-button" onclick="clearQuickSearch()"><i class="fas fa-broom"></i> &nbsp; Clear Quick Search</button>
+                    <button class="cash-register-button" onclick="openCashRegister()"><i class="fa-solid fa-cash-register"></i> &nbsp; Cash Register</button>
                 </div>
             </div>
             <!-- Customer Details -->
@@ -905,6 +906,428 @@
     <!-- Include confirm_payment_feature.js only once -->
     <script src="inc/confirm_payment_feature/confirm_payment_feature.js"></script>
     <!-- <script src="inc/confirm_payment_feature/receipt_printer.js"></script> -->
+
+    <!-- Cash Register Script (inline for now) -->
+    <script>
+        // Cash Register Functionality
+        function openCashRegister() {
+            // Check register status first
+            $.ajax({
+                url: '/AdminPanel/api/cash_register.php',
+                method: 'POST',
+                data: {
+                    action: 'get_register_status'
+                },
+                success: function(response) {
+                    try {
+                        // Try to parse as JSON if it's a string
+                        const data = typeof response === 'object' ? response : JSON.parse(response);
+                        
+                        if (data.success) {
+                            const registerData = data.data;
+                            const isOpen = registerData.is_open;
+                            
+                            // Build the content based on register status
+                            let content = '<div class="register-details">';
+                            let buttonsHtml = '';
+                            
+                            if (registerData.details) {
+                                // Register is open, show details
+                                const details = registerData.details;
+                                content += `
+                                    <div class="register-summary">
+                                        <h4>Today's Register Summary</h4>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Opening Balance:</span>
+                                            <span class="amount">Rs. ${Number(details.opening_balance).toFixed(2)}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Cash Sales:</span>
+                                            <span class="amount">Rs. ${Number(details.cash_sales).toFixed(2)}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Card Sales:</span>
+                                            <span class="amount">Rs. ${Number(details.card_sales).toFixed(2)}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Cash Out:</span>
+                                            <span class="amount">Rs. ${Number(details.cash_out).toFixed(2)}</span>
+                                        </div>
+                                        <div class="detail-row highlight">
+                                            <span class="detail-label">Expected Cash:</span>
+                                            <span class="amount">Rs. ${Number(details.expected_cash).toFixed(2)}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Transactions:</span>
+                                            <span class="amount">${details.transaction_count}</span>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                // Only show cash out and close register buttons if the register is open
+                                buttonsHtml += `
+                                    <button class="swal2-confirm swal2-styled cash-out-btn" onclick="cashOut()">Cash Out</button>
+                                    <button class="swal2-confirm swal2-styled close-register-btn" onclick="closeRegister()">Close Register</button>
+                                    <button class="swal2-confirm swal2-styled print-register-btn" onclick="printRegister(${registerData.register_id})">Print Report</button>
+                                `;
+                            } else {
+                                // Register is not open, show open button
+                                content += `
+                                    <div class="register-info">
+                                        <p>No open register found for today (${registerData.today_date}).</p>
+                                        <p>You need to open the cash register before processing sales.</p>
+                                    </div>
+                                `;
+                                
+                                buttonsHtml += `
+                                    <button class="swal2-confirm swal2-styled open-register-btn" onclick="openRegister()">Open Register</button>
+                                `;
+                            }
+                            
+                            content += '</div>';
+                            
+                            // Show the modal with register details
+                            Swal.fire({
+                                title: 'Cash Register',
+                                html: content,
+                                showConfirmButton: false,
+                                showCancelButton: true,
+                                cancelButtonText: 'Close',
+                                footer: buttonsHtml,
+                                customClass: {
+                                    container: 'cash-register-modal'
+                                }
+                            });
+                            
+                            // Add styles for the details
+                            const style = document.createElement('style');
+                            style.textContent = `
+                                .register-details {
+                                    text-align: left;
+                                    margin-bottom: 20px;
+                                }
+                                .register-summary h4 {
+                                    margin-bottom: 10px;
+                                    border-bottom: 1px solid #eee;
+                                    padding-bottom: 5px;
+                                }
+                                .detail-row {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    margin: 8px 0;
+                                }
+                                .detail-label {
+                                    font-weight: bold;
+                                }
+                                .amount {
+                                    text-align: right;
+                                }
+                                .highlight {
+                                    font-size: 1.1em;
+                                    font-weight: bold;
+                                }
+                                .cash-register-modal .swal2-footer {
+                                    justify-content: center;
+                                    flex-wrap: wrap;
+                                }
+                                .cash-register-modal .swal2-footer button {
+                                    margin: 5px;
+                                }
+                            `;
+                            document.head.appendChild(style);
+                            
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to get register status',
+                                icon: 'error'
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error processing response:', error);
+                        console.error('Raw response:', response);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Invalid server response',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Failed to communicate with server',
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+
+        // Add print function
+        function printRegister(registerId) {
+            // Open the print page in a new window
+            const printWindow = window.open(`/AdminPanel/cash_register_print.php?id=${registerId}`, '_blank');
+            
+            // Focus on the new window and print after it loads
+            if (printWindow) {
+                printWindow.focus();
+            }
+        }
+
+        // After the printRegister function
+
+        function openRegister() {
+            Swal.fire({
+                title: 'Open Cash Register',
+                html: `
+                    <div class="form-group">
+                        <label for="opening_balance">Opening Balance (Rs.)</label>
+                        <input type="number" id="opening_balance" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="register_notes">Notes (Optional)</label>
+                        <textarea id="register_notes" class="swal2-textarea" placeholder="Any notes about this register session..."></textarea>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Open Register',
+                preConfirm: () => {
+                    const openingBalance = document.getElementById('opening_balance').value;
+                    if (!openingBalance || isNaN(parseFloat(openingBalance))) {
+                        Swal.showValidationMessage('Please enter a valid opening balance');
+                        return false;
+                    }
+                    return {
+                        opening_balance: parseFloat(openingBalance),
+                        notes: document.getElementById('register_notes').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = result.value;
+                    $.ajax({
+                        url: '/AdminPanel/api/cash_register.php',
+                        method: 'POST',
+                        data: {
+                            action: 'open_register',
+                            opening_balance: formData.opening_balance,
+                            notes: formData.notes
+                        },
+                        success: function(response) {
+                            try {
+                                const data = typeof response === 'object' ? response : JSON.parse(response);
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: 'Cash register opened successfully',
+                                        icon: 'success'
+                                    }).then(() => {
+                                        // Refresh the cash register view
+                                        openCashRegister();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Failed to open register',
+                                        icon: 'error'
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Error processing response:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Invalid server response',
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX error:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to communicate with server',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function closeRegister() {
+            Swal.fire({
+                title: 'Close Cash Register',
+                html: `
+                    <div class="form-group">
+                        <label for="closing_balance">Closing Cash Count (Rs.)</label>
+                        <input type="number" id="closing_balance" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="closing_notes">Notes (Optional)</label>
+                        <textarea id="closing_notes" class="swal2-textarea" placeholder="Any notes about this register session..."></textarea>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Close Register',
+                preConfirm: () => {
+                    const closingBalance = document.getElementById('closing_balance').value;
+                    if (!closingBalance || isNaN(parseFloat(closingBalance))) {
+                        Swal.showValidationMessage('Please enter the actual cash count');
+                        return false;
+                    }
+                    return {
+                        closing_balance: parseFloat(closingBalance),
+                        notes: document.getElementById('closing_notes').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = result.value;
+                    $.ajax({
+                        url: '/AdminPanel/api/cash_register.php',
+                        method: 'POST',
+                        data: {
+                            action: 'close_register',
+                            closing_balance: formData.closing_balance,
+                            notes: formData.notes
+                        },
+                        success: function(response) {
+                            try {
+                                const data = typeof response === 'object' ? response : JSON.parse(response);
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: 'Cash register closed successfully',
+                                        icon: 'success'
+                                    }).then(() => {
+                                        // Refresh the cash register view or redirect
+                                        openCashRegister();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Failed to close register',
+                                        icon: 'error'
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Error processing response:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Invalid server response',
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX error:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to communicate with server',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function cashOut() {
+            Swal.fire({
+                title: 'Cash Out / Petty Cash',
+                html: `
+                    <div class="form-group">
+                        <label for="amount">Amount (Rs.)</label>
+                        <input type="number" id="amount" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" class="swal2-input" placeholder="Purpose of cash out">
+                    </div>
+                    <div class="form-group">
+                        <label for="cash_out_notes">Additional Notes (Optional)</label>
+                        <textarea id="cash_out_notes" class="swal2-textarea" placeholder="Any additional details..."></textarea>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Record Cash Out',
+                preConfirm: () => {
+                    const amount = document.getElementById('amount').value;
+                    const description = document.getElementById('description').value;
+                    
+                    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+                        Swal.showValidationMessage('Please enter a valid amount greater than zero');
+                        return false;
+                    }
+                    
+                    if (!description.trim()) {
+                        Swal.showValidationMessage('Please enter a description');
+                        return false;
+                    }
+                    
+                    return {
+                        amount: parseFloat(amount),
+                        description: description,
+                        notes: document.getElementById('cash_out_notes').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = result.value;
+                    $.ajax({
+                        url: '/AdminPanel/api/cash_register.php',
+                        method: 'POST',
+                        data: {
+                            action: 'cash_out',
+                            amount: formData.amount,
+                            description: formData.description,
+                            notes: formData.notes
+                        },
+                        success: function(response) {
+                            try {
+                                const data = typeof response === 'object' ? response : JSON.parse(response);
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: 'Cash out recorded successfully',
+                                        icon: 'success'
+                                    }).then(() => {
+                                        // Refresh the cash register view
+                                        openCashRegister();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Failed to record cash out',
+                                        icon: 'error'
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Error processing response:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Invalid server response',
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX error:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to communicate with server',
+                                icon: 'error'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
 
     <!-- Other scripts -->
     <script src="inc/searchCustomer function.js"></script>
