@@ -647,6 +647,9 @@ button:disabled {
     border-radius: 4px;
     box-sizing: border-box;
     font-size: 14px;
+    max-width: 100%;
+    height: 3rem;
+    font-size: 1.5rem;
 }
 
 .swal2-popup input[type="checkbox"] {
