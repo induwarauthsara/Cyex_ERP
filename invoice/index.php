@@ -18,7 +18,10 @@ include  __DIR__ . '/../inc/DataTable_cdn.php';
     </center>
 
     <?php
-    $sql = "SELECT * FROM invoice ORDER BY invoice_number DESC;";
+    $sql = "SELECT * 
+            FROM invoice i
+            INNER JOIN employees e ON i.biller = e.employ_id
+            ORDER BY invoice_number DESC;";
     include 'DataTable of DB Invoice Table.php'; ?>
 
 </body>

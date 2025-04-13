@@ -1,10 +1,20 @@
-var no = no ?? 0;
+// Global variable for row counter
+var no = window.no ?? 0;
 
 // Add Customer Phone Number Auto Complete Function
 function customer_add() {
     // check name available in dB
-    var customer_name = document.getElementById("name").value;
-    var customer_mobile = document.getElementById("tele").value;
+    var customerNameElement = document.getElementById("name");
+    var customerMobileElement = document.getElementById("tele");
+    
+    if (!customerNameElement || !customerMobileElement) {
+        console.log("Customer elements not found in DOM");
+        return;
+    }
+    
+    var customer_name = customerNameElement.value;
+    var customer_mobile = customerMobileElement.value;
+    
     //alert(customer_name);
     $.ajax({
         url: "/inc/get_customer_mobile.php",
@@ -17,26 +27,28 @@ function customer_add() {
         success: function (html) {
             //alert(html);
             if (html == "customer Not Found") {
-                document.getElementById('tele').value = 7;
+                customerMobileElement.value = 7;
             } else {
-                document.getElementById('tele').value = html;
+                customerMobileElement.value = html;
             }
         },
     });
 }
 
 // Add Input Event Listener to #advance Input Field 
-document.getElementById('advance').addEventListener('input', function () {
-    var advance = document.getElementById('advance');
-    // if advance is available, disable name[submit_and_fullPayment] and name[submit_and_print_fullPayment] buttons
-    if (advance.value > 0) {
-        document.querySelector('button[name="submit_and_fullPayment"]').disabled = true;
-        document.querySelector('button[name="submit_and_print_fullPayment"]').disabled = true;
-    } else {
-        document.querySelector('button[name="submit_and_fullPayment"]').disabled = false;
-        document.querySelector('button[name="submit_and_print_fullPayment"]').disabled = false;
-    }
-});
+var advance = document.getElementById('advance');
+if (advance) {
+    advance.addEventListener('input', function () {
+        // if advance is available, disable name[submit_and_fullPayment] and name[submit_and_print_fullPayment] buttons
+        var submitButtons = document.querySelectorAll('button[name="submit_and_fullPayment"], button[name="submit_and_print_fullPayment"]');
+        if (submitButtons.length > 0) {
+            var disabled = advance.value > 0;
+            submitButtons.forEach(function(button) {
+                button.disabled = disabled;
+            });
+        }
+    });
+}
 
 
 function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, oneTimeProduct) {
@@ -47,8 +59,19 @@ function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, o
     const rate_list = document.getElementById('rate');
     const amount_list = document.getElementById('amount_list');
     const remove_button_list = document.getElementById('remove_button_list');
+    
+    // Check if required elements exist
+    if (!product_list || !qty_list || !rate_list || !amount_list || !remove_button_list) {
+        console.error("Required DOM elements for adding products not found");
+        Swal.fire({
+            icon: 'error',
+            title: 'Element Error',
+            text: 'Required page elements not found. Please refresh the page and try again.'
+        });
+        return;
+    }
 
-    product_name = oneTimeProductName ?? document.getElementById('addproduct').value;
+    product_name = oneTimeProductName ?? document.getElementById('addproduct')?.value ?? '';
 
     function add_row(no) {
 
@@ -92,7 +115,7 @@ function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, o
         qty.type = "number";
         qty.value = oneTimeProductQty ?? 1;
         qty.setAttribute("oninput", "change('qty', className, id)");
-        qty.setAttribute("step", "any")
+        qty.setAttribute("step", "0.001")
         qty.setAttribute("name", qty.id);
 
         // Create a Rate in row
@@ -137,6 +160,15 @@ function addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, o
         x.innerText = "[x]"
         x.setAttribute("onclick", 'remove_row(id, className);');
 
+        // If it's a one-time product, add a hidden input to identify it
+        if (oneTimeProduct) {
+            let oneTimeProductIdentifier = document.createElement("input");
+            oneTimeProductIdentifier.id = "oneTimeProductID_" + no;
+            oneTimeProductIdentifier.type = "hidden";
+            oneTimeProductIdentifier.value = "true";
+            oneTimeProductIdentifier.setAttribute("name", "oneTimeProductID_" + no);
+            product_list.appendChild(oneTimeProductIdentifier);
+        }
 
         product_list.appendChild(product);
         qty_list.appendChild(qty);
@@ -456,23 +488,122 @@ function addonetimeproductModal(productName) {
     // check ProductName assigned
 
     Swal.fire({
-        title: 'Add Service Details',
-        html: `<label for='oneTimeProductName' class='swal2-label'> Service Name:</label>` +
-            `<input id="oneTimeProductName" class="swal2-input" value="${productName}" placeholder="Enter Service Name">` +
-            '<label for="oneTimeProductRate" class="swal2-label">Price (Rs.):</label>' +
-            '<input id="oneTimeProductRate" class="swal2-input" placeholder="Enter Rate">' +
-            '<label for="oneTimeProductQty" class="swal2-label">Quantity:</label>' +
-            '<input id="oneTimeProductQty" class="swal2-input" placeholder="Enter Quantity">',
+        title: 'Add One Time Product Details',
+        html: `
+            <div style="text-align: right; margin-bottom: 10px;">
+                <a href="/products/create/" class="btn btn-success" style="padding: 5px 10px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;">
+                    <i class="fas fa-plus"></i> Add New Product
+                </a>
+            </div>
+            <label for='oneTimeProductName' class='swal2-label'> Product Name:</label>
+            <input id="oneTimeProductName" class="swal2-input" value="${productName}" placeholder="Enter Product Name"><br>
+            <label for="oneTimeProductRegularPrice" class="swal2-label">Regular Price (Rs.):</label>
+            <input id="oneTimeProductRegularPrice" class="swal2-input" type="number" step="0.01" placeholder="Enter Regular Price"><br>
+            <label for="oneTimeProductDiscountPrice" class="swal2-label">Discount Price (Rs.):</label>
+            <input id="oneTimeProductDiscountPrice" class="swal2-input" type="number" step="0.01" placeholder="Enter Discount Price (optional)"><br>
+            <label for="oneTimeProductQty" class="swal2-label">Quantity:</label>
+            <input id="oneTimeProductQty" class="swal2-input" type="number" step="0.001" placeholder="Enter Quantity">`,
         focusConfirm: false,
         preConfirm: () => {
             const oneTimeProductName = Swal.getPopup().querySelector('#oneTimeProductName').value;
-            const oneTimeProductRate = Swal.getPopup().querySelector('#oneTimeProductRate').value;
+            const oneTimeProductRegularPrice = Swal.getPopup().querySelector('#oneTimeProductRegularPrice').value;
+            const oneTimeProductDiscountPrice = Swal.getPopup().querySelector('#oneTimeProductDiscountPrice').value;
             const oneTimeProductQty = Swal.getPopup().querySelector('#oneTimeProductQty').value;
-            if (oneTimeProductName && oneTimeProductRate && oneTimeProductQty && !isNaN(oneTimeProductRate) && !isNaN(oneTimeProductQty)) {
-                // Add one time product to the bill
-                addproduct(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, true);
+            
+            // Use discount price if provided, otherwise use regular price
+            const finalRate = oneTimeProductDiscountPrice && !isNaN(oneTimeProductDiscountPrice) 
+                ? oneTimeProductDiscountPrice 
+                : oneTimeProductRegularPrice;
+                
+            if (oneTimeProductName && oneTimeProductRegularPrice && oneTimeProductQty && 
+                !isNaN(oneTimeProductRegularPrice) && !isNaN(oneTimeProductQty)) {
+                
+                // Check if we're in the main POS interface by checking for required DOM elements
+                const requiredElements = document.getElementById('list') && 
+                                         document.getElementById('qty') && 
+                                         document.getElementById('rate') && 
+                                         document.getElementById('amount_list') && 
+                                         document.getElementById('remove_button_list');
+                
+                if (requiredElements) {
+                    // If we're in the main POS interface, add the product directly
+                    addproduct(oneTimeProductName, finalRate, oneTimeProductQty, true);
+                    
+                    // Store the original regular price and discount price for later access
+                    if (!window.oneTimeProducts) {
+                        window.oneTimeProducts = [];
+                    }
+                    
+                    window.oneTimeProducts.push({
+                        name: oneTimeProductName,
+                        regularPrice: parseFloat(oneTimeProductRegularPrice),
+                        discountPrice: parseFloat(oneTimeProductDiscountPrice || oneTimeProductRegularPrice),
+                        quantity: parseFloat(oneTimeProductQty),
+                        isOneTimeProduct: true
+                    });
+                } else {
+                    // If not in the main POS interface, we're probably in the product search
+                    // Add to cart via the product list
+                    if (typeof productList !== 'undefined') {
+                        const regularPrice = parseFloat(oneTimeProductRegularPrice);
+                        const discountPrice = parseFloat(oneTimeProductDiscountPrice || oneTimeProductRegularPrice);
+                        
+                        // Generate a unique batch ID for this one-time product
+                        const batchId = 'OTP-' + Date.now();
+                        
+                        // Add to product list
+                        productList.push({
+                            name: oneTimeProductName,
+                            product_id: 'temp_' + Date.now(),
+                            batch_id: batchId,
+                            regular_price: regularPrice,
+                            discount_price: discountPrice,
+                            quantity: parseFloat(oneTimeProductQty),
+                            subtotal: (parseFloat(oneTimeProductQty) * parseFloat(finalRate)),
+                            isOneTimeProduct: true
+                        });
+                        
+                        // Store in localStorage
+                        localStorage.setItem('productList', JSON.stringify(productList));
+                        
+                        // If these functions exist, call them to update the UI
+                        if (typeof renderProductList === 'function') {
+                            renderProductList();
+                        }
+                        
+                        if (typeof calculateInvoiceTotal === 'function') {
+                            calculateInvoiceTotal();
+                        }
+                        
+                        // Store in oneTimeProducts array for tracking
+                        if (!window.oneTimeProducts) {
+                            window.oneTimeProducts = [];
+                        }
+                        
+                        window.oneTimeProducts.push({
+                            name: oneTimeProductName,
+                            regularPrice: regularPrice,
+                            discountPrice: discountPrice,
+                            quantity: parseFloat(oneTimeProductQty),
+                            isOneTimeProduct: true
+                        });
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Product Added',
+                            text: 'One-time product added to cart successfully',
+                            timer: 1500
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Unable to add product to cart. Product list not found.'
+                        });
+                    }
+                }
             } else {
-                Swal.showValidationMessage(`Please enter all fields correctly.`);
+                Swal.showValidationMessage(`Please enter all required fields correctly.`);
             }
         }
     });

@@ -128,6 +128,19 @@ function checkDuplicates($con, $productData)
     if ($stmt->get_result()->num_rows > 0) {
         throw new ProductException("This product name is already in use", "productName");
     }
+
+    // check duplicate batch_number
+    if ($productData['hasVariant']) {
+        foreach ($productData['variants'] as $variant) {
+            $batchNumber = $variant['variantName'];
+            $stmt = $con->prepare("SELECT product_id FROM product_batch WHERE batch_number = ? LIMIT 1");
+            $stmt->bind_param("s", $batchNumber);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                throw new ProductException("Batch number '" . $batchNumber . "' is already in use. Please use a unique batch number for each variant.", "variants");
+            }
+        }
+    }
 }
 
 try {
@@ -163,6 +176,14 @@ try {
     $showInEcommerce = $productData['showInEcommerce'] ? '1' : '0';
     $categoryId = !empty($productData['categoryId']) ? (int)$productData['categoryId'] : null;
     $brandId = !empty($productData['brandId']) ? (int)$productData['brandId'] : null;
+    
+    // Determine barcode symbology if not provided
+    if (empty($productData['barcodeSymbology'])) {
+        require_once '../API/detect_barcode_symbology.php';
+        $barcodeSymbology = detectBarcodeSymbology($productCode);
+    } else {
+        $barcodeSymbology = $con->real_escape_string($productData['barcodeSymbology']);
+    }
 
     // Handle image upload
     $imagePath = null;
@@ -184,8 +205,8 @@ try {
     }
 
     // Insert into products table
-    $sql = "INSERT INTO products (product_name, product_type, barcode, sku, show_in_landing_page, 
-            category_id, brand_id, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO products (product_name, product_type, barcode, barcode_symbology, sku, show_in_landing_page, 
+            category_id, brand_id, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $con->prepare($sql);
     if (!$stmt) {
@@ -193,10 +214,11 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssiis",
+        "sssssiiis",
         $productName,
         $productType,
         $productCode,
+        $barcodeSymbology,
         $sku,
         $showInEcommerce,
         $categoryId,
@@ -217,6 +239,73 @@ try {
                 // Handle variants
                 foreach ($productData['variants'] as $variant) {
                     $batchNumber = $variant['variantName'];
+                    $discountPrice = !empty($variant['variantDiscountPrice']) ? $variant['variantDiscountPrice'] : null;
+                    
+                    $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity, notes, alert_quantity) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    
+                    $stmt = $con->prepare($sql);
+                    if (!$stmt) {
+                        throw new ProductException("Database error: " . $con->error);
+                    }
+
+                    $variantName = $variant['variantValue'];
+                    $variantQuantity = floatval($variant['variantQuantity']);
+                    $variantAlertQty = floatval($variant['variantAlertQty']);
+                    
+                    $stmt->bind_param(
+                        "isddddsd",
+                        $productId,
+                        $batchNumber,
+                        $variant['variantCost'],
+                        $variant['variantPrice'],
+                        $discountPrice,
+                        $variantQuantity,
+                        $variantName,
+                        $variantAlertQty
+                    );
+
+                    if (!$stmt->execute()) {
+                        throw new ProductException("Error creating variant: " . $stmt->error);
+                    }
+                }
+            } else {
+                // Single variant/batch
+                $batchNumber = generateBatchNumber();
+                $discountPrice = !empty($productData['discountPrice']) ? $productData['discountPrice'] : null;
+                $alertQuantity = isset($productData['alertQuantity']) ? floatval($productData['alertQuantity']) : 5.000;
+
+                $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, discount_price, quantity, alert_quantity) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                $stmt = $con->prepare($sql);
+                if (!$stmt) {
+                    throw new ProductException("Database error: " . $con->error);
+                }
+
+                $stmt->bind_param(
+                    "isddddd",
+                    $productId,
+                    $batchNumber,
+                    $productData['cost'],
+                    $productData['sellingPrice'],
+                    $discountPrice,
+                    $productData['initialStock'],
+                    $alertQuantity
+                );
+
+                if (!$stmt->execute()) {
+                    throw new ProductException("Error creating batch: " . $stmt->error);
+                }
+            }
+            break;
+
+        case 'combo':
+            // Create main combo batch
+            if ($productData['hasVariant']) {
+                // Handle variants
+                foreach ($productData['variants'] as $variant) {
+                    $batchNumber = $variant['variantName'];
                     $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, 
                             quantity, notes) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -227,7 +316,7 @@ try {
 
                     $variantName = $variant['variantValue'];
                     $stmt->bind_param(
-                        "isddis",
+                        "isddds",
                         $productId,
                         $batchNumber,
                         $variant['variantCost'],
@@ -244,7 +333,7 @@ try {
                 // Single variant/batch
                 $batchNumber = generateBatchNumber();
                 $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
-                        VALUES (?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?)";
 
                 $stmt = $con->prepare($sql);
                 if (!$stmt) {
@@ -252,7 +341,7 @@ try {
                 }
 
                 $stmt->bind_param(
-                    "isddi",
+                    "isddd",
                     $productId,
                     $batchNumber,
                     $productData['cost'],
@@ -261,32 +350,8 @@ try {
                 );
 
                 if (!$stmt->execute()) {
-                    throw new ProductException("Error creating batch: " . $stmt->error);
+                    throw new ProductException("Error creating combo batch: " . $stmt->error);
                 }
-            }
-            break;
-
-        case 'combo':
-            // Create main combo batch
-            $batchNumber = generateBatchNumber();
-            $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
-                    VALUES (?, ?, ?, ?, 0)";
-
-            $stmt = $con->prepare($sql);
-            if (!$stmt) {
-                throw new ProductException("Database error: " . $con->error);
-            }
-
-            $stmt->bind_param(
-                "isdd",
-                $productId,
-                $batchNumber,
-                $productData['cost'],
-                $productData['sellingPrice']
-            );
-
-            if (!$stmt->execute()) {
-                throw new ProductException("Error creating combo batch: " . $stmt->error);
             }
 
             $comboBatchId = $con->insert_id;
@@ -334,25 +399,56 @@ try {
         case 'digital':
         case 'service':
             // Create a batch without quantity
-            $batchNumber = generateBatchNumber();
-            $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
-                    VALUES (?, ?, ?, ?, 0)";
+            if ($productData['hasVariant']) {
+                // Handle variants
+                foreach ($productData['variants'] as $variant) {
+                    $batchNumber = $variant['variantName'];
+                    $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, 
+                            quantity, notes) VALUES (?, ?, ?, ?, ?, ?)";
 
-            $stmt = $con->prepare($sql);
-            if (!$stmt) {
-                throw new ProductException("Database error: " . $con->error);
-            }
+                    $stmt = $con->prepare($sql);
+                    if (!$stmt) {
+                        throw new ProductException("Database error: " . $con->error);
+                    }
 
-            $stmt->bind_param(
-                "isdd",
-                $productId,
-                $batchNumber,
-                $productData['cost'],
-                $productData['sellingPrice']
-            );
+                    $variantName = $variant['variantValue'];
+                    $stmt->bind_param(
+                        "isddds",
+                        $productId,
+                        $batchNumber,
+                        $variant['variantCost'],
+                        $variant['variantPrice'],
+                        $variant['variantStock'],
+                        $variantName
+                    );
 
-            if (!$stmt->execute()) {
-                throw new ProductException("Error creating digital/service batch: " . $stmt->error);
+                    if (!$stmt->execute()) {
+                        throw new ProductException("Error creating variant: " . $stmt->error);
+                    }
+                }
+            } else {
+                // Single variant/batch
+                $batchNumber = generateBatchNumber();
+                $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
+                    VALUES (?, ?, ?, ?, ?)";
+
+                $stmt = $con->prepare($sql);
+                if (!$stmt) {
+                    throw new ProductException("Database error: " . $con->error);
+                }
+
+                $stmt->bind_param(
+                    "isddd",
+                    $productId,
+                    $batchNumber,
+                    $productData['cost'],
+                    $productData['sellingPrice'],
+                    $productData['initialStock']
+                );
+
+                if (!$stmt->execute()) {
+                    throw new ProductException("Error creating digital/service batch: " . $stmt->error);
+                }
             }
             break;
     }

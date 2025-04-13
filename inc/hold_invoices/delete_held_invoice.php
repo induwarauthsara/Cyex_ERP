@@ -10,17 +10,18 @@ if (!$id) {
     exit;
 }
 
-// Prepare SQL query to delete the invoice
-$sql = "DELETE FROM held_invoices WHERE id = ?";
+// Prepare SQL query
+$sql = "UPDATE held_invoices SET status = 'completed' WHERE id = ?";
 $stmt = mysqli_prepare($con, $sql);
 
+// Check if prepare was successful
 if ($stmt) {
     // Bind parameters and execute the statement
     mysqli_stmt_bind_param($stmt, "i", $id);
-    $success = mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_execute($stmt);
 
-    if ($success) {
-        echo json_encode(['success' => true, 'message' => 'Invoice deleted successfully']);
+    if ($result) {
+        echo json_encode(['success' => true, 'message' => 'Invoice successfully removed from Held Invoice list']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to delete invoice']);
     }

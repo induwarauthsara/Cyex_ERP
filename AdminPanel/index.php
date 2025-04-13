@@ -40,7 +40,7 @@ include 'nav.php';
 
     <!-- Stock Low Alert -->
     <?php
-    $sql = "SELECT COUNT(*) FROM products WHERE stock_qty <= stock_alert_limit;";
+    $sql = "SELECT COUNT(*) FROM product_batch WHERE quantity <= alert_quantity;";
     $result = mysqli_query($con, $sql);
     if ($result) {
         $low_stock_count = mysqli_fetch_array($result);
@@ -90,11 +90,11 @@ include 'nav.php';
                     }
 
                     // Repair Stock Capital
-                    $sql = "SELECT * FROM repair_stock";
+                    $sql = "SELECT * FROM product_view";
                     $result = mysqli_query($con, $sql);
                     if ($result && mysqli_num_rows($result) > 0) {
                         while ($item_capital_sql = mysqli_fetch_array($result)) {
-                            $item_capital[] = ($item_capital_sql['stock_qty'] ?? 0) * ($item_capital_sql['stock_cost'] ?? 0);
+                            $item_capital[] = ($item_capital_sql['stock_qty'] ?? 0) * ($item_capital_sql['cost'] ?? 0);
                         }
                     } else {
                         echo $result ? "No any Item" : "Database Query Failed";
@@ -149,7 +149,7 @@ include 'nav.php';
             <h2> </h2>
         </div>
     </div>
-    <div class="card">
+    <!-- <div class="card">
         <i class="fa-solid fa-hand-holding-dollar"></i>
         <div class="info">
             <h3>Cash In Hand</h3>
@@ -166,8 +166,8 @@ include 'nav.php';
                 ?></h2>
             <button class='smallIcon' onclick='edit_CashInHand_balance(<?php echo "$cash_in_hand_amountRS" ?>)'><i class='fa-solid fa-pen'></i></button>
         </div>
-    </div>
-    <a href="/AdminPanel/creditBills.php">
+    </div> -->
+    <!-- <a href="/AdminPanel/creditBills.php">
         <div class="card">
             <i class="fa-solid fa-receipt"></i>
             <div class="info">
@@ -185,7 +185,7 @@ include 'nav.php';
                     ?></h2>
             </div>
         </div>
-    </a>
+    </a> -->
     <div class="card">
         <i class="fa-solid fa-credit-card"></i>
         <br>
@@ -373,4 +373,58 @@ Answer: apexcharts
 
     var chart = new ApexCharts(document.querySelector("#chart"), options);
     chart.render();
+
+    // Function to print the last closed cash register report
+    function printLastClosedRegister() {
+        // Show loading animation
+        showLoadingAnimation('Finding last closed register...');
+        
+        // Fetch the last closed register
+        $.ajax({
+            url: 'api/cash_register.php',
+            method: 'POST',
+            data: {
+                action: 'get_last_closed_register'
+            },
+            success: function(response) {
+                // Hide loading animation
+                hideLoadingAnimation();
+                
+                try {
+                    const data = typeof response === 'object' ? response : JSON.parse(response);
+                    if (data.success && data.data) {
+                        const registerId = data.data.id;
+                        // Open print window
+                        window.open(`/AdminPanel/cash_register_print.php?id=${registerId}`, '_blank');
+                    } else {
+                        Swal.fire({
+                            title: 'No Closed Register Found',
+                            text: data.message || 'No closed cash register session found.',
+                            icon: 'info'
+                        });
+                    }
+                } catch (e) {
+                    console.error('JSON Parse error:', e);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to parse server response.',
+                        icon: 'error'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                // Hide loading animation
+                hideLoadingAnimation();
+                
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Server error: ' + error,
+                    icon: 'error'
+                });
+            }
+        });
+    }
 </script>
+
+<!-- Include the cash register functionality -->
+<script src="js/cash_register.js"></script>

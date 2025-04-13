@@ -1,4 +1,6 @@
-    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
+    <meta charset="utf-8">
+
     <?php
     // Check session_start
     if (session_status() == PHP_SESSION_NONE) {
@@ -11,7 +13,7 @@
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
     <!-- favicon -->
-    <link rel="shortcut icon" href="../logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../logo.jpg" type="image/x-icon">
 
     <!-- add main css file -->
     <link rel="stylesheet" href="/style.css">
@@ -32,9 +34,9 @@
                 <a href="/invoice/payment-pending.php">Payment Pending Invoice</a>
             </div>
         </li>
-        <li class="dropdown dashboard_icon"> <a href="/comboProduct/productsList.php">Products</a>
+        <li class="dropdown dashboard_icon"> <a href="/products/">Products</a>
             <div class="dropdown-content">
-                <a href="/comboProduct/AddNewComboProduct.php">Add New Product</a>
+                <a href="/products/create/">Add New Product</a>
                 <!-- <a href="/comboProduct/RawItemList.php">Raw Item List</a> -->
                 <!-- <a href="/comboProduct">Combo Product Breakdown</a> -->
                 <!-- <a href="/dashboard/item/list.php">Raw Item List</a> -->
@@ -120,7 +122,7 @@
             padding: 0;
             overflow: hidden;
             background-color: #2b365b;
-            margin-bottom: 10px;
+            /* margin-bottom: 10px; */
             top: 0;
             width: 100%;
         }

@@ -6,7 +6,6 @@
             echo "<thead>";
             echo "<tr>";
             echo "<th>Invoice No</th>";
-            echo "<th>Type</th>";
             echo "<th>Date</th>";
             echo "<th>Customer Name</th>";
             echo "<th>Tele</th>";
@@ -17,8 +16,7 @@
             echo "<th>Balance</th>";
             echo "<th>Total Cost</th>";
             echo "<th>Total Profit</th>";
-            echo "<th>Biller</th>";
-            echo "<th>Worker</th>";
+            echo "<th>Cashier</th>";
             echo "<th>Full Paid</th>";
             echo "<th>Payment Method</th>";
             echo "<th>Actions</th>";
@@ -29,7 +27,6 @@
             while ($row = mysqli_fetch_array($result)) {
                 $invoice_date = $row['invoice_date'];
                 $invoice_number = $row['invoice_number'];
-                $invoice_type = $row['invoice_type'];
                 $customer_name = $row['customer_name'];
                 $customer_mobile = $row['customer_mobile'];
                 $time = $row['time'];
@@ -39,13 +36,11 @@
                 $balance = $row['balance'];
                 $cost = $row['cost'];
                 $profit = $row['profit'];
-                $biller = $row['biller'];
-                $worker = $row['primary_worker'];
+                $biller = $row['emp_name'];
                 $paided = $row['full_paid'];
                 $paymentMethod = $row['paymentMethod'];
                 echo "<tr>";
                 echo "<td>" . $invoice_number . "</td>";
-                echo "<td>" . $invoice_type . "</td>";
                 echo "<td>" . $invoice_date . "</td>";
                 echo "<td>" . $customer_name . "</td>";
                 echo "<td>" . $customer_mobile . "</td>";
@@ -57,7 +52,6 @@
                 echo "<td>" . $cost . "</td>";
                 echo "<td>" . $profit . "</td>";
                 echo "<td>" . $biller . "</td>";
-                echo "<td>" . $worker . "</td>";
                 echo "<td>";
                 if ($paided == 0) {
                     echo "No <br> <button onclick=' addFund(`$invoice_number`, $balance, `Add Fund`)'>Add Fund </button> <br>  

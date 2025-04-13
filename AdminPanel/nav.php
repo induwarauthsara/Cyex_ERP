@@ -39,6 +39,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Invoices",
             icon: "fas fa-file-invoice-dollar"
         },
+        "/AdminPanel/purchase/": {
+            name: "Purchase & GRN",
+            icon: "fas fa-cart-plus"
+        },
         "/AdminPanel/quotation.php": {
             name: "Quotation",
             icon: "fas fa-file-invoice"
@@ -51,7 +55,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Reports",
             icon: "fas fa-table-list"
         },
-        "/AdminPanel/suppliers.php": {
+        "/suppliers/": {
             name: "Suppliers",
             icon: "fas fa-truck"
         },
@@ -62,10 +66,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         "/AdminPanel/utility_payments.php": {
             name: "Utility Payments",
             icon: "fas fa-file-invoice"
-        },
-        "/AdminPanel/one_time_products.php": {
-            name: "Services",
-            icon: "fas fa-tools"
         },
         "/AdminPanel/hrm/viewPayrolls.php": {
             name: "Salary Payrolls",

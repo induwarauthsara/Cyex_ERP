@@ -1,656 +1,1051 @@
-    * {
-        -webkit-box-sizing: border-box;
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-    
-    body {
-        color: black;
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-    }
-    
-    a {
-        text-decoration: none;
-    }
-    
-    hr {
-        color: red;
-        margin: 5px;
-    }
-    
-    #changeInvoiceOptions-stock,
-    #changeInvoiceOptions-account {
-        border: 3px solid #a71212;
-        color: #a71212;
-        font-weight: bolder;
-        width: 80%;
-        margin: -2px 0;
-    }
-    
-    button {
-        padding: 5px 10px;
-        font-size: 1rem;
-        background-color: green;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin: auto;
-        display: flex;
-    }
-    /* Layout Containers */
-    
+:root {
+    --primary: #4361ee;
+    --secondary: #3f37c9;
+    --success: #4cc9f0;
+    --info: #4895ef;
+    --warning: #f72585;
+    --danger: #e63946;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --border-radius: 0.375rem;
+    --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+    margin: 0;
+    padding: 0;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 65% 35%;
+    min-height: 89vh;
+}
+
+
+/* Left Side Styling */
+
+#cart-leftSide {
+    padding: 1.5rem;
+    background-color: white;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#cart-left-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+#cart-left-header img {
+    width: 60px;
+    height: auto;
+    margin-right: 1rem;
+}
+
+.company-details h1 {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin: 0;
+}
+
+.company-details h3 {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    margin: 0.25rem 0;
+}
+
+#cart-left-top-bottons {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.shortcut-button,
+.clear-search-cache-button,
+.view-held-invoices,
+.action-button {
+    /* background: var(--primary); */
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.shortcut-button {
+    background-color: rgb(131, 56, 236);
+}
+
+.view-held-invoices {
+    background-color: rgb(251, 86, 7);
+    color: white;
+    margin-right: 5px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.print-last-invoice {
+    background-color: #F1C40F;
+    color: white;
+    margin-right: 5px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.clear-search-cache-button {
+    background-color: rgb(255, 190, 11);
+    color: var(--dark);
+}
+
+.shortcut-button:hover,
+.view-held-invoices:hover,
+.clear-search-cache-button:hover,
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #007bff;
+    color: white;
+}
+
+.customer-details {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.customer-details div {
+    flex: 1;
+}
+
+.customer-details label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.customer-details input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    background-color: var(--gray-100);
+    transition: all 0.3s;
+}
+
+.customer-details input:hover {
+    border-color: var(--gray-500);
+}
+
+.customer-details input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+}
+
+#errors p {
+    background-color: #dc3545;
+    color: black;
+    padding: 15px;
+    margin: 5px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+}
+
+.product-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+#product-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid var(--primary);
+    border-radius: var(--border-radius);
+    background-color: white;
+    transition: all 0.3s;
+}
+
+#product-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+}
+
+#search-results {
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--gray-300);
+}
+
+.search-result-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    transition: all 0.2s;
+}
+
+.search-result-item:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.product-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.product-list table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.product-list th {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 500;
+    text-align: left;
+    padding: 0.75rem 1rem;
+}
+
+.product-list td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: middle;
+}
+
+.product-list tbody tr:hover {
+    background-color: var(--gray-100);
+}
+
+.product-list input {
+    padding: 0.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    width: 100%;
+}
+
+.product-list input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.remove-product {
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.remove-product:hover {
+    background-color: #d32f2f;
+}
+
+
+/* Right Side Styling */
+
+#cart-rightSide {
+    background-color: var(--gray-800);
+    color: white;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    max-height: 89vh;
+}
+
+.invoice-summary {
+    background-color: var(--gray-900);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.summary-counts {
+    display: flex;
+    justify-content: space-around;
+    padding-bottom: 1rem;
+    gap: 1rem;
+    border-bottom: 1px solid var(--gray-700);
+}
+
+.count-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.count-value {
+    text-align: center;
+}
+
+.count-item i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    background-color: rgb(224, 242, 254);
+    padding: 0.75rem;
+    border-radius: 50%;
+}
+
+.count-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.invoice-summary hr {
+    border-color: var(--gray-700);
+    margin: 1rem 0;
+}
+
+.invoice-summary p {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.75rem 0;
+    font-size: 1.1rem;
+}
+
+.total-payable {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--success);
+}
+
+.discount-edit button {
+    background: transparent;
+    border: none;
+    color: var(--info);
+    cursor: pointer;
+}
+
+.total-without-discount,
+.discount-amount,
+#product-count,
+#item-count {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.button-group {
+    margin-top: auto;
+}
+
+#payment-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+#cart-action-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+#payment-buttons button,
+#cart-action-buttons button {
+    padding: 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#pay-btn {
+    background-color: var(--success);
+    color: white;
+}
+
+#card-btn {
+    background-color: var(--info);
+    color: white;
+}
+
+#hold-btn {
+    background-color: var(--warning);
+    color: white;
+}
+
+#credit-btn {
+    background-color: var(--secondary);
+    color: white;
+}
+
+#cancel-btn {
+    background-color: var(--danger);
+    color: white;
+}
+
+#payment-buttons button:hover,
+#cart-action-buttons button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+/* Modal styling */
+
+.swal2-popup {
+    font-family: 'Poppins', sans-serif;
+    padding: 2rem;
+}
+
+.swal2-styled {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+}
+
+
+/* Batch selection modal */
+
+.batch-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+}
+
+.batch-table th {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.batch-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--gray-300);
+}
+
+.batch-table tr:hover {
+    background-color: var(--gray-100);
+}
+
+
+/* Responsive adjustments */
+
+@media (max-width: 1200px) {
     .main {
-        max-width: 1200px;
-        margin: auto;
-        padding: 15px;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: row;
+        grid-template-columns: 1fr;
     }
-    
-    #cart-leftSide {
-        flex: 3;
-        padding: 20px;
-        max-width: 80%;
-        min-width: 70%;
-    }
-    
-    #cart-left-header {
-        display: flex;
-    }
-    
-    #cart-left-header img {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        margin-right: 20px;
-        flex: 1;
-    }
-    
-    .company-details {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 2;
-    }
-    
-    #cart-left-top-bottons {
-        display: flex;
-        flex: 4;
-    }
-    
     #cart-rightSide {
-        flex: 1;
-        padding: 20px;
-        display: flex;
+        height: auto;
+        min-height: 50vh;
+    }
+}
+
+@media (max-width: 768px) {
+    #cart-left-header {
         flex-direction: column;
-        justify-content: space-between;
-        min-width: 20%;
-        max-width: 30%;
-        justify-content: flex-start;
+        align-items: flex-start;
     }
-    
-    .discount-edit {
-        display: flex;
-        margin-bottom: 5px;
+    #cart-left-top-bottons {
+        margin-left: 0;
+        margin-top: 1rem;
+        width: 100%;
     }
-    /* Customer Details */
-    
     .customer-details {
-        margin-bottom: 10px;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly
-    }
-    
-    .customer-details input {
-        padding: 8px;
-        margin-top: 5px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-    
-    #errors p {
-        background-color: #dc3545;
-        color: black;
-        padding: 15px;
-        margin: 5px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        width: 300px;
-        text-align: center;
-        width: 100%;
-        font-weight: bold;
-    }
-    /* Product List Table */
-    
-    .product-list table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    
-    .product-list th,
-    .product-list td {
-        padding: 12px;
-        border: 1px solid #ccc;
-        text-align: left;
-    }
-    
-    .product-list th {
-        background-color: #f5f5f5;
-    }
-    
-    .product-list tbody tr:nth-child(even) {
-        background-color: #dddddd;
-    }
-    /* Invoice Summary */
-    
-    .invoice-summary {
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .invoice-summary p {
-        font-size: 1.2em;
-        margin: 5px 0;
-        display: flex;
-        justify-content: space-between;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .invoice-summary p span {
-        font-size: larger;
-        text-align: center;
-    }
-    
-    .summery-count {
-        display: flex;
-        justify-content: space-between;
-        justify-content: space-around
-    }
-    
-    .total-payable {
-        font-size: xx-large !important;
-        color: #d80303;
-        font-weight: 800 !important;
-        text-align: center;
-    }
-    /* Buttons Section */
-    
-    .button-group {
-        display: flex;
         flex-direction: column;
     }
-    
-    .button-group button {
-        padding: 15px;
-        font-size: 1.1em;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-weight: bold;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    
-    .total-without-discount,
-    .discount-amount,
-    #product-count,
-    #item-count {
-        font-size: 1.2em;
-        font-weight: bold;
-    }
-    
-    #payment-buttons {
-        display: flex;
-    }
-    
-    #payment-buttons button {
-        width: 100%;
-        margin: 5px !important;
-        display: flex;
-        align-items: center;
-    }
-    
-    #cart-action-buttons {
-        display: flex;
-    }
-    
-    #pay-btn {
-        background-color: #5cb85c;
-        color: #fff;
-        font-size: 1.5em;
-        flex: 2;
-    }
-    
-    #pay-btn:hover {
-        background-color: #4cae4c;
-    }
-    
-    #card-btn {
-        background-color: #f0ad4e;
-        color: #fff;
-        flex: 1;
-    }
-    
-    #card-btn:hover {
-        background-color: #ec971f;
-    }
-    
-    #cancel-btn {
-        background-color: #d9534f;
-        color: #fff;
-    }
-    
-    #cancel-btn:hover {
-        background-color: #c9302c;
-    }
-    
-    #credit-btn {
-        background-color: #5bc0de;
-        color: #fff;
-    }
-    
-    #credit-btn:hover {
-        background-color: #46b8da;
-    }
-    
-    input-field {
-        display: flex;
-        align-items: center;
-        flex-direction: row;
-    }
-    
-    input-field#changeInvoiceOptions-stock {
-        grid-area: changeInvoiceOptions_stock;
-    }
-    
-    input-field#changeInvoiceOptions-account {
-        grid-area: changeInvoiceOptions_account;
-    }
-    
-    #AddTodoFieldSet {
-        grid-area: AddTodoFieldSet;
-    }
-    
-    .shortcut-button {
-        cursor: pointer;
-    }
-    
-    #product-input {
-        width: 100%;
-        padding: 10px;
-        font-size: 16px;
-    }
-    /* Add Todo Button */
-    /* Errors */
-    
-    #errors p {
-        background-color: #dc3545;
-        color: black;
-        padding: 15px;
-        margin: 5px;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        text-align: center;
-        font-weight: bold;
-    }
-    /* Data Table Style */
-    
-    .dt-button,
-    .dtsb-add {
-        background-color: green !important;
-        color: white !important;
-    }
-    
-    .dataTables_wrapper {
-        margin: 15px;
-    }
-    
-    .dt-buttons {
-        margin-left: 30px;
-    }
-    
-    .dtsb-searchBuilder {
-        margin-top: 50px;
-    }
-    
-    th {
-        text-align: center !important;
-    }
-    
-    table {
-        font-family: Arial, sans-serif;
-        border-collapse: collapse;
-        width: 100%;
-    }
-    
-    td,
-    th {
-        border: 1px solid #dddddd;
-        text-align: left;
-        padding: 8px;
-    }
-    /* Disabled Buttons */
-    
-    button:disabled {
-        background-color: #cccccc !important;
-        color: #666666 !important;
-        cursor: not-allowed !important;
-    }
-    /* Tab Styles */
-    
-    .tab {
-        display: flex;
-        justify-content: center;
-    }
-    
-    #InvoiceDescription {
-        width: 100%;
-        margin: 10px;
-        padding: 15px;
-    }
-    
-    .tablinks:first-child {
-        border-radius: 1rem 0 0 1rem;
-    }
-    
-    .tablinks:last-child {
-        border-radius: 0 1rem 1rem 0;
-    }
-    
-    .tablinks {
-        margin: 0;
-        padding: 10px 20px;
-        border-radius: unset;
-        background-color: white;
-        border: 2px solid #2778c4;
-        color: #2778c4;
-        cursor: pointer;
-    }
-    
-    .tablinks.active {
-        background-color: #2778c4;
-        color: white;
-    }
-    /* Modals and SweetAlert2 Popups */
-    
+}
+
+
+/* Add font import */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ---------------------------------------------- */
+
+
+/* Errors */
+
+#errors p {
+    background-color: #dc3545;
+    color: black;
+    padding: 15px;
+    margin: 5px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+/* Data Table Style */
+
+.dt-button,
+.dtsb-add {
+    background-color: green !important;
+    color: white !important;
+}
+
+.dataTables_wrapper {
+    margin: 15px;
+}
+
+.dt-buttons {
+    margin-left: 30px;
+}
+
+.dtsb-searchBuilder {
+    margin-top: 50px;
+}
+
+.dt-buttons {
+    margin-bottom: 1rem;
+}
+
+.dt-buttons .btn {
+    margin-right: 0.5rem;
+}
+
+.dt-button-collection {
+    padding: 0.5rem;
+}
+
+.dt-button-collection .dt-button {
+    margin: 0.25rem 0;
+}
+
+.dt-buttons.btn-group.flex-wrap {
+    position: absolute;
+    top: -15px;
+    left: 0;
+}
+
+th {
+    text-align: center !important;
+}
+
+table {
+    font-family: Arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td,
+th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+
+/* Disabled Buttons */
+
+button:disabled {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed !important;
+}
+
+
+/* Tab Styles */
+
+.tab {
+    display: flex;
+    justify-content: center;
+}
+
+.tablinks:first-child {
+    border-radius: 1rem 0 0 1rem;
+}
+
+.tablinks:last-child {
+    border-radius: 0 1rem 1rem 0;
+}
+
+.tablinks {
+    margin: 0;
+    padding: 10px 20px;
+    border-radius: unset;
+    background-color: white;
+    border: 2px solid #2778c4;
+    color: #2778c4;
+    cursor: pointer;
+}
+
+.tablinks.active {
+    background-color: #2778c4;
+    color: white;
+}
+
+
+/* Modals and SweetAlert2 Popups */
+
+.swal2-popup {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    /* width: fit-content !important; */
+}
+
+.swal2-popup label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.swal2-popup input[type="number"],
+.swal2-popup input[type="text"],
+.swal2-popup input[type="date"],
+.swal2-popup input[list],
+.swal2-popup select {
+    width: calc(100% - 20px);
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+    max-width: 100%;
+    height: 3rem;
+    font-size: 1.5rem;
+}
+
+.swal2-popup input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.swal2-popup input[type="number"]:disabled,
+.swal2-popup input[type="text"]:disabled,
+.swal2-popup input[type="date"]:disabled {
+    background-color: #e9ecef;
+}
+
+.swal2-popup #total,
+.swal2-popup #balancePayment {
+    font-weight: bold;
+    color: #ff5733;
+    display: block;
+    margin-top: 5px;
+}
+
+.swal2-popup button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.swal2-popup button:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+
+/* Adjust the spacing and alignment */
+
+.swal2-popup .checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.swal2-popup .checkbox-group label {
+    margin-bottom: 0;
+}
+
+.swal2-popup .input-group {
+    margin-bottom: 15px;
+}
+
+.swal2-popup .input-group label {
+    margin-bottom: 5px;
+    display: inline-block;
+}
+
+.swal2-popup .input-group input {
+    width: calc(100% - 20px);
+}
+
+@media (max-width: 480px) {
     .swal2-popup {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        margin: auto;
+        width: 100%;
+        padding: 15px;
     }
-    
-    .swal2-popup label {
-        margin-bottom: 8px;
-        font-weight: bold;
-        color: #333;
-    }
-    
     .swal2-popup input[type="number"],
     .swal2-popup input[type="text"],
     .swal2-popup input[type="date"],
-    .swal2-popup input[list],
-    .swal2-popup select {
-        width: calc(100% - 20px);
-        padding: 8px;
-        margin-bottom: 15px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-        font-size: 14px;
-    }
-    
-    .swal2-popup input[type="checkbox"] {
-        margin-right: 10px;
-    }
-    
-    .swal2-popup input[type="number"]:disabled,
-    .swal2-popup input[type="text"]:disabled,
-    .swal2-popup input[type="date"]:disabled {
-        background-color: #e9ecef;
-    }
-    
-    .swal2-popup #total,
-    .swal2-popup #balancePayment {
-        font-weight: bold;
-        color: #ff5733;
-        display: block;
-        margin-top: 5px;
-    }
-    
-    .swal2-popup button {
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-    }
-    
-    .swal2-popup button:hover {
-        background-color: #0056b3;
-        color: white;
-    }
-    /* Adjust the spacing and alignment */
-    
-    .swal2-popup .checkbox-group {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-    
-    .swal2-popup .checkbox-group label {
-        margin-bottom: 0;
-    }
-    
-    .swal2-popup .input-group {
-        margin-bottom: 15px;
-    }
-    
-    .swal2-popup .input-group label {
-        margin-bottom: 5px;
-        display: inline-block;
-    }
-    
-    .swal2-popup .input-group input {
-        width: calc(100% - 20px);
-    }
-    
-    @media (max-width: 480px) {
-        .swal2-popup {
-            width: 100%;
-            padding: 15px;
-        }
-        .swal2-popup input[type="number"],
-        .swal2-popup input[type="text"],
-        .swal2-popup input[type="date"],
-        .swal2-popup input[list] {
-            width: 100%;
-        }
-    }
-    
-    .highlighted {
-        background-color: #f9ff00;
-        cursor: pointer;
-    }
-    
-    .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        padding: 15px 20px;
-        border-radius: 5px;
-        color: #fff;
-        font-size: 16px;
-        opacity: 0;
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    
-    .notification.success {
-        background-color: #4CAF50;
-    }
-    
-    .notification.error {
-        background-color: #f44336;
-    }
-    /* General highlight effect for all focusable elements */
-    
-    input:focus,
-    textarea:focus,
-    select:focus,
-    button:focus,
-    .radio:focus,
-    .checkbox:focus {
-        outline: none;
-        border: 2px solid #007bff;
-        box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
-        background-color: #e6f0ff;
-        transition: all 0.2s ease-in-out;
-    }
-    
-    input:focus,
-    textarea:focus {
-        border-radius: 4px;
-    }
-    
-    button:focus {
-        background-color: #007bff;
-        color: #ffffff;
-        font-weight: bold;
-    }
-    
-    select:focus {
-        border-radius: 4px;
-        background-color: #e6f0ff;
-    }
-    
-    input[type="radio"]:focus {
-        outline: 2px solid #007bff;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    }
-    
-    input[type="checkbox"]:focus {
-        outline: 2px solid #007bff;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    }
-    
-    input:hover,
-    textarea:hover,
-    select:hover {
-        background-color: #e0eaff;
-    }
-    
-    button:hover {
-        background-color: #0036e7;
-    }
-    
-    .invoice-summary {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        border-top: 1px solid #ccc;
-        margin-top: 10px;
-    }
-    
-    .invoice-summary p {
-        margin: 5px 0;
-    }
-    
-    .button-group {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 15px;
-    }
-    
-    .view-held-invoices {
-        cursor: pointer;
-    }
-    
-    #discount-modal {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #fff;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-        text-align: center;
-    }
-    
-    .discount-options button {
-        margin: 0 5px;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    /* Shortcut Key UI */
-    
-    kbd {
-        display: inline-block;
-        padding: 5px 10px;
-        font-size: 16px;
-        font-family: 'Courier New', Courier, monospace;
-        color: #292929;
-        background-color: #d98b8b;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
-        font-weight: bold;
-    }
-    /* Style for tab buttons */
-    
-    .tab-button {
-        padding: 10px;
-        border: 1px solid #007bff;
-        cursor: pointer;
-        background-color: #f8f9fa;
-        color: #007bff;
-        font-weight: bold;
+    .swal2-popup input[list] {
         width: 100%;
-        display: flex;
-        justify-content: center;
     }
-    
-    .tab-button.active {
-        background-color: #007bff;
-        color: white;
-    }
-    /* Style for tab content */
-    
-    .tab-content {
-        display: none;
-        padding-top: 10px;
-    }
-    
-    .tab-content.active {
-        display: block;
-    }
-    
-    .tab-content #quick-cash-container button {
-        width: 100%;
-        padding: 8px;
-        font-size: 0.9em;
-        text-align: center;
-    }
+}
+
+.highlighted {
+    background-color: #f9ff00;
+    cursor: pointer;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification.success {
+    background-color: #4CAF50;
+}
+
+.notification.error {
+    background-color: #f44336;
+}
+
+
+/* General highlight effect for all focusable elements */
+
+input:focus,
+textarea:focus,
+select:focus,
+button:focus,
+.radio:focus,
+.checkbox:focus {
+    outline: none;
+    border: 2px solid #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+    background-color: #e6f0ff;
+    transition: all 0.2s ease-in-out;
+}
+
+input:focus,
+textarea:focus {
+    border-radius: 4px;
+}
+
+button:focus {
+    background-color: #007bff;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+select:focus {
+    border-radius: 4px;
+    background-color: #e6f0ff;
+}
+
+input[type="radio"]:focus {
+    outline: 2px solid #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+input[type="checkbox"]:focus {
+    outline: 2px solid #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+    background-color: #e0eaff;
+}
+
+button:hover {
+    background-color: #0036e7;
+}
+
+.view-held-invoices {
+    cursor: pointer;
+}
+
+#discount-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.discount-options button {
+    margin: 0 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+
+/* Shortcut Key UI */
+
+kbd {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+    color: #292929;
+    background-color: #d98b8b;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+}
+
+kbd.small {
+    /* small */
+    font-size: 14px;
+    padding: 3px 6px;
+    margin: 0 8px;
+}
+
+
+/* Style for tab buttons */
+
+.tab-button {
+    padding: 10px;
+    border: 1px solid #007bff;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    color: #007bff;
+    font-weight: bold;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.tab-button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+
+/* Style for tab content */
+
+.tab-content {
+    display: none;
+    padding-top: 10px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content #quick-cash-container button {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+
+/* Fix NavBar Drop Down Invisible Bug due to bootstrap css */
+
+.dropdown {
+    position: static !important;
+}
+
+.quick-aceess-buttons-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.invoice-summary i {
+    margin-right: 8px;
+    text-align: center;
+}
+
+#payment-buttons button i,
+#cart-action-buttons button i {
+    margin-right: 8px;
+}
+
+.discount-edit i {
+    margin-right: 5px;
+}
+
+
+/* Footer Styling */
+
+.footer {
+    background-color: var(--gray-800);
+    color: var(--gray-400);
+    text-align: center;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    border-top: 1px solid var(--gray-700);
+}
+
+.footer a {
+    color: rgb(0, 255, 55);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: var(--success);
+    text-decoration: underline;
+}
+
+
+/* The switch - the box around the slider */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+
+/* Hide default HTML checkbox */
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+
+/* The slider */
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--gray-400);
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: var(--primary);
+}
+
+input:checked+.slider:before {
+    transform: translateX(26px);
+}
+
+
+/* Rounded sliders */
+
+.slider.round {
+    border-radius: 24px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+
+/* Individual Discount Price Toggle - Right Side Placement */
+
+.individual-discount-toggle-container {
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.individual-discount-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.individual-discount-toggle label {
+    color: var(--gray-300);
+    font-size: 0.95rem;
+}
+
+#individual-discount-savings {
+    color: var(--success);
+    font-size: 0.9rem;
+    text-align: right;
+    padding: 0.25rem 0;
+}
+
+#individual-discount-savings-amount {
+    font-weight: bold;
+}
+
+
+/* Make the switch smaller to fit in the right panel */
+
+.individual-discount-toggle .switch {
+    width: 40px;
+    height: 20px;
+}
+
+.individual-discount-toggle .slider:before {
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+}
+
+.individual-discount-toggle input:checked+.slider:before {
+    transform: translateX(20px);
+}

@@ -15,7 +15,7 @@ body {
     background-color: #333;
     color: white;
     padding: 15px;
-    text-align: center;
+    /* text-align: center; */
     left: 0;
     top: 60px;
     width: 200px;
@@ -38,6 +38,10 @@ body {
     padding: 10px;
     border-radius: 5px;
     line-height: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
 }
 
 .nav a:hover {
@@ -67,6 +71,18 @@ input {
     margin: 5px;
     border-radius: 5px;
     border: 1px solid #333;
+}
+
+input:focus,
+input:active,
+input:hover,
+select:focus,
+select:active,
+select:hover,
+textarea:focus,
+textarea:active,
+textarea:hover {
+    color: black !important;
 }
 
 input[type="submit"] {
@@ -205,6 +221,11 @@ h1 {
 
 
 /* Buttons */
+
+button {
+    display: flex;
+    align-items: center;
+}
 
 .smallIcon i {
     font-size: 20px !important;

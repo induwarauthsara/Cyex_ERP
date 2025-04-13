@@ -10,8 +10,17 @@ if (!$id) {
     exit;
 }
 
-// Prepare SQL query to select items, discount_type, discount_value, customer_name, and customer_number
-$sql = "SELECT items, discount_type, discount_value, customer_name, customer_number FROM held_invoices WHERE id = ? AND status = 'held'";
+// Prepare SQL query to include individual_discount_mode
+$sql = "SELECT 
+            items, 
+            discount_type, 
+            discount_value, 
+            customer_name, 
+            customer_number, 
+            individual_discount_mode 
+        FROM held_invoices 
+        WHERE id = ? AND status = 'held'";
+
 $stmt = mysqli_prepare($con, $sql);
 
 // Check if prepare was successful
@@ -21,18 +30,27 @@ if ($stmt) {
     mysqli_stmt_execute($stmt);
 
     // Bind the result variables
-    mysqli_stmt_bind_result($stmt, $items, $discount_type, $discount_value, $customer_name, $customer_number);
+    mysqli_stmt_bind_result(
+        $stmt, 
+        $items, 
+        $discount_type, 
+        $discount_value, 
+        $customer_name, 
+        $customer_number, 
+        $individual_discount_mode
+    );
     mysqli_stmt_fetch($stmt);
 
     if ($items) {
-        // Respond with items, discount_type, discount_value, customer_name, and customer_number
+        // Respond with items, discount_type, discount_value, customer_name, customer_number, and individual_discount_mode
         echo json_encode([
             'success' => true,
             'items' => json_decode($items),
             'discount_type' => $discount_type,
             'discount_value' => $discount_value,
             'customer_name' => $customer_name,
-            'customer_number' => $customer_number
+            'customer_number' => $customer_number,
+            'individual_discount_mode' => (bool)$individual_discount_mode
         ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Invoice not found']);

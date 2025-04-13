@@ -22,7 +22,10 @@ $payment_pending_total = asRs(mysqli_fetch_assoc(mysqli_query($con, $sql))['sum(
     </center>
 
     <?php
-    $sql = "SELECT * FROM invoice WHERE balance > 0;";
+    $sql = "SELECT * 
+            FROM invoice i
+            INNER JOIN employees e ON i.biller = e.employ_id
+            WHERE balance > 0;";
     include 'DataTable of DB Invoice Table.php'; ?>
 
 </body>
