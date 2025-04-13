@@ -320,7 +320,7 @@ function handleGetBarcodeItems()
 function generateGRNPDF($pdf, $grn, $items)
 {
     // Add company logo and header
-    $pdf->Image('../../../logo.jpg', 10, 10, 30);
+    $pdf->Image('../../../logo.png', 10, 10, 30);
     $pdf->SetXY(45, 10);
     $pdf->SetFont('helvetica', 'B', 16);
     $pdf->Cell(0, 10, 'GOODS RECEIPT NOTE', 0, 1, 'C');

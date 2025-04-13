@@ -61,7 +61,7 @@ $total_row_count = $sales_row_count + $OTProduct_row_count;
     <div class="main">
         <div class="bill">
             <div class="header"> <a href="/index.php">
-                    <div class="logo-img"> <img src="/logo.jpg" alt="LOGO">
+                    <div class="logo-img"> <img src="/logo.png" alt="LOGO">
                 </a>
             </div>
             <div class="topic">

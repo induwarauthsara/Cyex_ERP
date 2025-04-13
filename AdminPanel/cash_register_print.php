@@ -283,7 +283,7 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
     <div class="report" id="report-container">
         <div class="header">
             <div class="logo-img">
-                <img src="/logo.jpg" alt="Company Logo">
+                <img src="/logo.png" alt="Company Logo">
             </div>
             <div class="company-name"><?php echo $ERP_COMPANY_NAME; ?></div>
             <div class="company-address">

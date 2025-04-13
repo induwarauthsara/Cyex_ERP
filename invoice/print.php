@@ -175,7 +175,7 @@ if (isset($_GET['invoice'])) {
 
 <div class="bill">
     <div class="header">
-        <div class="logo-img"> <a href="../index.php"> <img src="../logo.jpg" alt="LOGO"> </a></div>
+        <div class="logo-img"> <a href="../index.php"> <img src="../logo.png" alt="LOGO"> </a></div>
         <div class="topic">
             <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
             <h2><?php echo $ERP_COMPANY_ADDRESS; ?><br><?php echo $ERP_COMPANY_PHONE; ?></h2>

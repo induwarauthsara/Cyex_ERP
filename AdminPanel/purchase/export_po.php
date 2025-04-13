@@ -52,8 +52,8 @@ class MYPDF extends TCPDF
         global $ERP_COMPANY_NAME, $ERP_COMPANY_ADDRESS, $ERP_COMPANY_PHONE;
 
         // Logo
-        if (file_exists('../../images/logo.jpg')) {
-            $this->Image('../../images/logo.jpg', 10, 10, 30);
+        if (file_exists('../../images/logo.png')) {
+            $this->Image('../../images/logo.png', 10, 10, 30);
         }
 
         // Company info
