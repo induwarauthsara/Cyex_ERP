@@ -10,7 +10,7 @@ require 'inc/header.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $ERP_COMPANY_NAME; ?> - One-Time Products</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- DataTables CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css">

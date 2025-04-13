@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $ERP_COMPANY_NAME; ?> - POS</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="logo.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="inc/invoice_main_functions.jsx"></script>
@@ -22,7 +22,7 @@
         <div id="cart-leftSide">
             <!-- Cart Heder -->
             <div id="cart-left-header">
-                <img src="logo.jpg" alt="Company LOGO">
+                <img src="logo.png" alt="Company LOGO">
                 <div class="company-details">
                     <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
                     <h3><?php echo $ERP_COMPANY_ADDRESS; ?><br><?php echo $ERP_COMPANY_PHONE; ?></h3>
