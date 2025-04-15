@@ -319,7 +319,7 @@
                             <div class="card-body">
                                 <div class="mb-3" id="initialStockSection">
                                     <label for="initialStock" class="form-label">Initial Stock Quantity</label>
-                                    <input type="number" class="form-control" id="initialStock" step="0.001">
+                                    <input type="number" class="form-control" id="initialStock" step="any">
                                 </div>
 
                                 <!-- Add Alert Quantity field here -->
@@ -331,13 +331,13 @@
                                             data-bs-placement="top"
                                             title="System will send notifications when stock falls below this value"></i>
                                     </label>
-                                    <input type="number" class="form-control" id="alertQuantity" min="0" value="5" step="0.001">
+                                    <input type="number" class="form-control" id="alertQuantity" min="0" value="5" step="any">
                                     <small class="text-muted">System will alert when stock falls below this value</small>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="cost" class="form-label required-field">Cost</label>
-                                    <input type="number" class="form-control" id="cost" required>
+                                    <input type="number" class="form-control" id="cost" required step="any">
                                 </div>
 
                                 <div class="row mb-3">
@@ -345,14 +345,14 @@
                                         <label for="sellingPrice" class="form-label required-field">Selling Price</label>
                                         <div class="input-group">
                                             <span class="input-group-text">Rs.</span>
-                                            <input type="number" class="form-control" id="sellingPrice" name="sellingPrice" step="1" min="0" required>
+                                            <input type="number" class="form-control" id="sellingPrice" name="sellingPrice" step="any" min="0" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="discountPrice" class="form-label">Discount Price <small>(optional)</small></label>
                                         <div class="input-group">
                                             <span class="input-group-text">Rs.</span>
-                                            <input type="number" class="form-control" id="discountPrice" name="discountPrice" step="0.01" min="0" placeholder="Optional">
+                                            <input type="number" class="form-control" id="discountPrice" name="discountPrice" step="any" min="0" placeholder="Optional">
                                             <button class="btn btn-outline-secondary discount-percent-toggle" type="button">
                                                 <i class="fas fa-percentage"></i>
                                             </button>
@@ -896,7 +896,7 @@
                             <input type="text" class="form-control variant-value" required placeholder="e.g., Red, Large">
                         </td>
                         <td>
-                            <input type="number" class="form-control variant-stock" value="0" min="0" step="0.001">
+                            <input type="number" class="form-control variant-stock" value="0" min="0" step="any">
                         </td>
                         <td>
                             <div class="input-group">
@@ -918,7 +918,7 @@
                             <div class="variant-discount-indicator text-success small mt-1"></div>
                         </td>
                         <td>
-                            <input type="number" class="form-control variant-alert" value="5" min="0" step="0.001">
+                            <input type="number" class="form-control variant-alert" value="5" min="0" step="any">
                         </td>
                         <td>
                             <div class="btn-group">
