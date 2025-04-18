@@ -602,7 +602,7 @@
                     <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
                         <input id="quantity-${index}" type="number" min="0.001" step="0.001" value="${product.quantity}" 
-                            onchange="updateQuantity(${index}, this.value)" style="width: 60px; padding: 5px;">
+                            onchange="updateQuantity(${index}, this.value)">
                     </td>`;
 
                 if (individualDiscountMode) {
@@ -610,11 +610,11 @@
                     row += `
                     <td style="padding: 10px; border: 1px solid #ccc;">
                         <input type="number" step="0.01" min="0" value="${product.regular_price}" 
-                            onchange="updateRegularPrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                            onchange="updateRegularPrice(${index}, this.value)">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
                         <input type="number" step="0.01" min="0" value="${product.discount_price}" 
-                            onchange="updateDiscountPrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                            onchange="updateDiscountPrice(${index}, this.value)">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.discount_price).toFixed(2))}</td>`;
                 } else {
@@ -622,7 +622,7 @@
                     row += `
                     <td style="padding: 10px; border: 1px solid #ccc;">
                         <input type="number" step="0.01" min="0" value="${product.regular_price}" 
-                            onchange="updateRegularPrice(${index}, this.value)" style="width: 80px; padding: 5px;">
+                            onchange="updateRegularPrice(${index}, this.value)">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.regular_price).toFixed(2))}</td>`;
                 }

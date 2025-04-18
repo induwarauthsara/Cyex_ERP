@@ -264,6 +264,7 @@ body {
     border: 1px solid var(--gray-300);
     border-radius: var(--border-radius);
     width: 100%;
+    font-size: 1.2rem;
 }
 
 .product-list input:focus {
