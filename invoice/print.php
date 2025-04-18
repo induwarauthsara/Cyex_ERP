@@ -193,13 +193,24 @@ if (isset($_GET['invoice'])) {
             $tele = $invoice['customer_mobile'];
             $bill_no = $invoice['invoice_number'];
             $date = $invoice['invoice_date'];
-            $biller = $invoice['biller'];
+            $biller_id = $invoice['biller'];
             $total = $invoice['total'];
             $discount = $invoice['discount'];
             $advance = $invoice['advance'];
             $balance = $invoice['balance'];
             $full_paid = $invoice['full_paid'];
             $payment_method = $invoice['payment_method'] ?? 'Cash';
+            
+            // Get cashier name from the database
+            $cashier_name = "";
+            $cashier_query = "SELECT emp_name FROM employees WHERE employ_id = '$biller_id' LIMIT 1";
+            $cashier_result = mysqli_query($con, $cashier_query);
+            if ($cashier_result && mysqli_num_rows($cashier_result) > 0) {
+                $cashier_row = mysqli_fetch_assoc($cashier_result);
+                $cashier_name = $cashier_row['emp_name'];
+            } else {
+                $cashier_name = $biller_id; // Fallback to ID if name not found
+            }
 
             // Get individual_discount_mode for this invoice from the sales table
             $mode_query = "SELECT individual_discount_mode FROM sales WHERE invoice_number = '$id' LIMIT 1";
@@ -220,7 +231,7 @@ if (isset($_GET['invoice'])) {
         <div class="bill-no">Invoice No: <?php echo $bill_no; ?></div>
         <div class="bill-details Innerdetails">
             <div class="date">Date: <b><?php echo $date; ?></b></div>
-            <div class="biller">Cashier: <b><?php echo $biller; ?></b></div>
+            <div class="biller">Cashier: <b><?php echo $cashier_name; ?></b></div>
         </div>
         <div class="customer-details Innerdetails">
             <div class="customer-name">
