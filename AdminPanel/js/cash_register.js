@@ -34,6 +34,17 @@ function openCashRegister() {
                                 <p><strong>Total Sales:</strong> Rs. ${parseFloat(registerDetails.total_sales || 0).toFixed(2)}</p>
                                 <p><strong>Cash Sales:</strong> Rs. ${parseFloat(registerDetails.cash_sales || 0).toFixed(2)}</p>
                                 <p><strong>Card Sales:</strong> Rs. ${parseFloat(registerDetails.card_sales || 0).toFixed(2)}</p>
+                                ${registerDetails.returns_count > 0 ? `
+                                <div style="background-color: #f0f0f0; padding: 8px; margin: 8px 0; border-left: 3px solid #4a6fdc;">
+                                    <p style="margin: 5px 0;"><strong>Sales Returns:</strong></p>
+                                    <p style="margin: 5px 0;"><strong>- Cash Returns:</strong> Rs. ${parseFloat(registerDetails.cash_returns || 0).toFixed(2)}</p>
+                                    <p style="margin: 5px 0;"><strong>- Store Credit Returns:</strong> Rs. ${parseFloat(registerDetails.store_credit_returns || 0).toFixed(2)}</p>
+                                    <p style="margin: 5px 0;"><strong>- Total Returns:</strong> Rs. ${parseFloat(registerDetails.total_returns || 0).toFixed(2)}</p>
+                                    <p style="margin: 5px 0;"><strong>- Return Transactions:</strong> ${registerDetails.returns_count || 0}</p>
+                                    <p style="margin: 5px 0;"><strong>- Returned Items:</strong> ${registerDetails.returned_items_count || 0}</p>
+                                </div>
+                                ` : ''}
+                                <p><strong>Net Cash Sales:</strong> Rs. ${parseFloat(registerDetails.net_cash_sales || 0).toFixed(2)}</p>
                                 <p><strong>Petty Cash:</strong> Rs. ${parseFloat(registerDetails.cash_out || 0).toFixed(2)}</p>
                                 <p><strong>Cash Drawer Amount:</strong> Rs. ${parseFloat(registerDetails.expected_cash || 0).toFixed(2)}</p>
                             ` : '<p>No open register session for today</p>'}
@@ -228,6 +239,18 @@ function closeRegisterModal() {
                     console.log('Register Summary Data:', summary);
                     console.log('Register ID from API:', summary.register_id, 'Type:', typeof summary.register_id);
 
+                    // Create HTML for sales returns section
+                    const returnsSection = summary.returns_count > 0 ? `
+                        <div class="register-returns" style="background-color: #f0f0f0; padding: 8px; margin: 8px 0; border-left: 3px solid #4a6fdc;">
+                            <h4 style="margin: 5px 0;">Sales Returns</h4>
+                            <p style="margin: 5px 0;"><strong>Cash Returns:</strong> ${parseFloat(summary.cash_returns).toFixed(2)}</p>
+                            <p style="margin: 5px 0;"><strong>Store Credit Returns:</strong> ${parseFloat(summary.store_credit_returns).toFixed(2)}</p>
+                            <p style="margin: 5px 0;"><strong>Total Returns:</strong> ${parseFloat(summary.total_returns).toFixed(2)}</p>
+                            <p style="margin: 5px 0;"><strong>Return Transactions:</strong> ${summary.returns_count}</p>
+                            <p style="margin: 5px 0;"><strong>Returned Items:</strong> ${summary.returned_items_count}</p>
+                        </div>
+                    ` : '';
+
                     Swal.fire({
                         title: 'Close Cash Register',
                         html: `
@@ -238,8 +261,10 @@ function closeRegisterModal() {
                                     <p><strong>Total Sales:</strong> ${parseFloat(summary.total_sales).toFixed(2)}</p>
                                     <p><strong>Cash Sales:</strong> ${parseFloat(summary.cash_sales).toFixed(2)}</p>
                                     <p><strong>Card Sales:</strong> ${parseFloat(summary.card_sales).toFixed(2)}</p>
+                                    ${returnsSection}
+                                    <p><strong>Net Cash Sales:</strong> ${parseFloat(summary.net_cash_sales).toFixed(2)}</p>
                                     <p><strong>Petty Cash:</strong> ${parseFloat(summary.cash_out).toFixed(2)}</p>
-                                    <p><strong>Cash Drawer Amount:</strong> ${parseFloat(summary.expected_cash).toFixed(2)}</p>
+                                    <p><strong>Expected Cash in Drawer:</strong> ${parseFloat(summary.expected_cash).toFixed(2)}</p>
                                 </div>
                                 <input type="hidden" id="register_id" value="${summary.register_id}">
                                 <div class="form-group">
@@ -248,7 +273,7 @@ function closeRegisterModal() {
                                 </div>
                                 <div class="form-group">
                                     <label for="cash_drawer_balance">Cash Drawer Balance:</label>
-                                    <input type="number" id="cash_drawer_balance" class="swal2-input" placeholder="Enter cash drawer balance" step="0.01" min="0">
+                                    <input type="number" id="cash_drawer_balance" class="swal2-input" placeholder="Enter cash drawer balance" step="0.01" min="0" value="${parseFloat(summary.expected_cash).toFixed(2)}">
                                 </div>
                                 <div class="form-group">
                                     <label for="bank_deposit">Bank Deposit Amount:</label>

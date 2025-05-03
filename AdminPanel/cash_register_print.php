@@ -56,6 +56,91 @@ $total_discount = $sales['total_discount'] ?? 0;
 $transaction_count = $sales['transaction_count'] ?? 0;
 $avg_transaction = $sales['avg_transaction'] ?? 0;
 
+// Get returns data
+$returns_sql = "SELECT 
+                  SUM(CASE WHEN sr.refund_method = 'Cash' THEN sr.return_amount ELSE 0 END) as cash_returns,
+                  SUM(CASE WHEN sr.refund_method = 'Store Credit' THEN sr.return_amount ELSE 0 END) as store_credit_returns,
+                  COUNT(*) as returns_count,
+                  COUNT(DISTINCT sr.invoice_id) as returned_invoices_count,
+                  (SELECT COUNT(*) FROM sales_return_items sri 
+                   JOIN sales_returns sr2 ON sri.return_id = sr2.return_id
+                   WHERE DATE(sr2.return_date) = '$date' AND
+                   TIME(sr2.return_date) BETWEEN 
+                      '$open_time' 
+                   AND 
+                      " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                  ) as returned_items_count
+                FROM 
+                  sales_returns sr
+                WHERE 
+                  DATE(sr.return_date) = '$date' AND
+                  TIME(sr.return_date) BETWEEN 
+                      '$open_time' 
+                  AND 
+                      " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()");
+
+$returns_result = mysqli_query($con, $returns_sql);
+$returns = mysqli_fetch_assoc($returns_result);
+
+$cash_returns = $returns['cash_returns'] ?? 0;
+$store_credit_returns = $returns['store_credit_returns'] ?? 0;
+$total_returns = $cash_returns + $store_credit_returns;
+$returns_count = $returns['returns_count'] ?? 0;
+$returned_invoices_count = $returns['returned_invoices_count'] ?? 0;
+$returned_items_count = $returns['returned_items_count'] ?? 0;
+
+// Get top return reasons if returns exist
+$top_return_reasons = [];
+if ($returns_count > 0) {
+    $return_reasons_sql = "SELECT 
+                            return_reason, 
+                            COUNT(*) as count,
+                            SUM(return_amount) as total_amount
+                          FROM sales_returns
+                          WHERE 
+                            DATE(return_date) = '$date' AND
+                            TIME(return_date) BETWEEN 
+                                '$open_time' 
+                            AND 
+                                " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                          GROUP BY return_reason
+                          ORDER BY count DESC";
+    
+    $return_reasons_result = mysqli_query($con, $return_reasons_sql);
+    while ($reason = mysqli_fetch_assoc($return_reasons_result)) {
+        $top_return_reasons[] = $reason;
+    }
+}
+
+// Get top returned products if returns exist
+$top_returned_products = [];
+if ($returns_count > 0) {
+    $returned_products_sql = "SELECT 
+                                p.product_name,
+                                SUM(sri.quantity_returned) as total_qty,
+                                SUM(sri.return_price * sri.quantity_returned) as total_amount
+                              FROM sales_return_items sri
+                              JOIN sales_returns sr ON sri.return_id = sr.return_id
+                              JOIN products p ON sri.product_id = p.product_id
+                              WHERE 
+                                DATE(sr.return_date) = '$date' AND
+                                TIME(sr.return_date) BETWEEN 
+                                    '$open_time' 
+                                AND 
+                                    " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                              GROUP BY p.product_name
+                              ORDER BY total_amount DESC
+                              LIMIT 5";
+    
+    $returned_products_result = mysqli_query($con, $returned_products_sql);
+    while ($product = mysqli_fetch_assoc($returned_products_result)) {
+        $top_returned_products[] = $product;
+    }
+}
+
+// Adjust cash sales to account for returns
+$net_cash_sales = $cash_sales - $cash_returns;
+
 // Get cash out transactions
 $petty_sql = "SELECT SUM(amount) as total_cash_out FROM pettycash WHERE register_id = $register_id";
 $petty_result = mysqli_query($con, $petty_sql);
@@ -69,7 +154,7 @@ $petty_details_result = mysqli_query($con, $petty_details_sql);
 // Calculate cash drawer amount
 
 // Calculate cash difference
-$cash_difference = $opening_balance + $cash_sales - $pettycash_out - $cash_out - $cash_drawer_balance;
+$cash_difference = $opening_balance + $net_cash_sales - $pettycash_out - $cash_out - $cash_drawer_balance;
 
 // Get top selling items for today
 $top_items_sql = "SELECT 
@@ -321,26 +406,132 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
         <div class="section">
             <div class="section-title">Sales Summary</div>
             <div class="detail-row">
-                <span class="detail-label">Transactions:</span>
-                <span><?php echo $transaction_count; ?></span>
+                <span class="detail-label">Cash Sales:</span>
+                <span class="amount"><?php echo number_format($cash_sales, 2); ?></span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Gross Sales:</span>
-                <span class="amount">Rs. <?php echo number_format($total_sales + $total_discount, 2); ?></span>
+                <span class="detail-label">Card Sales:</span>
+                <span class="amount"><?php echo number_format($card_sales, 2); ?></span>
+            </div>
+            <?php if ($returns_count > 0): ?>
+            <div class="detail-row">
+                <span class="detail-label">Cash Returns:</span>
+                <span class="amount"><?php echo number_format($cash_returns, 2); ?></span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Discounts:</span>
-                <span class="amount">Rs. <?php echo number_format($total_discount, 2); ?></span>
+                <span class="detail-label">Store Credit Returns:</span>
+                <span class="amount"><?php echo number_format($store_credit_returns, 2); ?></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Total Returns:</span>
+                <span class="amount"><?php echo number_format($total_returns, 2); ?></span>
             </div>
             <div class="detail-row highlight">
-                <span class="detail-label">Net Sales:</span>
-                <span class="amount">Rs. <?php echo number_format($total_sales, 2); ?></span>
+                <span class="detail-label">Net Cash Sales:</span>
+                <span class="amount"><?php echo number_format($net_cash_sales, 2); ?></span>
+            </div>
+            <?php endif; ?>
+            <div class="detail-row highlight">
+                <span class="detail-label">Total Sales:</span>
+                <span class="amount"><?php echo number_format($total_sales, 2); ?></span>
             </div>
             <div class="detail-row">
-                <span class="detail-label">Avg. Transaction:</span>
-                <span class="amount">Rs. <?php echo number_format($avg_transaction, 2); ?></span>
+                <span class="detail-label">Total Discount:</span>
+                <span class="amount"><?php echo number_format($total_discount, 2); ?></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Transaction Count:</span>
+                <span class="amount"><?php echo $transaction_count; ?></span>
+            </div>
+            <?php if ($returns_count > 0): ?>
+            <div class="detail-row">
+                <span class="detail-label">Returns Count:</span>
+                <span class="amount"><?php echo $returns_count; ?></span>
+            </div>
+            <?php endif; ?>
+            <div class="detail-row">
+                <span class="detail-label">Average Transaction:</span>
+                <span class="amount"><?php echo number_format($avg_transaction, 2); ?></span>
             </div>
         </div>
+
+        <?php if ($returns_count > 0): ?>
+        <div class="section">
+            <div class="section-title">Returns Summary</div>
+            <div class="detail-row">
+                <span class="detail-label">Returned Transactions:</span>
+                <span class="amount"><?php echo $returns_count; ?></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Returned Invoices:</span>
+                <span class="amount"><?php echo $returned_invoices_count; ?></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Returned Items:</span>
+                <span class="amount"><?php echo $returned_items_count; ?></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Cash Returns:</span>
+                <span class="amount"><?php echo number_format($cash_returns, 2); ?></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Store Credit Returns:</span>
+                <span class="amount"><?php echo number_format($store_credit_returns, 2); ?></span>
+            </div>
+            <div class="detail-row highlight">
+                <span class="detail-label">Total Returns:</span>
+                <span class="amount"><?php echo number_format($total_returns, 2); ?></span>
+            </div>
+            
+            <!-- Top Return Reasons -->
+            <?php if (!empty($top_return_reasons)): ?>
+            <div style="margin-top: 10px;">
+                <div class="detail-row">
+                    <span class="detail-label">Top Return Reasons:</span>
+                </div>
+                <table>
+                    <tr>
+                        <th>Reason</th>
+                        <th class="text-right">Count</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                    <?php foreach ($top_return_reasons as $reason): ?>
+                    <tr>
+                        <td><?php echo $reason['return_reason']; ?></td>
+                        <td class="text-right"><?php echo $reason['count']; ?></td>
+                        <td class="text-right">Rs. <?php echo number_format($reason['total_amount'], 2); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Top Returned Products -->
+            <?php if (!empty($top_returned_products)): ?>
+            <div style="margin-top: 10px;">
+                <div class="detail-row">
+                    <span class="detail-label">Top Returned Products:</span>
+                </div>
+                <table>
+                    <tr>
+                        <th>Product</th>
+                        <th class="text-right">Qty</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                    <?php foreach ($top_returned_products as $product): ?>
+                    <tr>
+                        <td><?php echo strlen($product['product_name']) > 20 ? 
+                            substr($product['product_name'], 0, 20) . '...' : 
+                            $product['product_name']; ?></td>
+                        <td class="text-right"><?php echo $product['total_qty']; ?></td>
+                        <td class="text-right">Rs. <?php echo number_format($product['total_amount'], 2); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
 
         <div class="section">
             <div class="section-title">Payment Methods</div>

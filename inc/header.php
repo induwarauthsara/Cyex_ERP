@@ -44,6 +44,8 @@
             </div>
         </li>
 
+        <li class="dashboard_icon adminOnly"> <a href="/AdminPanel/sales_returns/"> <i class="fas fa-undo header_icons"> </i> Sales Return </a> </li>
+        
         <li class="dashboard_icon adminOnly"> <a href="/AdminPanel/"> <i class="fas fa-cogs header_icons"> </i> Admin Panel </a> </li>
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->

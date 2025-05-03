@@ -1,0 +1,367 @@
+/* Sales Returns CSS */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+h1 i {
+    color: #4a6fdc;
+}
+
+.search-section,
+.return-section,
+.recent-returns {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#invoice-search {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+
+/* Expired invoice warning */
+
+.expired-invoice-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.expired-invoice-warning p {
+    margin: 0;
+    color: #856404;
+    flex: 1;
+}
+
+.expired-invoice-warning button {
+    margin-left: 15px;
+}
+
+.warning {
+    color: #856404;
+}
+
+.warning i {
+    margin-right: 5px;
+}
+
+
+/* Return Anyway button styling */
+
+#return-anyway-btn {
+    background-color: #fd7e14;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+#return-anyway-btn:hover {
+    background-color: #e67211;
+}
+
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.primary {
+    background-color: #4a6fdc;
+    color: white;
+}
+
+.primary:hover {
+    background-color: #3a5cb8;
+}
+
+.secondary {
+    background-color: #f2f2f2;
+    color: #333;
+}
+
+.secondary:hover {
+    background-color: #e0e0e0;
+}
+
+.invoice-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.invoice-info,
+.invoice-totals {
+    flex: 1;
+}
+
+.items-table-container {
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.return-options {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.return-config {
+    flex: 2;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.return-summary {
+    flex: 1;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.summary-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+/* Quantity Input Styling */
+
+.qty-input {
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+
+/* Modal Styles */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.close:hover {
+    color: #333;
+}
+
+
+/* Responsive Adjustments */
+
+@media (max-width: 768px) {
+    .return-options {
+        flex-direction: column;
+    }
+    .invoice-details {
+        flex-direction: column;
+    }
+    .search-box {
+        flex-direction: column;
+    }
+}
+
+
+/* DataTables Customization */
+
+.dataTables_wrapper .dataTables_filter input {
+    margin-left: 5px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 5px 10px;
+    margin: 0 2px;
+    border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #4a6fdc;
+    color: white !important;
+    border: none;
+}
+
+
+/* Checkbox styling */
+
+.return-checkbox {
+    width: 18px;
+    height: 18px;
+}
+
+
+/* Add styles for warning and error boxes */
+
+.warning-box {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    color: #856404;
+}
+
+.error-box {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    color: #721c24;
+}
+
+.warning-box p,
+.error-box p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.warning-box i,
+.error-box i {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+
+/* Style for fully returned items */
+
+tr.fully-returned {
+    background-color: #f5f5f5;
+    color: #888;
+    opacity: 0.8;
+}
+
+tr.fully-returned td {
+    text-decoration: line-through;
+}
+
+tr.fully-returned td:first-child,
+tr.fully-returned td:last-child {
+    text-decoration: none;
+}
+
+tr.fully-returned .return-checkbox {
+    cursor: not-allowed;
+}

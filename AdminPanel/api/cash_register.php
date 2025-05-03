@@ -233,17 +233,17 @@ function recordPettyCash() {
 }
 
 /**
- * Gets the summary of the current open register session
+ * Gets a summary of the current register
  */
 function getRegisterSummary() {
     global $con, $response;
     
-    // Get the current open register session
+    // Get the current open register
     $sql = "SELECT * FROM cash_register WHERE closed_at IS NULL ORDER BY id DESC LIMIT 1";
     $result = mysqli_query($con, $sql);
     
-    if (mysqli_num_rows($result) === 0) {
-        $response['message'] = 'No open cash register session found';
+    if (mysqli_num_rows($result) !== 1) {
+        $response['message'] = 'No open register found';
         return;
     }
     
@@ -278,14 +278,51 @@ function getRegisterSummary() {
     $card_sales = $sales['card_sales'] ?? 0;
     $transaction_count = $sales['transaction_count'] ?? 0;
     
+    // Get returns data - with more detailed breakdown and item counts
+    $returns_sql = "SELECT 
+                      SUM(CASE WHEN refund_method = 'Cash' THEN return_amount ELSE 0 END) as cash_returns,
+                      SUM(CASE WHEN refund_method = 'Store Credit' THEN return_amount ELSE 0 END) as store_credit_returns,
+                      COUNT(*) as returns_count,
+                      COUNT(DISTINCT invoice_id) as returned_invoices_count,
+                      (SELECT COUNT(*) FROM sales_return_items sri 
+                       JOIN sales_returns sr ON sri.return_id = sr.return_id
+                       WHERE DATE(sr.return_date) = CURDATE() AND
+                       TIME(sr.return_date) BETWEEN 
+                          (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
+                       AND 
+                          COALESCE(
+                            (SELECT DATE_FORMAT(closed_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id),
+                            CURRENT_TIME()
+                          )) as returned_items_count
+                    FROM 
+                      sales_returns
+                    WHERE 
+                      DATE(return_date) = CURDATE() AND
+                      TIME(return_date) BETWEEN 
+                        (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
+                      AND 
+                        COALESCE(
+                          (SELECT DATE_FORMAT(closed_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id),
+                          CURRENT_TIME()
+                        )";
+
+    $returns_result = mysqli_query($con, $returns_sql);
+    $returns = mysqli_fetch_assoc($returns_result);
+    
+    $cash_returns = $returns['cash_returns'] ?? 0;
+    $store_credit_returns = $returns['store_credit_returns'] ?? 0;
+    $returns_count = $returns['returns_count'] ?? 0;
+    $returned_invoices_count = $returns['returned_invoices_count'] ?? 0;
+    $returned_items_count = $returns['returned_items_count'] ?? 0;
+    
     // Get petty cash / cash out transactions
     $petty_sql = "SELECT SUM(amount) as total_cash_out FROM pettycash WHERE register_id = $register_id";
     $petty_result = mysqli_query($con, $petty_sql);
     $petty = mysqli_fetch_assoc($petty_result);
     $cash_out = $petty['total_cash_out'] ?? 0;
     
-    // Calculate cash drawer amount
-    $cash_drawer_amount = $opening_balance + $cash_sales - $cash_out;
+    // Calculate cash drawer amount - subtract cash returns
+    $cash_drawer_amount = $opening_balance + $cash_sales - $cash_returns - $cash_out;
     
     // Prepare response data
     $summary = [
@@ -294,7 +331,14 @@ function getRegisterSummary() {
         'cash_sales' => floatval($cash_sales),
         'card_sales' => floatval($card_sales),
         'total_sales' => floatval($cash_sales + $card_sales),
+        'cash_returns' => floatval($cash_returns),
+        'store_credit_returns' => floatval($store_credit_returns),
+        'total_returns' => floatval($cash_returns + $store_credit_returns),
+        'net_cash_sales' => floatval($cash_sales - $cash_returns),
         'transaction_count' => intval($transaction_count),
+        'returns_count' => intval($returns_count),
+        'returned_invoices_count' => intval($returned_invoices_count),
+        'returned_items_count' => intval($returned_items_count),
         'cash_out' => floatval($cash_out),
         'expected_cash' => floatval($cash_drawer_amount)
     ];
@@ -393,14 +437,45 @@ function getRegisterStatus() {
         $card_sales = $sales['card_sales'] ?? 0;
         $transaction_count = $sales['transaction_count'] ?? 0;
         
+        // Get returns data - with more detailed breakdown and item counts
+        $returns_sql = "SELECT 
+                          SUM(CASE WHEN refund_method = 'Cash' THEN return_amount ELSE 0 END) as cash_returns,
+                          SUM(CASE WHEN refund_method = 'Store Credit' THEN return_amount ELSE 0 END) as store_credit_returns,
+                          COUNT(*) as returns_count,
+                          COUNT(DISTINCT invoice_id) as returned_invoices_count,
+                          (SELECT COUNT(*) FROM sales_return_items sri 
+                           JOIN sales_returns sr ON sri.return_id = sr.return_id
+                           WHERE DATE(sr.return_date) = CURDATE() AND
+                           TIME(sr.return_date) BETWEEN 
+                              (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
+                           AND 
+                              CURRENT_TIME()) as returned_items_count
+                        FROM 
+                          sales_returns
+                        WHERE 
+                          DATE(return_date) = CURDATE() AND
+                          TIME(return_date) BETWEEN 
+                            (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
+                          AND 
+                            CURRENT_TIME()";
+
+        $returns_result = mysqli_query($con, $returns_sql);
+        $returns = mysqli_fetch_assoc($returns_result);
+        
+        $cash_returns = $returns['cash_returns'] ?? 0;
+        $store_credit_returns = $returns['store_credit_returns'] ?? 0;
+        $returns_count = $returns['returns_count'] ?? 0;
+        $returned_invoices_count = $returns['returned_invoices_count'] ?? 0;
+        $returned_items_count = $returns['returned_items_count'] ?? 0;
+        
         // Get petty cash / cash out transactions
         $petty_sql = "SELECT SUM(amount) as total_cash_out FROM pettycash WHERE register_id = $register_id";
         $petty_result = mysqli_query($con, $petty_sql);
         $petty = mysqli_fetch_assoc($petty_result);
         $cash_out = $petty['total_cash_out'] ?? 0;
         
-        // Calculate expected cash
-        $expected_cash = $opening_balance + $cash_sales - $cash_out;
+        // Calculate expected cash - subtract cash returns
+        $expected_cash = $opening_balance + $cash_sales - $cash_returns - $cash_out;
         
         $register_data['register_id'] = intval($register_id);
         $register_data['details'] = [
@@ -408,7 +483,14 @@ function getRegisterStatus() {
             'total_sales' => floatval($cash_sales + $card_sales),
             'cash_sales' => floatval($cash_sales),
             'card_sales' => floatval($card_sales),
+            'cash_returns' => floatval($cash_returns),
+            'store_credit_returns' => floatval($store_credit_returns),
+            'total_returns' => floatval($cash_returns + $store_credit_returns),
+            'net_cash_sales' => floatval($cash_sales - $cash_returns),
             'transaction_count' => intval($transaction_count),
+            'returns_count' => intval($returns_count),
+            'returned_invoices_count' => intval($returned_invoices_count),
+            'returned_items_count' => intval($returned_items_count),
             'cash_out' => floatval($cash_out),
             'expected_cash' => floatval($expected_cash)
         ];
