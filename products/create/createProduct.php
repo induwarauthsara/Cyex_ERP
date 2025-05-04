@@ -418,7 +418,7 @@ try {
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 combo_product_id INT,
                 component_product_id INT,
-                quantity INT,
+                quantity DECIMAL(10,3) NOT NULL DEFAULT 1,
                 batch_number VARCHAR(50),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (combo_product_id) REFERENCES products(product_id),
@@ -440,7 +440,7 @@ try {
                 }
 
                 $stmt->bind_param(
-                    "iiis",
+                    "iids",
                     $productId,
                     $component['productId'],
                     $component['quantity'],

@@ -673,7 +673,7 @@
                         <div class="col-md-4">
                             <label class="form-label">Quantity</label>
                             <div class="input-group">
-                                <input type="number" class="form-control combo-quantity" name="comboProducts[${comboIndex}][quantity]" min="1" value="${data ? data.quantity || 1 : 1}" required>
+                                <input type="number" class="form-control combo-quantity" name="comboProducts[${comboIndex}][quantity]" min="0.001" step="0.001" value="${data ? data.quantity || 1 : 1}" required>
                                 <button type="button" class="btn btn-danger remove-combo-btn" onclick="removeComboProduct(this)">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -837,7 +837,7 @@
                 let comboValid = true;
                 $('#comboProductsContainer .combo-item').each(function() {
                     const productId = $(this).find('.combo-product-select').val();
-                    const quantity = parseInt($(this).find('.combo-quantity').val());
+                    const quantity = parseFloat($(this).find('.combo-quantity').val());
 
                     if (!productId) {
                         showErrorMessage('Please select a product for all combo items');
@@ -846,8 +846,8 @@
                         return false;
                     }
 
-                    if (quantity <= 0) {
-                        showErrorMessage('Quantity must be at least 1 for all combo items');
+                    if (isNaN(quantity) || quantity <= 0) {
+                        showErrorMessage('Quantity must be greater than zero for all combo items');
                         $(this).find('.combo-quantity').focus();
                         comboValid = false;
                         return false;
@@ -919,7 +919,7 @@
                 $('#comboProductsContainer .combo-item').each(function() {
                     const combo = {
                         productId: $(this).find('.combo-product-select').val(),
-                        quantity: parseInt($(this).find('.combo-quantity').val())
+                        quantity: parseFloat(parseFloat($(this).find('.combo-quantity').val()).toFixed(3))
                     };
                     formData.comboProducts.push(combo);
                 });
@@ -1030,63 +1030,113 @@
                 console.log('Product data to be sent:', productData);
                 const productId = $('#productId').val();
 
-                // Create FormData object for file uploads
-                const formData = new FormData();
-                formData.append('productData', JSON.stringify(productData));
-                formData.append('productId', productId);
-
-                // Add image if selected
-                if ($('#productImage')[0].files.length > 0) {
-                    formData.append('productImage', $('#productImage')[0].files[0]);
-                }
-
-                // Disable submit button and show loading
-                const submitButton = $('#submitButton');
-                const originalButtonText = submitButton.html();
-                submitButton.html('<i class="fas fa-spinner fa-spin"></i> Updating...').prop('disabled', true);
-                $('#loader').show();
-
-                // Send AJAX request
-                $.ajax({
-                    url: 'API/updateProduct.php',
-                    type: 'POST',
-                    data: formData,
-                    contentType: false,
-                    processData: false,
-                    success: function(response) {
-                        if (response.success) {
-                            showSuccessMessage(response.message);
-                            setTimeout(() => {
-                                window.location.href = 'index.php';
-                            }, 2000);
-                        } else {
-                            // Reset the deleted batches array if update failed
-                            deletedBatches = [];
-
-                            // Show error message
-                            if (response.field) {
-                                showErrorMessage(response.message + ` (${response.field})`);
+                // For combo products, calculate the maximum available quantity
+                if (productData.productType === 'combo' && productData.comboProducts.length > 0) {
+                    // We'll use AJAX to get the calculated quantity
+                    $.ajax({
+                        url: 'API/calculateComboQuantity.php',
+                        type: 'POST',
+                        data: JSON.stringify({ comboComponents: productData.comboProducts }),
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                console.log('Calculated combo quantity:', response.quantity);
+                                
+                                // Add the calculated quantity to the productData
+                                productData.comboQuantity = response.quantity;
+                                
+                                // Now proceed with the form submission
+                                submitFormWithData(productData, productId);
                             } else {
-                                showErrorMessage(response.message);
+                                showErrorMessage(response.message || 'Failed to calculate combo quantity');
                             }
+                        },
+                        error: function() {
+                            showErrorMessage('Error calculating combo quantity');
                         }
-                    },
-                    error: function(xhr) {
+                    });
+                } else {
+                    // For non-combo products, proceed directly
+                    submitFormWithData(productData, productId);
+                }
+            });
+        }
+
+        function submitFormWithData(productData, productId) {
+            // Create FormData object for file uploads
+            const formData = new FormData();
+            formData.append('productData', JSON.stringify(productData));
+            formData.append('productId', productId);
+
+            // Add image if selected
+            if ($('#productImage')[0].files.length > 0) {
+                formData.append('productImage', $('#productImage')[0].files[0]);
+            }
+
+            // Disable submit button and show loading
+            const submitButton = $('#submitButton');
+            const originalButtonText = submitButton.html();
+            submitButton.html('<i class="fas fa-spinner fa-spin"></i> Updating...').prop('disabled', true);
+            $('#loader').show();
+
+            // Send AJAX request
+            $.ajax({
+                url: 'API/updateProduct.php',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    if (response.success) {
+                        // Call updateProducts.php to recalculate quantities for all combo products
+                        updateComboProductsQuantities();
+                        
+                        showSuccessMessage(response.message);
+                        setTimeout(() => {
+                            window.location.href = 'index.php';
+                        }, 2000);
+                    } else {
                         // Reset the deleted batches array if update failed
                         deletedBatches = [];
 
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            showErrorMessage(response.message || 'An error occurred while updating the product');
-                        } catch (e) {
-                            showErrorMessage('An error occurred while updating the product');
+                        // Show error message
+                        if (response.field) {
+                            showErrorMessage(response.message + ` (${response.field})`);
+                        } else {
+                            showErrorMessage(response.message);
                         }
-                    },
-                    complete: function() {
-                        submitButton.html(originalButtonText).prop('disabled', false);
-                        $('#loader').hide();
                     }
-                });
+                },
+                error: function(xhr) {
+                    // Reset the deleted batches array if update failed
+                    deletedBatches = [];
+
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        showErrorMessage(response.message || 'An error occurred while updating the product');
+                    } catch (e) {
+                        showErrorMessage('An error occurred while updating the product');
+                    }
+                },
+                complete: function() {
+                    submitButton.html(originalButtonText).prop('disabled', false);
+                    $('#loader').hide();
+                }
+            });
+        }
+
+        // Function to update combo product quantities
+        function updateComboProductsQuantities() {
+            $.ajax({
+                url: '../crons/updateProducts.php',
+                type: 'GET',
+                success: function(response) {
+                    console.log('Combo product quantities updated successfully');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating combo product quantities:', error);
+                }
             });
         }
         

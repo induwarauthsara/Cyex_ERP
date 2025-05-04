@@ -450,7 +450,7 @@ try {
                     id INT PRIMARY KEY AUTO_INCREMENT,
                     combo_product_id INT,
                     component_product_id INT,
-                    quantity INT,
+                    quantity DECIMAL(10,3) NOT NULL DEFAULT 1,
                     batch_number VARCHAR(50),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (combo_product_id) REFERENCES products(product_id),
@@ -461,20 +461,47 @@ try {
                     throw new ProductException("Error creating combo_products table: " . $con->error);
                 }
                 
+                // Calculate the maximum available quantity for this combo product
+                $comboQuantity = 0;
+                if (!empty($productData['comboProducts'])) {
+                    // Check if quantity was calculated in the frontend
+                    if (isset($productData['comboQuantity'])) {
+                        $comboQuantity = (float)$productData['comboQuantity'];
+                    } else {
+                        // Calculate it here if not provided
+                        require_once 'calculateComboQuantity.php';
+                        $comboQuantity = calculateComboQuantity($productData['comboProducts']);
+                    }
+                }
+                
                 // Get current batch number
-                $batchQuery = "SELECT batch_number FROM product_batch WHERE product_id = ? LIMIT 1";
+                $batchQuery = "SELECT batch_id, batch_number FROM product_batch WHERE product_id = ?";
                 $stmt = $con->prepare($batchQuery);
                 $stmt->bind_param("i", $productId);
                 $stmt->execute();
                 $batchResult = $stmt->get_result();
                 
                 if ($batchResult->num_rows > 0) {
-                    $batchNumber = $batchResult->fetch_assoc()['batch_number'];
+                    // Update existing batches with the new calculated quantity
+                    while ($batch = $batchResult->fetch_assoc()) {
+                        $updateSql = "UPDATE product_batch SET quantity = ? WHERE batch_id = ?";
+                        $updateStmt = $con->prepare($updateSql);
+                        if (!$updateStmt) {
+                            throw new ProductException("Database error updating batch quantity: " . $con->error);
+                        }
+                        
+                        $updateStmt->bind_param("di", $comboQuantity, $batch['batch_id']);
+                        if (!$updateStmt->execute()) {
+                            throw new ProductException("Error updating batch quantity: " . $updateStmt->error);
+                        }
+                        
+                        $batchNumber = $batch['batch_number'];
+                    }
                 } else {
                     // Create a new batch if none exists
                     $batchNumber = 'BATCH-' . date('Ymd') . '-' . substr(uniqid(), -5);
                     $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
-                            VALUES (?, ?, ?, ?, 0)";
+                            VALUES (?, ?, ?, ?, ?)";
                     
                     $stmt = $con->prepare($sql);
                     if (!$stmt) {
@@ -485,11 +512,12 @@ try {
                     $sellingPrice = $productData['sellingPrice'] ?? 0;
                     
                     $stmt->bind_param(
-                        "isdd",
+                        "isddd",
                         $productId,
                         $batchNumber,
                         $cost,
-                        $sellingPrice
+                        $sellingPrice,
+                        $comboQuantity
                     );
                     
                     if (!$stmt->execute()) {
@@ -508,7 +536,7 @@ try {
                     }
                     
                     $stmt->bind_param(
-                        "iiis",
+                        "iids",
                         $productId,
                         $component['productId'],
                         $component['quantity'],
