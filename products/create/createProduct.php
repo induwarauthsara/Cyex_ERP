@@ -143,6 +143,56 @@ function checkDuplicates($con, $productData)
     }
 }
 
+/**
+ * Calculate the maximum available quantity for a combo product
+ * based on the available quantities of its components
+ */
+function calculateComboProductQuantity($con, $comboComponents) 
+{
+    $maxQuantity = null;
+    
+    foreach ($comboComponents as $component) {
+        if (empty($component['productId']) || empty($component['quantity']) || $component['quantity'] <= 0) {
+            continue;
+        }
+        
+        // Get available quantity for this component
+        $query = "SELECT pb.product_id, SUM(pb.quantity) as total_quantity 
+                  FROM product_batch pb 
+                  WHERE pb.product_id = ? AND pb.status = 'active'
+                  GROUP BY pb.product_id";
+        
+        $stmt = $con->prepare($query);
+        if (!$stmt) {
+            return 0; // Return 0 if there's an error
+        }
+        
+        $stmt->bind_param("i", $component['productId']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($row = $result->fetch_assoc()) {
+            $availableQty = floatval($row['total_quantity']);
+            $requiredQty = floatval($component['quantity']);
+            
+            // Calculate how many combo units can be created from this component
+            $possibleComboUnits = floor($availableQty / $requiredQty);
+            
+            // Update the max quantity if this is lower than the current max
+            if ($maxQuantity === null || $possibleComboUnits < $maxQuantity) {
+                $maxQuantity = $possibleComboUnits;
+            }
+        } else {
+            // If any component has zero stock, the combo can't be created
+            return 0;
+        }
+        
+        $stmt->close();
+    }
+    
+    return $maxQuantity !== null ? $maxQuantity : 0;
+}
+
 try {
     if (!isset($_POST['productData'])) {
         throw new ProductException("No product data received");
@@ -301,13 +351,19 @@ try {
             break;
 
         case 'combo':
+            // Calculate the maximum available quantity for this combo product
+            $comboQuantity = 0;
+            if (!empty($productData['comboProducts'])) {
+                $comboQuantity = calculateComboProductQuantity($con, $productData['comboProducts']);
+            }
+            
             // Create main combo batch
             if ($productData['hasVariant']) {
                 // Handle variants
                 foreach ($productData['variants'] as $variant) {
                     $batchNumber = $variant['variantName'];
                     $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, 
-                            quantity, notes) VALUES (?, ?, ?, ?, ?, ?)";
+                            notes, quantity) VALUES (?, ?, ?, ?, ?, ?)";
 
                     $stmt = $con->prepare($sql);
                     if (!$stmt) {
@@ -315,14 +371,15 @@ try {
                     }
 
                     $variantName = $variant['variantValue'];
+                    // Set each variant's quantity to the calculated combo quantity
                     $stmt->bind_param(
-                        "isddds",
+                        "isddsd",
                         $productId,
                         $batchNumber,
                         $variant['variantCost'],
                         $variant['variantPrice'],
-                        $variant['variantStock'],
-                        $variantName
+                        $variantName,
+                        $comboQuantity
                     );
 
                     if (!$stmt->execute()) {
@@ -346,7 +403,7 @@ try {
                     $batchNumber,
                     $productData['cost'],
                     $productData['sellingPrice'],
-                    $productData['initialStock']
+                    $comboQuantity
                 );
 
                 if (!$stmt->execute()) {
@@ -404,7 +461,7 @@ try {
                 foreach ($productData['variants'] as $variant) {
                     $batchNumber = $variant['variantName'];
                     $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, 
-                            quantity, notes) VALUES (?, ?, ?, ?, ?, ?)";
+                            notes) VALUES (?, ?, ?, ?, ?)";
 
                     $stmt = $con->prepare($sql);
                     if (!$stmt) {
@@ -413,12 +470,11 @@ try {
 
                     $variantName = $variant['variantValue'];
                     $stmt->bind_param(
-                        "isddds",
+                        "isdds",
                         $productId,
                         $batchNumber,
                         $variant['variantCost'],
                         $variant['variantPrice'],
-                        $variant['variantStock'],
                         $variantName
                     );
 
@@ -429,8 +485,8 @@ try {
             } else {
                 // Single variant/batch
                 $batchNumber = generateBatchNumber();
-                $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price, quantity) 
-                    VALUES (?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO product_batch (product_id, batch_number, cost, selling_price) 
+                    VALUES (?, ?, ?, ?)";
 
                 $stmt = $con->prepare($sql);
                 if (!$stmt) {
@@ -438,12 +494,11 @@ try {
                 }
 
                 $stmt->bind_param(
-                    "isddd",
+                    "isdd",
                     $productId,
                     $batchNumber,
                     $productData['cost'],
-                    $productData['sellingPrice'],
-                    $productData['initialStock']
+                    $productData['sellingPrice']
                 );
 
                 if (!$stmt->execute()) {
