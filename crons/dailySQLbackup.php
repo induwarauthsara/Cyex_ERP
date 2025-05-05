@@ -4,9 +4,9 @@ require_once '../inc/config.php';
 // 2. Send Database Backup to Email
 // Email details
 $to = "induwarauthsara19@gmail.com";
-$subject = date('Y-m-d') . " Srijaya Billing System Database Backup";
+$subject = date('Y-m-d') . " $ERP_COMPANY_NAME System Database Backup";
 $message = "Please find attached the database backup for " . date('Y-m-d');
-$headers = "From: info@srijaya.lk"; // Replace with your email address
+$headers = "From: DBbackup@cyextech.com"; // Replace with your email address
 
 // Command to execute mysqldump and capture output
 $command = "mysqldump --opt -h $server -u $db_user -p$db_pwd $db_name";
@@ -31,9 +31,9 @@ if ($output !== null) {
     $body .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
     $body .= $message . "\r\n\r\n";
     $body .= "--$uid\r\n";
-    $body .= "Content-Type: application/octet-stream; name=\"backup.sql\"\r\n";
+    $body .= "Content-Type: application/octet-stream; name=\"" . date('Y-m-d') . " {$ERP_COMPANY_NAME} backup.sql\"\r\n";
     $body .= "Content-Transfer-Encoding: base64\r\n";
-    $body .= "Content-Disposition: attachment; filename=\"backup.sql\"\r\n\r\n";
+    $body .= "Content-Disposition: attachment; filename=\"" . date('Y-m-d') . " {$ERP_COMPANY_NAME} backup.sql\"\r\n\r\n";
     $body .= chunk_split(base64_encode($output)) . "\r\n\r\n";
     $body .= "--$uid--";
 
