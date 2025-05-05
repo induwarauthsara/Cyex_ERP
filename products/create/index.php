@@ -696,6 +696,48 @@
             loadInitialData(); // Load initial options (brands, categories, suppliers)
             // Load Product list for combo product
             loadProductsForCombo();
+            
+            // REMOVE the earlier general select2 initialization and reinitialize each specific select
+            // Initialize each select separately to avoid conflicts
+            $('#brand').select2();
+            $('#category').select2();
+            $('#productType').select2();
+            $('#defaultUnit').select2();
+            $('#saleUnit').select2();
+            $('#purchaseUnit').select2();
+            
+            // Special initialization for the combo product select
+            setTimeout(function() {
+                $('#comboProductSelect').select2({
+                    placeholder: 'Search and select product',
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#addComboProductModal'),
+                    matcher: function(params, data) {
+                        // If there is no search term, return all data
+                        if ($.trim(params.term) === '') {
+                            return data;
+                        }
+                        
+                        // Search term to lowercase
+                        const term = params.term.toLowerCase();
+                        
+                        // Skip if empty
+                        if (!data.text) {
+                            return null;
+                        }
+                        
+                        // Search in the text
+                        if (data.text.toLowerCase().indexOf(term) > -1) {
+                            return data;
+                        }
+                        
+                        // Return `null` if the term should not be displayed
+                        return null;
+                    }
+                });
+            }, 500);
+            
             $('#comboProductSelect').on('change', function() {
                 const productId = $(this).val();
                 if (productId) {
@@ -1270,7 +1312,36 @@
                         $.each(data, function(index, product) {
                             $('#comboProductSelect').append(`<option value="${product.id}">${product.name}</option>`);
                         });
-                        $('#comboProductSelect').select2();
+                        
+                        // Reinitialize select2 for this element
+                        $('#comboProductSelect').select2({
+                            placeholder: 'Search and select product',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: $('#addComboProductModal'),
+                            matcher: function(params, data) {
+                                // If there is no search term, return all data
+                                if ($.trim(params.term) === '') {
+                                    return data;
+                                }
+                                
+                                // Search term to lowercase
+                                const term = params.term.toLowerCase();
+                                
+                                // Skip if empty
+                                if (!data.text) {
+                                    return null;
+                                }
+                                
+                                // Search in the text
+                                if (data.text.toLowerCase().indexOf(term) > -1) {
+                                    return data;
+                                }
+                                
+                                // Return `null` if the term should not be displayed
+                                return null;
+                            }
+                        });
                     },
                     error: function(xhr, status, error) {
                         console.error('Error loading products', error);
@@ -1345,6 +1416,10 @@
                     success: function(response) {
                         if (response.success) {
                             showSuccessMessage("Product created successfully!");
+                            
+                            // Reload the product list for combo products after successful creation
+                            loadProductsForCombo();
+                            
                             resetForm();
                         } else {
                             handleErrorResponse(response);
