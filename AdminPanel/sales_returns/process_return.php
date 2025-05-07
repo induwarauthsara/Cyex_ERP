@@ -240,55 +240,55 @@ try {
     // Handle refund method
     if ($refund_method === 'Store Credit' && $customer_id) {
         // Add to customer's store credit
-        $customer_query = "SELECT customer_extra_fund FROM customers WHERE id = '$customer_id'";
-        $customer_data = fetch_data($customer_query);
+        // $customer_query = "SELECT customer_extra_fund FROM customers WHERE id = '$customer_id'";
+        // $customer_data = fetch_data($customer_query);
         
-        if (!empty($customer_data)) {
-            $current_credit = floatval($customer_data[0]['customer_extra_fund'] ?? 0);
-            $new_credit = $current_credit + $total_return_amount;
+        // if (!empty($customer_data)) {
+        //     // $current_credit = floatval($customer_data[0]['customer_extra_fund'] ?? 0);
+        //     // $new_credit = $current_credit + $total_return_amount;
             
-            // Update customer credit
-            $update_credit_query = "UPDATE customers SET customer_extra_fund = '$new_credit' WHERE id = '$customer_id'";
-            $update_credit_result = mysqli_query($con, $update_credit_query);
+        //     // Update customer credit
+        //     // $update_credit_query = "UPDATE customers SET customer_extra_fund = '$new_credit' WHERE id = '$customer_id'";
+        //     // $update_credit_result = mysqli_query($con, $update_credit_query);
             
-            if (!$update_credit_result) {
-                throw new Exception('Failed to update customer store credit: ' . mysqli_error($con));
-            }
+        //     // if (!$update_credit_result) {
+        //     //     throw new Exception('Failed to update customer store credit: ' . mysqli_error($con));
+        //     // }
             
-            // Log credit update action
-            if (isset($_SESSION['employee_id'])) {
-                $employee_id = $_SESSION['employee_id'];
-                $action_log_query = "INSERT INTO action_log (employee_id, action, description) VALUES ('$employee_id', 'Store Credit', 'Added store credit to customer #$customer_id: +$total_return_amount')";
-            } else {
-                $action_log_query = "INSERT INTO action_log (action, description) VALUES ('Store Credit', 'Added store credit to customer #$customer_id: +$total_return_amount')";
-            }
-            mysqli_query($con, $action_log_query);
+        //     // Log credit update action
+        //     if (isset($_SESSION['employee_id'])) {
+        //         $employee_id = $_SESSION['employee_id'];
+        //         $action_log_query = "INSERT INTO action_log (employee_id, action, description) VALUES ('$employee_id', 'Store Credit', 'Added store credit to customer #$customer_id: +$total_return_amount')";
+        //     } else {
+        //         $action_log_query = "INSERT INTO action_log (action, description) VALUES ('Store Credit', 'Added store credit to customer #$customer_id: +$total_return_amount')";
+        //     }
+        //     mysqli_query($con, $action_log_query);
             
-            // Add fund transaction record if the table exists
-            try {
-                $fund_transaction_query = "INSERT INTO fund_transactions (
-                    customer_id, 
-                    amount, 
-                    type, 
-                    description, 
-                    invoice_id
-                ) VALUES (
-                    '$customer_id',
-                    '$total_return_amount',
-                    'addition',
-                    'Return credit from invoice #$invoice_number',
-                    '$invoice_number'
-                )";
-                $fund_transaction_result = mysqli_query($con, $fund_transaction_query);
+        //     // Add fund transaction record if the table exists
+        //     try {
+        //         $fund_transaction_query = "INSERT INTO fund_transactions (
+        //             customer_id, 
+        //             amount, 
+        //             type, 
+        //             description, 
+        //             invoice_id
+        //         ) VALUES (
+        //             '$customer_id',
+        //             '$total_return_amount',
+        //             'addition',
+        //             'Return credit from invoice #$invoice_number',
+        //             '$invoice_number'
+        //         )";
+        //         $fund_transaction_result = mysqli_query($con, $fund_transaction_query);
                 
-                if (!$fund_transaction_result) {
-                    error_log("Warning: Could not add fund transaction record: " . mysqli_error($con));
-                }
-            } catch (Exception $e) {
-                // Don't fail the entire transaction if fund_transactions insert fails
-                error_log("Warning: Could not add fund transaction record: " . $e->getMessage());
-            }
-        }
+        //         if (!$fund_transaction_result) {
+        //             error_log("Warning: Could not add fund transaction record: " . mysqli_error($con));
+        //         }
+        //     } catch (Exception $e) {
+        //         // Don't fail the entire transaction if fund_transactions insert fails
+        //         error_log("Warning: Could not add fund transaction record: " . $e->getMessage());
+        //     }
+        // }
     } else if ($refund_method === 'Cash') {
         // Log cash refund transaction
         transaction_log('Cash Refund', "Sales return for invoice #$invoice_number", -$total_return_amount);

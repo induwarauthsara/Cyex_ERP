@@ -196,6 +196,8 @@ if (isset($_GET['invoice'])) {
             $biller_id = $invoice['biller'];
             $total = $invoice['total'];
             $discount = $invoice['discount'];
+            $amount_received = $invoice['amount_received'];
+            $cash_change = $invoice['cash_change'];
             $advance = $invoice['advance'];
             $balance = $invoice['balance'];
             $full_paid = $invoice['full_paid'];
@@ -309,9 +311,21 @@ if (isset($_GET['invoice'])) {
             <td colspan="3" class="bill_sum">Discount</td>
             <td class="price"><?php echo number_format($discount, 2); ?></td>
         </tr>
-        <?php if ($advance > 0) { ?>
+        <?php if ($amount_received > 0) { ?>
             <tr>
-                <td colspan="3" class="bill_sum"><?php echo $payment_method; ?></td>
+                <td colspan="3" class="bill_sum">Amount Received (<?php echo $payment_method; ?>)</td>
+                <td class="price"><?php echo number_format($amount_received, 2); ?></td>
+            </tr>
+        <?php } ?>
+        <?php if ($cash_change > 0) { ?>
+            <tr>
+                <td colspan="3" class="bill_sum">Change</td>
+                <td class="price"><?php echo number_format($cash_change, 2); ?></td>
+            </tr>
+        <?php } ?>
+        <?php if ($advance != $amount_received - $cash_change) { ?>
+            <tr>
+                <td colspan="3" class="bill_sum">Actual Payment Applied</td>
                 <td class="price"><?php echo number_format($advance, 2); ?></td>
             </tr>
         <?php } ?>
@@ -325,13 +339,6 @@ if (isset($_GET['invoice'])) {
             <td colspan="3" class="bill_sum">TOTAL</td>
             <td class="price"><?php echo number_format($total - $discount, 2); ?></td>
         </tr>
-        <?php if ($change > 0) { ?>
-            <tr>
-                <td colspan="3" class="bill_sum">Change</td>
-                <td class="price"><?php echo number_format($change, 2); ?></td>
-            </tr>
-        <?php } ?>
-
     </table>
 
     <?php if ($total_savings > 0) { ?>

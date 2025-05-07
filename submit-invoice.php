@@ -23,6 +23,7 @@ $totalReceived = isset($data['totalReceived']) ? floatval($data['totalReceived']
 $customerName = isset($data['customerName']) ? trim($data['customerName']) : 'Walk-in Customer';
 $customerNumber = isset($data['customerNumber']) ? trim($data['customerNumber']) : '0';
 $individualDiscountMode = isset($data['individualDiscountMode']) ? (bool)$data['individualDiscountMode'] : false;
+$bool_creditPayment = isset($data['creditPayment']) ? (bool)$data['creditPayment'] : false;
 
 // Get current Logged in Employee User id
 $biller = $_SESSION['employee_id'];
@@ -42,7 +43,41 @@ if (!in_array($discountType, ['flat', 'percentage'])) {
 $discount = $discountType === 'percentage' ? ($subtotal * $discountValue / 100) : $discountValue;
 $finalTotal = $subtotal - $discount;
 
-$balance = isset($data['balance']) ? floatval($data['balance']) : 0;
+// New calculation for amount_received (previously advance), cash_change (previously balance), 
+// the new advance, and the new balance
+$amount_received = isset($data['totalReceived']) ? floatval($data['totalReceived']) : 0;
+$cash_change = 0;
+$advance = 0;
+$balance = 0;
+
+// Get customer fund data
+$useCustomerExtraFundAmount = isset($data['useCustomerExtraFundAmount']) ? floatval($data['useCustomerExtraFundAmount']) : 0;
+$bool_useCustomerExtraFund = isset($data['bool_useCustomerExtraFund']) ? (bool)$data['bool_useCustomerExtraFund'] : false;
+
+// Calculate cash_change (amount to return to customer when they pay more than needed)
+if ($amount_received > $finalTotal && !$bool_creditPayment) {
+    // If customer overpaid
+    $cash_change = $amount_received - $finalTotal;
+    // Advance is what customer actually paid minus change returned (not including extra fund)
+    $advance = $amount_received - $cash_change; 
+    $balance = 0; // No remaining balance
+} else {
+    $cash_change = 0;
+    // Advance is just what they actually handed over (not including extra fund)
+    $advance = $amount_received;
+    $balance = $finalTotal - $advance; // Balance is what's still due
+}
+
+// Customer extra fund handling - only reduces balance, doesn't increase advance
+if ($bool_useCustomerExtraFund && $useCustomerExtraFundAmount > 0) {
+    // Extra fund only reduces the balance, not counted as advance
+    $balance = $balance - $useCustomerExtraFundAmount;
+    if ($balance < 0) {
+        $balance = 0; // Ensure balance doesn't go negative
+    }
+    // Note: We don't increase advance here since customer extra fund isn't handed over now
+}
+
 $paymentMethod = isset($data['paymentMethod']) ? trim($data['paymentMethod']) : 'Cash';
 if (!in_array($paymentMethod, ['Cash', 'Card', 'Online Transfer', 'Credit'])) {
     $paymentMethod = 'Cash'; // Default to Cash if invalid method
@@ -59,18 +94,8 @@ if (!is_array($quickCashData)) {
 }
 $quickCashCounts = json_encode($quickCashData);
 
-// Customer fund handling
-$useCustomerExtraFundAmount = isset($data['useCustomerExtraFundAmount']) ? floatval($data['useCustomerExtraFundAmount']) : 0;
-$bool_useCustomerExtraFund = isset($data['bool_useCustomerExtraFund']) ? (bool)$data['bool_useCustomerExtraFund'] : false;
-$bool_creditPayment = isset($data['creditPayment']) ? (bool)$data['creditPayment'] : false;
-
-// Customer extra fund validation and correct calculation
-if ($bool_useCustomerExtraFund && $useCustomerExtraFundAmount > 0) {
-    $totalPayable -= $useCustomerExtraFundAmount;
-}
-
-// Payment validation
-if ($totalReceived < $totalPayable && !$bool_creditPayment) {
+// Payment validation - now checking against the updated balance
+if ($balance > 0 && !$bool_creditPayment) {
     $errors[] = "Insufficient amount received";
 }
 
@@ -139,13 +164,13 @@ try {
         throw new Exception("Customer does not have enough funds. Available: " . $currentExtraFund);
     }
 
-    // Insert invoice with additional fields for better tracking
+    // Insert invoice with updated column structure
     $query = "INSERT INTO invoice (
-                customer_name, customer_mobile, total, discount, advance, 
-                balance, paymentMethod, full_paid, invoice_description, biller,
+                customer_name, customer_mobile, customer_id, total, discount, amount_received, 
+                cash_change, advance, balance, paymentMethod, full_paid, invoice_description, biller,
                 individual_discount_mode, credit_payment, time, invoice_date
               ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()
               )";
     
     $stmt = mysqli_prepare($con, $query);
@@ -155,17 +180,19 @@ try {
 
     $invoiceDescription = 'Standard Purchase';
     $fullPaid = ($balance <= 0 || $bool_creditPayment) ? ($bool_creditPayment ? 0 : 1) : 0;
-    $advance = $totalReceived;
     $individual_discount_mode_int = $individualDiscountMode ? 1 : 0;
     $credit_payment_int = $bool_creditPayment ? 1 : 0;
 
     mysqli_stmt_bind_param(
         $stmt,
-        'ssddddsssiii',
+        'ssidddddsssiiii',
         $customerName,
         $customerNumber,
+        $customerId,
         $subtotal,
         $discount,
+        $amount_received,
+        $cash_change,
         $advance,
         $balance,
         $paymentMethod,
