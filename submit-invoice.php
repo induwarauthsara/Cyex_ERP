@@ -21,7 +21,7 @@ $errors = [];
 $totalPayable = isset($data['totalPayable']) ? floatval($data['totalPayable']) : 0;
 $totalReceived = isset($data['totalReceived']) ? floatval($data['totalReceived']) : 0;
 $customerName = isset($data['customerName']) ? trim($data['customerName']) : 'Walk-in Customer';
-$customerNumber = isset($data['customerNumber']) ? trim($data['customerNumber']) : '0';
+$customerNumber = isset($data['customerNumber']) ? trim($data['customerNumber']) : '1';
 $individualDiscountMode = isset($data['individualDiscountMode']) ? (bool)$data['individualDiscountMode'] : false;
 $bool_creditPayment = isset($data['creditPayment']) ? (bool)$data['creditPayment'] : false;
 
