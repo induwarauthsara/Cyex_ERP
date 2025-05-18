@@ -46,7 +46,7 @@
 
                 <div>
                     <label for="tele">Customer Number:</label>
-                    <input type="text" name="tele" id="tele" autocomplete="off" readonly placeholder="0" onclick="searchCustomer()">
+                    <input type="text" name="tele" id="tele" autocomplete="off" readonly placeholder="customer tel" onclick="searchCustomer()">
                 </div>
             </div>
             <div class="product-container">
