@@ -32,9 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'get_register_summary':
             getRegisterSummary();
             break;
-            
+
         case 'get_today_sessions':
-            getTodaySessions();
+            getTodaySessions(); // Now shows today's sessions plus any open ones from previous days
             break;
             
         case 'get_register_status':
@@ -250,8 +250,7 @@ function getRegisterSummary() {
     $register = mysqli_fetch_assoc($result);
     $register_id = $register['id'];
     $opening_balance = $register['opening_balance'];
-    
-    // Get total sales amount (cash, card) for the period
+      // Get total sales amount (cash, card) for the period
     // Fixing cash calculation - only count the actual bill amount, not the amount customer gave
     $sales_sql = "SELECT 
                     SUM(CASE WHEN pd.payment_method = 'Cash' THEN i.total - i.discount ELSE 0 END) as cash_sales,
@@ -262,13 +261,13 @@ function getRegisterSummary() {
                 LEFT JOIN 
                     payment_details pd ON i.invoice_number = pd.invoice_id
                 WHERE 
-                    i.invoice_date = CURDATE() AND
-                    i.time BETWEEN 
-                        (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
+                    CONCAT(i.invoice_date, ' ', i.time) >= 
+                        (SELECT CONCAT(DATE(opened_at), ' ', TIME(opened_at)) FROM cash_register WHERE id = $register_id) 
                     AND 
+                    CONCAT(i.invoice_date, ' ', i.time) <= 
                         COALESCE(
-                            (SELECT DATE_FORMAT(closed_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id),
-                            CURRENT_TIME()
+                            (SELECT CONCAT(DATE(closed_at), ' ', TIME(closed_at)) FROM cash_register WHERE id = $register_id),
+                            NOW()
                         )";
     
     $sales_result = mysqli_query($con, $sales_sql);
@@ -277,8 +276,7 @@ function getRegisterSummary() {
     $cash_sales = $sales['cash_sales'] ?? 0;
     $card_sales = $sales['card_sales'] ?? 0;
     $transaction_count = $sales['transaction_count'] ?? 0;
-    
-    // Get returns data - with more detailed breakdown and item counts
+      // Get returns data - with more detailed breakdown and item counts
     $returns_sql = "SELECT 
                       SUM(CASE WHEN refund_method = 'Cash' THEN return_amount ELSE 0 END) as cash_returns,
                       SUM(CASE WHEN refund_method = 'Store Credit' THEN return_amount ELSE 0 END) as store_credit_returns,
@@ -286,24 +284,24 @@ function getRegisterSummary() {
                       COUNT(DISTINCT invoice_id) as returned_invoices_count,
                       (SELECT COUNT(*) FROM sales_return_items sri 
                        JOIN sales_returns sr ON sri.return_id = sr.return_id
-                       WHERE DATE(sr.return_date) = CURDATE() AND
-                       TIME(sr.return_date) BETWEEN 
-                          (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
+                       WHERE sr.return_date >= 
+                          (SELECT opened_at FROM cash_register WHERE id = $register_id)
                        AND 
+                          sr.return_date <= 
                           COALESCE(
-                            (SELECT DATE_FORMAT(closed_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id),
-                            CURRENT_TIME()
+                            (SELECT closed_at FROM cash_register WHERE id = $register_id),
+                            NOW()
                           )) as returned_items_count
                     FROM 
                       sales_returns
                     WHERE 
-                      DATE(return_date) = CURDATE() AND
-                      TIME(return_date) BETWEEN 
-                        (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
+                      return_date >= 
+                        (SELECT opened_at FROM cash_register WHERE id = $register_id)
                       AND 
+                        return_date <= 
                         COALESCE(
-                          (SELECT DATE_FORMAT(closed_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id),
-                          CURRENT_TIME()
+                          (SELECT closed_at FROM cash_register WHERE id = $register_id),
+                          NOW()
                         )";
 
     $returns_result = mysqli_query($con, $returns_sql);
@@ -349,12 +347,13 @@ function getRegisterSummary() {
 }
 
 /**
- * Gets all cash register sessions for today
+ * Gets all cash register sessions for today and any open sessions from previous days
  */
 function getTodaySessions() {
     global $con, $response;
     
-    $sql = "SELECT * FROM cash_register WHERE DATE(opened_at) = CURDATE() ORDER BY id DESC";
+    // Get today's sessions and any open sessions regardless of date
+    $sql = "SELECT * FROM cash_register WHERE DATE(opened_at) = CURDATE() OR closed_at IS NULL ORDER BY id DESC";
     $result = mysqli_query($con, $sql);
     
     $sessions = [];
@@ -398,8 +397,8 @@ function recordBankDeposit($amount, $notes) {
 function getRegisterStatus() {
     global $con, $response;
     
-    // Check if there's an open register
-    $sql = "SELECT * FROM cash_register WHERE DATE(opened_at) = CURDATE() AND closed_at IS NULL ORDER BY id DESC LIMIT 1";
+    // Check if there's an open register (regardless of when it was opened)
+    $sql = "SELECT * FROM cash_register WHERE closed_at IS NULL ORDER BY id DESC LIMIT 1";
     $result = mysqli_query($con, $sql);
     $is_open = mysqli_num_rows($result) > 0;
     
@@ -412,8 +411,7 @@ function getRegisterStatus() {
         $register = mysqli_fetch_assoc($result);
         $register_id = $register['id'];
         $opening_balance = $register['opening_balance'];
-        
-        // Get total sales amount (cash, card) for the period
+          // Get total sales amount (cash, card) for the period since the register was opened
         // Fixing cash calculation - only count the actual bill amount, not the amount customer gave
         $sales_sql = "SELECT 
                         SUM(CASE WHEN pd.payment_method = 'Cash' THEN i.total - i.discount ELSE 0 END) as cash_sales,
@@ -424,20 +422,15 @@ function getRegisterStatus() {
                     LEFT JOIN 
                         payment_details pd ON i.invoice_number = pd.invoice_id
                     WHERE 
-                        i.invoice_date = CURDATE() AND
-                        i.time BETWEEN 
-                            (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
-                        AND 
-                            CURRENT_TIME()";
+                        CONCAT(i.invoice_date, ' ', i.time) >= 
+                            (SELECT CONCAT(DATE(opened_at), ' ', TIME(opened_at)) FROM cash_register WHERE id = $register_id)";
         
         $sales_result = mysqli_query($con, $sales_sql);
         $sales = mysqli_fetch_assoc($sales_result);
         
         $cash_sales = $sales['cash_sales'] ?? 0;
         $card_sales = $sales['card_sales'] ?? 0;
-        $transaction_count = $sales['transaction_count'] ?? 0;
-        
-        // Get returns data - with more detailed breakdown and item counts
+        $transaction_count = $sales['transaction_count'] ?? 0;          // Get returns data - with more detailed breakdown and item counts
         $returns_sql = "SELECT 
                           SUM(CASE WHEN refund_method = 'Cash' THEN return_amount ELSE 0 END) as cash_returns,
                           SUM(CASE WHEN refund_method = 'Store Credit' THEN return_amount ELSE 0 END) as store_credit_returns,
@@ -445,19 +438,13 @@ function getRegisterStatus() {
                           COUNT(DISTINCT invoice_id) as returned_invoices_count,
                           (SELECT COUNT(*) FROM sales_return_items sri 
                            JOIN sales_returns sr ON sri.return_id = sr.return_id
-                           WHERE DATE(sr.return_date) = CURDATE() AND
-                           TIME(sr.return_date) BETWEEN 
-                              (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
-                           AND 
-                              CURRENT_TIME()) as returned_items_count
+                           WHERE sr.return_date >= 
+                              (SELECT opened_at FROM cash_register WHERE id = $register_id)) as returned_items_count
                         FROM 
                           sales_returns
                         WHERE 
-                          DATE(return_date) = CURDATE() AND
-                          TIME(return_date) BETWEEN 
-                            (SELECT DATE_FORMAT(opened_at, '%H:%i:%s') FROM cash_register WHERE id = $register_id) 
-                          AND 
-                            CURRENT_TIME()";
+                          return_date >= 
+                            (SELECT opened_at FROM cash_register WHERE id = $register_id)";
 
         $returns_result = mysqli_query($con, $returns_sql);
         $returns = mysqli_fetch_assoc($returns_result);

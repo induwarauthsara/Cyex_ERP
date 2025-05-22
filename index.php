@@ -985,11 +985,10 @@
                                     <button class="swal2-confirm swal2-styled close-register-btn" onclick="closeRegister()">Close Register</button>
                                     <button class="swal2-confirm swal2-styled print-register-btn" onclick="printRegister(${registerData.register_id})">Print Report</button>
                                 `;
-                            } else {
-                                // Register is not open, show open button
+                            } else {                                // Register is not open, show open button
                                 content += `
                                     <div class="register-info">
-                                        <p>No open register found for today (${registerData.today_date}).</p>
+                                        <p>No open register found.</p>
                                         <p>You need to open the cash register before processing sales.</p>
                                     </div>
                                 `;
