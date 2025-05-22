@@ -24,9 +24,11 @@ $notes = $register['notes'];
 $closing_notes = $register['closing_notes'];
 
 // Format dates
-$date = $opened_at->format('Y-m-d');
-$open_time = $opened_at->format('H:i:s');
-$close_time = $closed_at ? $closed_at->format('H:i:s') : 'Still Open';
+$opened_date = $opened_at->format('Y-m-d');
+$opened_time = $opened_at->format('H:i:s');
+$closed_date = $closed_at ? $closed_at->format('Y-m-d') : date('Y-m-d');
+$closed_time = $closed_at ? $closed_at->format('H:i:s') : 'Still Open';
+$date = ($opened_date === $closed_date) ? $opened_date : "$opened_date to $closed_date";
 
 // Get sales data
 $sales_sql = "SELECT 
@@ -40,11 +42,8 @@ $sales_sql = "SELECT
             LEFT JOIN 
                 payment_details pd ON i.invoice_number = pd.invoice_id
             WHERE 
-                i.invoice_date = '$date' AND
-                i.time BETWEEN 
-                    '$open_time' 
-                AND 
-                    " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()");
+                CONCAT(i.invoice_date, ' ', i.time) >= '" . $register['opened_at'] . "'
+                " . ($closed_at ? " AND CONCAT(i.invoice_date, ' ', i.time) <= '" . $register['closed_at'] . "'" : "");
 
 $sales_result = mysqli_query($con, $sales_sql);
 $sales = mysqli_fetch_assoc($sales_result);
@@ -64,20 +63,14 @@ $returns_sql = "SELECT
                   COUNT(DISTINCT sr.invoice_id) as returned_invoices_count,
                   (SELECT COUNT(*) FROM sales_return_items sri 
                    JOIN sales_returns sr2 ON sri.return_id = sr2.return_id
-                   WHERE DATE(sr2.return_date) = '$date' AND
-                   TIME(sr2.return_date) BETWEEN 
-                      '$open_time' 
-                   AND 
-                      " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                   WHERE sr2.return_date >= '" . $register['opened_at'] . "'
+                   " . ($closed_at ? " AND sr2.return_date <= '" . $register['closed_at'] . "'" : "") . "
                   ) as returned_items_count
                 FROM 
                   sales_returns sr
                 WHERE 
-                  DATE(sr.return_date) = '$date' AND
-                  TIME(sr.return_date) BETWEEN 
-                      '$open_time' 
-                  AND 
-                      " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()");
+                  sr.return_date >= '" . $register['opened_at'] . "'
+                  " . ($closed_at ? " AND sr.return_date <= '" . $register['closed_at'] . "'" : "");
 
 $returns_result = mysqli_query($con, $returns_sql);
 $returns = mysqli_fetch_assoc($returns_result);
@@ -98,11 +91,8 @@ if ($returns_count > 0) {
                             SUM(return_amount) as total_amount
                           FROM sales_returns
                           WHERE 
-                            DATE(return_date) = '$date' AND
-                            TIME(return_date) BETWEEN 
-                                '$open_time' 
-                            AND 
-                                " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                            return_date >= '" . $register['opened_at'] . "'
+                            " . ($closed_at ? " AND return_date <= '" . $register['closed_at'] . "'" : "") . "
                           GROUP BY return_reason
                           ORDER BY count DESC";
     
@@ -123,11 +113,8 @@ if ($returns_count > 0) {
                               JOIN sales_returns sr ON sri.return_id = sr.return_id
                               JOIN products p ON sri.product_id = p.product_id
                               WHERE 
-                                DATE(sr.return_date) = '$date' AND
-                                TIME(sr.return_date) BETWEEN 
-                                    '$open_time' 
-                                AND 
-                                    " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                                sr.return_date >= '" . $register['opened_at'] . "'
+                                " . ($closed_at ? " AND sr.return_date <= '" . $register['closed_at'] . "'" : "") . "
                               GROUP BY p.product_name
                               ORDER BY total_amount DESC
                               LIMIT 5";
@@ -156,7 +143,7 @@ $petty_details_result = mysqli_query($con, $petty_details_sql);
 // Calculate cash difference
 $cash_difference = $opening_balance + $net_cash_sales - $pettycash_out - $cash_out - $cash_drawer_balance;
 
-// Get top selling items for today
+// Get top selling items for the register period
 $top_items_sql = "SELECT 
                     s.product, 
                     SUM(s.qty) as total_qty, 
@@ -166,11 +153,8 @@ $top_items_sql = "SELECT
                 JOIN 
                     invoice i ON s.invoice_number = i.invoice_number
                 WHERE 
-                    i.invoice_date = '$date' AND
-                    i.time BETWEEN 
-                        '$open_time' 
-                    AND 
-                        " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                    CONCAT(i.invoice_date, ' ', i.time) >= '" . $register['opened_at'] . "'
+                    " . ($closed_at ? " AND CONCAT(i.invoice_date, ' ', i.time) <= '" . $register['closed_at'] . "'" : "") . "
                 GROUP BY 
                     s.product
                 ORDER BY 
@@ -189,11 +173,8 @@ $payment_methods_sql = "SELECT
                     JOIN 
                         payment_details pd ON i.invoice_number = pd.invoice_id
                     WHERE 
-                        i.invoice_date = '$date' AND
-                        i.time BETWEEN 
-                            '$open_time' 
-                        AND 
-                            " . ($closed_at ? "'" . $close_time . "'" : "CURRENT_TIME()") . "
+                        CONCAT(i.invoice_date, ' ', i.time) >= '" . $register['opened_at'] . "'
+                        " . ($closed_at ? " AND CONCAT(i.invoice_date, ' ', i.time) <= '" . $register['closed_at'] . "'" : "") . "
                     GROUP BY 
                         pd.payment_method";
 
@@ -383,18 +364,17 @@ $payment_methods_result = mysqli_query($con, $payment_methods_sql);
             <div class="detail-row">
                 <span class="detail-label">Register ID:</span>
                 <span><?php echo $register_id; ?></span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Date:</span>
+            </div>            <div class="detail-row">
+                <span class="detail-label">Period:</span>
                 <span><?php echo $date; ?></span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Opened:</span>
-                <span><?php echo $open_time; ?></span>
+                <span><?php echo "$opened_date $opened_time"; ?></span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Closed:</span>
-                <span><?php echo $close_time; ?></span>
+                <span><?php echo $closed_at ? "$closed_date $closed_time" : "Still Open"; ?></span>
             </div>
             <?php if ($notes): ?>
                 <div class="notes">
