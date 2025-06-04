@@ -1199,7 +1199,7 @@
                         <td>${batch_name}</td>
                         <td>${cost.toFixed(2)}</td>
                         <td>${selling_price.toFixed(2)}</td>
-                        <td><input type="number" class="form-control combo-quantity" data-unit-cost="${cost}" data-unit-selling-price="${selling_price}" value="${quantity}" min="1"></td>
+                        <td><input type="number" class="form-control combo-quantity" data-unit-cost="${cost}" data-unit-selling-price="${selling_price}" value="${quantity}"></td>
                         <td class="combo-total-cost">${totalCost}</td>
                         <td class="combo-total-selling-price">${totalSellingPrice}</td>
                         <td>
