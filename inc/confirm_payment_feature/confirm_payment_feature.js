@@ -120,12 +120,16 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             
             <!-- Tab Contents -->
             <div id="cash-tab" class="tab-content active">
+
+            <!-- Quick Cash Section Hidden 
                 <div id="quick-cash-container">
                     <h3>Quick Cash</h3>
                     <div style="display: flex; flex-direction: column; gap: 5px;">
                         ${generateQuickCashButtons()}
                     </div>
                 </div>
+            -->
+
                 <label><strong>Amount Received:</strong></label>
                 <input type="number" id="cash-amount-received" oninput="calculateBalance()" class="swal2-input" placeholder="Enter cash received" autofocus>
                 <p><strong>Change to Return:</strong> <span id="change-amount" style="color: #dc3545;">Rs. 0.00</span></p>

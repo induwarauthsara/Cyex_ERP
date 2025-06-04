@@ -289,7 +289,7 @@
                             <!-- Additional Shortcuts from the Invoice Confirm -->
                             <tr> <td><kbd>F1</kbd></td> <td><b>Cash Payment </b> </td> </tr>
                             <tr> <td><kbd>F2</kbd></td> <td><b>Card Payment</b> </td> </tr>
-                            <tr> <td><kbd>F3</kbd>&nbsp;to&nbsp;<kbd>F9</kbd></td> <td> Add Notes to Quick Cash </td> </tr>
+                            <!-- <tr> <td><kbd>F3</kbd>&nbsp;to&nbsp;<kbd>F9</kbd></td> <td> Add Notes to Quick Cash </td> </tr> -->
                             <tr> <td><kbd>F10</kbd></td> <td>Clear Quick Cash</td> </tr>
                             <tr> <td><kbd>Enter</kbd>+<kbd>Enter</kbd><br> (Double Press)</td> <td>Finalize Payment Confirm</td> </tr>
                             <tr> <td><kbd>Shift</kbd> + <kbd>C</kbd></td> <td>Cancel and Clear Bill</td> </tr>
