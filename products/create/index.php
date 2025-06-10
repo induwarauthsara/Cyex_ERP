@@ -556,8 +556,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="text-center mt-4">
+                </div>                <div class="text-center mt-4">
+                    <button type="button" id="autoGenerateBtn" class="btn btn-warning btn-lg me-3">
+                        <i class="fas fa-magic"></i> Auto Generate Values
+                    </button>
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-save"></i> Create Product
                     </button>
@@ -857,12 +859,164 @@
                 } else if (productType === 'digital' || productType === 'service') {
                     $('#unitSection, #initialStockSection, #unitSectionCard').addClass('hidden');
                 }
-            }
-            // Generate Product Code
+            }            // Generate Product Code
             $('#generateCodeBtn').on('click', function() {
                 const randomCode = 'PROD-' + Math.floor(Math.random() * 1000000);
                 $('#productCode').val(randomCode);
             });
+
+            // Auto Generate Values functionality
+            $('#autoGenerateBtn').on('click', function() {
+                const button = $(this);
+                const originalText = button.html();
+                
+                // Show loading state
+                button.html('<i class="fas fa-spinner fa-spin"></i> Generating...');
+                button.prop('disabled', true);
+                
+                // Auto generate values
+                autoGenerateValues().then(() => {
+                    // Reset button state
+                    button.html(originalText);
+                    button.prop('disabled', false);
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Values auto-generated successfully!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }).catch((error) => {
+                    // Reset button state
+                    button.html(originalText);
+                    button.prop('disabled', false);
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error generating values: ' + error.message
+                    });
+                });
+            });
+
+            // Auto generate values function
+            async function autoGenerateValues() {
+                try {
+                    // 1. Generate SKU from product name
+                    generateSKU();
+                    
+                    // 2. Generate random barcode
+                    generateBarcode();
+                    
+                    // 3. Set default brand (No Brand)
+                    await setDefaultBrand();
+                    
+                    // 4. Set default category (Uncategorized)
+                    await setDefaultCategory();
+                    
+                } catch (error) {
+                    throw error;
+                }
+            }
+            
+            // Generate SKU from product name
+            function generateSKU() {
+                const productName = $('#productName').val().trim();
+                if (productName) {
+                    // Convert to lowercase and replace spaces with underscores
+                    const sku = productName.toLowerCase().replace(/\s+/g, '_');
+                    $('#sku').val(sku);
+                } else {
+                    // Generate random SKU if no product name
+                    const randomSku = 'sku_' + Math.floor(Math.random() * 1000000);
+                    $('#sku').val(randomSku);
+                }
+            }
+            
+            // Generate random barcode by clicking the generate button
+            function generateBarcode() {
+                $('#generateCodeBtn').click();
+            }
+            
+            // Set default brand (No Brand)
+            async function setDefaultBrand() {
+                return new Promise((resolve, reject) => {
+                    // First check if "No Brand" exists in the brand dropdown
+                    const existingOption = $('#brand option').filter(function() {
+                        return $(this).text().toLowerCase() === 'no brand';
+                    });
+                    
+                    if (existingOption.length > 0) {
+                        // "No Brand" exists, select it
+                        $('#brand').val(existingOption.val()).trigger('change');
+                        resolve();
+                    } else {
+                        // "No Brand" doesn't exist, create it
+                        $.ajax({
+                            url: '../API/addBrand.php',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                name: 'No Brand'
+                            },
+                            success: function(response) {
+                                if (response && response.id) {
+                                    // Add the new option and select it
+                                    $('#brand').append(`<option value="${response.id}" selected>No Brand</option>`);
+                                    $('#brand').val(response.id).trigger('change');
+                                    resolve();
+                                } else {
+                                    reject(new Error('Failed to create "No Brand"'));
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                reject(new Error('Error creating "No Brand": ' + error));
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Set default category (Uncategorized)
+            async function setDefaultCategory() {
+                return new Promise((resolve, reject) => {
+                    // First check if "Uncategorized" exists in the category dropdown
+                    const existingOption = $('#category option').filter(function() {
+                        return $(this).text().toLowerCase() === 'uncategorized';
+                    });
+                    
+                    if (existingOption.length > 0) {
+                        // "Uncategorized" exists, select it
+                        $('#category').val(existingOption.val()).trigger('change');
+                        resolve();
+                    } else {
+                        // "Uncategorized" doesn't exist, create it
+                        $.ajax({
+                            url: '../API/addCategory.php',
+                            type: 'POST',
+                            dataType: 'json',
+                            data: {
+                                name: 'Uncategorized'
+                            },
+                            success: function(response) {
+                                if (response && response.id) {
+                                    // Add the new option and select it
+                                    $('#category').append(`<option value="${response.id}" selected>Uncategorized</option>`);
+                                    $('#category').val(response.id).trigger('change');
+                                    resolve();
+                                } else {
+                                    reject(new Error('Failed to create "Uncategorized"'));
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                reject(new Error('Error creating "Uncategorized": ' + error));
+                            }
+                        });
+                    }
+                });
+            }
+
             // Handle default unit change
             $('#defaultUnit').on('change', function() {
                 var selectedUnit = $(this).val();
