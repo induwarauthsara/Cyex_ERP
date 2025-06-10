@@ -557,10 +557,12 @@
                         </div>
                     </div>
                 </div>                <div class="text-center mt-4">
-                    <button type="button" id="autoGenerateBtn" class="btn btn-warning btn-lg me-3">
+                    <button type="button" id="autoGenerateBtn" class="btn btn-warning btn-md me-3" 
+                            data-bs-toggle="tooltip" data-bs-placement="top" 
+                            title="Auto-fill only empty Brand, Category, SKU, and Barcode fields with default values">
                         <i class="fas fa-magic"></i> Auto Generate Values
                     </button>
-                    <button type="submit" class="btn btn-primary btn-lg">
+                    <button type="submit" class="btn btn-success btn-lg px-5">
                         <i class="fas fa-save"></i> Create Product
                     </button>
                 </div>
@@ -679,8 +681,13 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        $(document).ready(function() {
+    <script>        $(document).ready(function() {
+
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
 
             // Focus Barcode input when Scan button is pressed
             $(document).on('keydown', function(event) {
@@ -898,21 +905,19 @@
                         text: 'Error generating values: ' + error.message
                     });
                 });
-            });
-
-            // Auto generate values function
+            });            // Auto generate values function
             async function autoGenerateValues() {
                 try {
-                    // 1. Generate SKU from product name
+                    // 1. Generate SKU from product name (only if empty)
                     generateSKU();
                     
-                    // 2. Generate random barcode
+                    // 2. Generate random barcode (only if empty)
                     generateBarcode();
                     
-                    // 3. Set default brand (No Brand)
+                    // 3. Set default brand (only if not selected)
                     await setDefaultBrand();
                     
-                    // 4. Set default category (Uncategorized)
+                    // 4. Set default category (only if not selected)
                     await setDefaultCategory();
                     
                 } catch (error) {
@@ -920,8 +925,14 @@
                 }
             }
             
-            // Generate SKU from product name
+            // Generate SKU from product name (only if empty)
             function generateSKU() {
+                const currentSku = $('#sku').val().trim();
+                if (currentSku) {
+                    // SKU already filled, don't overwrite
+                    return;
+                }
+                
                 const productName = $('#productName').val().trim();
                 if (productName) {
                     // Convert to lowercase and replace spaces with underscores
@@ -934,14 +945,26 @@
                 }
             }
             
-            // Generate random barcode by clicking the generate button
+            // Generate random barcode by clicking the generate button (only if empty)
             function generateBarcode() {
+                const currentBarcode = $('#productCode').val().trim();
+                if (currentBarcode) {
+                    // Barcode already filled, don't overwrite
+                    return;
+                }
                 $('#generateCodeBtn').click();
             }
-            
-            // Set default brand (No Brand)
+              // Set default brand (No Brand) - only if not already selected
             async function setDefaultBrand() {
                 return new Promise((resolve, reject) => {
+                    // Check if brand is already selected
+                    const currentBrand = $('#brand').val();
+                    if (currentBrand && currentBrand !== '') {
+                        // Brand already selected, don't overwrite
+                        resolve();
+                        return;
+                    }
+                    
                     // First check if "No Brand" exists in the brand dropdown
                     const existingOption = $('#brand option').filter(function() {
                         return $(this).text().toLowerCase() === 'no brand';
@@ -978,9 +1001,17 @@
                 });
             }
             
-            // Set default category (Uncategorized)
+            // Set default category (Uncategorized) - only if not already selected
             async function setDefaultCategory() {
                 return new Promise((resolve, reject) => {
+                    // Check if category is already selected
+                    const currentCategory = $('#category').val();
+                    if (currentCategory && currentCategory !== '') {
+                        // Category already selected, don't overwrite
+                        resolve();
+                        return;
+                    }
+                    
                     // First check if "Uncategorized" exists in the category dropdown
                     const existingOption = $('#category option').filter(function() {
                         return $(this).text().toLowerCase() === 'uncategorized';
