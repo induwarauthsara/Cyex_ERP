@@ -84,6 +84,10 @@ if (!in_array($paymentMethod, ['Cash', 'Card', 'Online Transfer', 'Credit'])) {
 }
 
 $printReceipt = isset($data['printReceipt']) ? (bool)$data['printReceipt'] : false;
+$printType = isset($data['printType']) ? trim($data['printType']) : 'receipt';
+if (!in_array($printType, ['receipt', 'standard'])) {
+    $printType = 'receipt'; // Default to receipt if invalid type
+}
 $extraPaidAmount = isset($data['extraPaidAmount']) ? floatval($data['extraPaidAmount']) : 0;
 $bool_extraPaidAddToCustomerFund = isset($data['extraPaidAddToCustomerFund']) ? (bool)$data['extraPaidAddToCustomerFund'] : false;
 
@@ -634,14 +638,13 @@ try {
     }
 
     // Commit transaction
-    mysqli_commit($con);
-
-    // Send success response
+    mysqli_commit($con);    // Send success response
     echo json_encode([
         'success' => true,
         'message' => 'Invoice submitted successfully',
         'invoiceNumber' => $invoiceNumber,
-        'printReceipt' => $printReceipt
+        'printReceipt' => $printReceipt,
+        'printType' => $printType
     ]);
     
 } catch (Exception $e) {

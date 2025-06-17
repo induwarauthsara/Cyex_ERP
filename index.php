@@ -74,8 +74,7 @@
         </div>
 
         <!-- Cart Right Side -->
-        <div id="cart-rightSide">
-            <!-- Invoice Summary -->
+        <div id="cart-rightSide">            <!-- Invoice Summary -->
             <div class="invoice-summary">
                 <div class="summary-counts">
                     <div class="count-item">
@@ -115,6 +114,26 @@
                 <hr />
 
                 <p>Total Payable <span class="total-payable"> Rs. <span id="total-payable">0.00</span></span></p>
+            </div>            <!-- Print Preferences -->
+            <div class="print-preferences">
+                <div class="print-row">
+                    <div class="print-checkbox-container">
+                        <label for="print-bill-checkbox">
+                            <input type="checkbox" id="print-bill-checkbox" onchange="togglePrintTypeOptions()">
+                            <span>Print Bill</span>
+                        </label>
+                    </div>
+                    <div id="print-type-container" style="display: none;">
+                        <div class="print-type-toggle">
+                            <span class="toggle-label">Receipt</span>
+                            <label class="switch" for="print-type-toggle">
+                                <input type="checkbox" id="print-type-toggle" onchange="updatePrintType()">
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="toggle-label">Standard</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Button Group -->
@@ -274,6 +293,9 @@
             // Render the product list with the appropriate columns
             renderProductList();
             calculateInvoiceTotal();
+
+            // Load print preferences from localStorage
+            loadPrintPreferences();
         });
 
         function showShortcuts() {
@@ -899,6 +921,46 @@
                 }
             });
         }
+
+        // Print Preferences Functions
+        function togglePrintTypeOptions() {
+            const printCheckbox = document.getElementById('print-bill-checkbox');
+            const printTypeContainer = document.getElementById('print-type-container');
+            
+            if (printCheckbox.checked) {
+                printTypeContainer.style.display = 'block';
+            } else {
+                printTypeContainer.style.display = 'none';
+            }
+            
+            // Save print preference to localStorage
+            localStorage.setItem('printBillEnabled', printCheckbox.checked);
+        }
+
+        function updatePrintType() {
+            const printTypeToggle = document.getElementById('print-type-toggle');
+            const printType = printTypeToggle.checked ? 'standard' : 'receipt';
+            
+            // Save print type to localStorage
+            localStorage.setItem('printType', printType);
+        }
+
+        function loadPrintPreferences() {
+            // Load print bill checkbox state from localStorage
+            const printBillEnabled = localStorage.getItem('printBillEnabled');
+            if (printBillEnabled !== null) {
+                const printCheckbox = document.getElementById('print-bill-checkbox');
+                printCheckbox.checked = printBillEnabled === 'true';
+                togglePrintTypeOptions(); // Show/hide print type options based on checkbox state
+            }
+            
+            // Load print type from localStorage
+            const printType = localStorage.getItem('printType');
+            if (printType !== null) {
+                const printTypeToggle = document.getElementById('print-type-toggle');
+                printTypeToggle.checked = printType === 'standard';
+            }
+        }
     </script>
 
     <!-- External Scripts -->
@@ -1450,9 +1512,7 @@
 
     <!-- Other scripts -->
     <script src="inc/searchCustomer function.js"></script>
-    <script src="inc/hold_invoices/hold_invoices_logics.js"></script>
-
-    <style>
+    <script src="inc/hold_invoices/hold_invoices_logics.js"></script>    <style>
         .loading-spinner {
             display: inline-block;
             width: 60px;
@@ -1472,6 +1532,186 @@
             100% {
                 transform: rotate(360deg);
             }
+        }        /* Print Preferences Styles */
+        .print-preferences {
+            margin: 15px 0;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #333 !important;
+            font-family: inherit;
+        }
+
+        .print-preferences * {
+            color: inherit !important;
+        }
+
+        .print-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+            flex-wrap: nowrap;
+        }
+
+        .print-checkbox-container {
+            flex-shrink: 0;
+            min-width: fit-content;
+        }
+
+        .print-checkbox-container label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50 !important;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .print-checkbox-container input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            accent-color: #2196F3;
+            cursor: pointer;
+            outline: none;
+        }
+
+        #print-type-container {
+            flex: 0 0 auto;
+            min-width: 180px;
+        }
+
+        .print-type-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background-color: #ffffff !important;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            gap: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .toggle-label {
+            color: #2c3e50 !important;
+            font-weight: 500;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+
+        /* Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .slider.round {
+            border-radius: 28px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .print-row {
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+            
+            .print-checkbox-container {
+                flex: 0 0 auto;
+            }
+            
+            #print-type-container {
+                min-width: 150px;
+            }
+            
+            .print-type-toggle {
+                gap: 6px;
+                padding: 5px 10px;
+            }
+            
+            .toggle-label {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .print-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            #print-type-container {
+                width: 100%;
+                min-width: unset;
+            }
+            
+            .print-type-toggle {
+                justify-content: space-between;
+                width: 100%;
+            }
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
         }
     </style>
 </body>

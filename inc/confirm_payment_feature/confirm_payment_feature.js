@@ -143,9 +143,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             <div id="bank-tab" class="tab-content">
                 <label><strong>Online Transfer Amount:</strong></label>
                 <input type="number" id="bank-amount" oninput="calculateBalance()" class="swal2-input" placeholder="Enter bank transfer amount">
-            </div>
-
-            <!-- Balance and Print Option -->
+            </div>            <!-- Balance and Print Option -->
             <hr style="border-top: 1px solid #ddd; margin: 15px 0;" />
             <p><strong>Balance:</strong> <span id="balance-amount" style="color: #28a745; font-size: 1.5em; font-weight: bold;">Rs. 0.00</span></p>
 
@@ -153,7 +151,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
             <div id="extra-paid-checkbox-container" style="display: none; margin-top: 10px;"></div> <br>
 
             <label>
-                <input type="checkbox" id="print-receipt" style="margin-right: 10px;" checked>
+                <input type="checkbox" id="print-receipt" style="margin-right: 10px;" ${localStorage.getItem('printBillEnabled') === 'true' ? 'checked' : ''}>
                 Print Bill
             </label>
         </div>
@@ -256,14 +254,14 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                         ...product,
                         quantity: parseFloat(product.quantity)
                     };
-                }),
-                paymentMethod,
+                }),                paymentMethod,
                 extraPaidAddToCustomerFund,
                 extraPaidAmount,
                 bool_useCustomerExtraFund: document.getElementById('useCustomerExtraFund')?.checked || false,
                 useCustomerExtraFundAmount,
                 creditPayment: document.getElementById('creditPayment')?.checked || false,
-                individualDiscountMode // Add the individual discount mode flag
+                individualDiscountMode, // Add the individual discount mode flag
+                printType: localStorage.getItem('printType') || 'receipt' // Add print type from localStorage
             };
 
             // Step 3: Send data to submit-invoice.php
@@ -281,8 +279,7 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 if (response.ok && result.success) {
                     clearCart();
                     clearQuickCash();
-                    
-                    // Handle receipt printing if requested
+                      // Handle receipt printing if requested
                     if (printReceipt) {
                         try {
                             // Show processing notification first
@@ -294,9 +291,11 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                                 timer: 1500,
                                 timerProgressBar: true
                             });
+                              // Get print type from localStorage or response
+                            const printType = result.printType || localStorage.getItem('printType') || 'receipt';
                             
                             // After processing, show success message and open print window automatically
-                            window.open(`invoice/print.php?id=${result.invoiceNumber}`, '_blank');
+                            window.open(`invoice/print.php?id=${result.invoiceNumber}&printType=${printType}`, '_blank');
                             
                             // Show success message
                             Swal.fire({

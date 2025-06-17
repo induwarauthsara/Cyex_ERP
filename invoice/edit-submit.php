@@ -651,13 +651,13 @@ require_once '../inc/config.php'; ?>
 
 <?php
 
-if (empty($error_array)) {
-
-    // Refresh Page
+if (empty($error_array)) {    // Refresh Page
     echo "<script>
             window.history.back();
             window.setTimeout(function() {
-                window.open('/invoice/print.php?id=2265', '_blank');
+                // Get print type from localStorage, default to receipt
+                const printType = localStorage.getItem('printType') || 'receipt';
+                window.open('/invoice/print.php?id=$invoice_number&printType=' + printType, '_blank');
             }, 100); // 100 milliseconds delay to ensure the back navigation happens first
     </script> ";
 } else {
