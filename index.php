@@ -196,33 +196,33 @@
                         $('#product-input').val('');
                     }
                 }
-            });
-
-            //Shortcut Key Listeners
+            });            //Shortcut Key Listeners
             $(document).on('keydown', function(event) {
-                if (event.key === "Insert") {
-                    $('#product-input').focus();
-                }
-                if (event.shiftKey && event.key === 'D') {
-                    openDiscountModal();
-                }
-                if (event.shiftKey && event.key === 'H') {
-                    holdInvoice();
-                }
-                if (event.ctrlKey && event.key === 'h') {
-                    event.preventDefault();
-                    loadHeldInvoices();
-                }
-                if (event.shiftKey && event.key === 'H') {
-                    holdInvoice();
-                }
-                if (event.shiftKey && event.key === 'C') {
-                    event.preventDefault(); // Prevent any default action for Shift + C
-                    cancelBill(); // Call the cancel bill function
-                }
-                if (event.shiftKey && event.key === 'P') {
-                    event.preventDefault(); // Prevent any default action for Shift + P
-                    printLastInvoice(); // Call the print last invoice function
+                // Only trigger if no input fields are focused
+                if (!$(event.target).is('input, textarea, select')) {
+                    if (event.key === "Insert") {
+                        $('#product-input').focus();
+                    }
+                    if (event.altKey && event.key === 'd') {
+                        event.preventDefault();
+                        openDiscountModal();
+                    }
+                    if (event.altKey && event.key === 'h') {
+                        event.preventDefault();
+                        holdInvoice();
+                    }
+                    if (event.altKey && event.key === 'l') {
+                        event.preventDefault();
+                        loadHeldInvoices();
+                    }
+                    if (event.altKey && event.key === 'c') {
+                        event.preventDefault(); // Prevent any default action for Alt + C
+                        cancelBill(); // Call the cancel bill function
+                    }
+                    if (event.altKey && event.key === 'p') {
+                        event.preventDefault(); // Prevent any default action for Alt + P
+                        printLastInvoice(); // Call the print last invoice function
+                    }
                 }
             });
 
@@ -296,26 +296,28 @@
 
             // Load print preferences from localStorage
             loadPrintPreferences();
-        });
-
-        function showShortcuts() {
+        });        function showShortcuts() {
             Swal.fire({
                 title: 'Keyboard Shortcuts',
                 html: `<table> <thead> <tr> <th>Shortcut</th> <th>Description</th> </tr> </thead> <tbody>
                             <tr> <td><kbd>Insert</kbd></td> <td>Focus on product input</td> </tr>
                             <tr> <td><kbd>+</kbd></td> <td>Select Customer</td> </tr>
-                            <tr> <td><kbd>Shift</kbd> + <kbd>D</kbd></td> <td>Open Discount</td> </tr>
-                            <tr> <td><kbd>Shift</kbd> + <kbd>H</kbd></td> <td>Hold Bill</td> </tr>
-                            <tr> <td><kbd>Ctrl</kbd> + <kbd>H</kbd></td> <td>Show Held Bill List</td> </tr>
-                            <tr> <td><kbd>Shift</kbd> + <kbd>P</kbd></td> <td>Print Last Invoice</td> </tr>
+                            <tr> <td><kbd>Alt</kbd> + <kbd>D</kbd></td> <td>Open Discount</td> </tr>
+                            <tr> <td><kbd>Alt</kbd> + <kbd>H</kbd></td> <td>Hold Bill</td> </tr>
+                            <tr> <td><kbd>Alt</kbd> + <kbd>L</kbd></td> <td>Show Held Bill List</td> </tr>
+                            <tr> <td><kbd>Alt</kbd> + <kbd>P</kbd></td> <td>Print Last Invoice</td> </tr>
+                            <tr> <td><kbd>Alt</kbd> + <kbd>C</kbd></td> <td>Cancel and Clear Bill</td> </tr>
                             <!-- Additional Shortcuts from the Invoice Confirm -->
                             <tr> <td><kbd>F1</kbd></td> <td><b>Cash Payment </b> </td> </tr>
                             <tr> <td><kbd>F2</kbd></td> <td><b>Card Payment</b> </td> </tr>
                             <!-- <tr> <td><kbd>F3</kbd>&nbsp;to&nbsp;<kbd>F9</kbd></td> <td> Add Notes to Quick Cash </td> </tr> -->
                             <tr> <td><kbd>F10</kbd></td> <td>Clear Quick Cash</td> </tr>
                             <tr> <td><kbd>Enter</kbd>+<kbd>Enter</kbd><br> (Double Press)</td> <td>Finalize Payment Confirm</td> </tr>
-                            <tr> <td><kbd>Shift</kbd> + <kbd>C</kbd></td> <td>Cancel and Clear Bill</td> </tr>
-                            </tbody> </table> `,
+                            </tbody> </table> 
+                            <br>
+                            <p style="font-size: 12px; color: #666; text-align: left;">
+                                <strong>Note:</strong> Alt key shortcuts work when you're not typing in input fields.
+                            </p>`,
                 icon: 'info',
                 showConfirmButton: false
             });
