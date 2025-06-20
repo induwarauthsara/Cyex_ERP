@@ -261,7 +261,10 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 useCustomerExtraFundAmount,
                 creditPayment: document.getElementById('creditPayment')?.checked || false,
                 individualDiscountMode, // Add the individual discount mode flag
-                printType: localStorage.getItem('printType') || 'receipt' // Add print type from localStorage
+                printType: localStorage.getItem('printType') || 'receipt', // Add print type from localStorage
+                // Add fallback biller information from localStorage
+                fallbackBillerId: localStorage.getItem('employee_id') || null,
+                fallbackBillerName: localStorage.getItem('employee_name') || null
             };
 
             // Step 3: Send data to submit-invoice.php
@@ -324,13 +327,28 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                             timer: 2000,
                             timerProgressBar: true
                         });
+                    }                } else {
+                    // Check if it's a session expiry issue
+                    if (result.session_expired) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Session Expired',
+                            text: 'Your session has expired but the invoice was processed using saved login data. Please login again for future transactions.',
+                            confirmButtonText: 'Login Again',
+                            cancelButtonText: 'Continue',
+                            showCancelButton: true
+                        }).then((loginResult) => {
+                            if (loginResult.isConfirmed) {
+                                window.location.href = '/login';
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Submission Failed',
+                            text: result.message || 'An error occurred while submitting the invoice.'
+                        });
                     }
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Submission Failed',
-                        text: result.message || 'An error occurred while submitting the invoice.'
-                    });
                     return false;
                 }
             } catch (error) {

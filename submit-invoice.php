@@ -25,8 +25,33 @@ $customerNumber = isset($data['customerNumber']) ? trim($data['customerNumber'])
 $individualDiscountMode = isset($data['individualDiscountMode']) ? (bool)$data['individualDiscountMode'] : false;
 $bool_creditPayment = isset($data['creditPayment']) ? (bool)$data['creditPayment'] : false;
 
-// Get current Logged in Employee User id
-$biller = $_SESSION['employee_id'];
+// Get current Logged in Employee User id with fallback
+$biller = null;
+if (isset($_SESSION['employee_id'])) {
+    $biller = $_SESSION['employee_id'];
+} else {
+    // Fallback: Use biller from localStorage if session expired
+    if (isset($data['fallbackBillerId']) && !empty($data['fallbackBillerId'])) {
+        $biller = intval($data['fallbackBillerId']);
+        
+        // Verify the employee still exists and is active
+        $verify_query = "SELECT employ_id FROM employees WHERE employ_id = ? AND status = '1'";
+        $verify_stmt = mysqli_prepare($con, $verify_query);
+        if ($verify_stmt) {
+            mysqli_stmt_bind_param($verify_stmt, 'i', $biller);
+            mysqli_stmt_execute($verify_stmt);
+            $verify_result = mysqli_stmt_get_result($verify_stmt);
+            if (mysqli_num_rows($verify_result) === 0) {
+                $biller = null; // Employee not found or inactive
+            }
+            mysqli_stmt_close($verify_stmt);
+        }
+    }
+    
+    if (!$biller) {
+        $errors[] = "User session expired. Please login again.";
+    }
+}
 
 // Calculate discount and final totals
 $subtotal = isset($data['subtotal']) ? floatval($data['subtotal']) : 0;
@@ -690,13 +715,12 @@ try {
 
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
-    }
-
-    // Return error to client
+    }    // Return error to client
     echo json_encode([
         'success' => false,
         'message' => 'An error occurred: ' . $e->getMessage(),
-        'code' => 500
+        'code' => 500,
+        'session_expired' => !isset($_SESSION['employee_id']) // Help client identify session issues
     ]);
 }
 

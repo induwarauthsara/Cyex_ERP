@@ -20,3 +20,5 @@ dashboard/product/error_log
 crons/error_log
 dashboard/*
 printerCount/.gitXX/*
+debug_session_fallback.js
+test_session_fallback.php

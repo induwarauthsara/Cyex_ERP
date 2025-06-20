@@ -163,6 +163,15 @@
         let discountValue = parseFloat(localStorage.getItem('discountValue')) || 0; // Load discount value from localStorage
         let individualDiscountMode = JSON.parse(localStorage.getItem('individualDiscountMode')) || false;
 
+        // Ensure user session data is saved to localStorage
+        <?php if (isset($_SESSION['employee_id'])): ?>
+        if (!localStorage.getItem('employee_id')) {
+            localStorage.setItem('employee_id', '<?php echo $_SESSION['employee_id']; ?>');
+            localStorage.setItem('employee_name', '<?php echo addslashes($_SESSION['employee_name']); ?>');
+            localStorage.setItem('employee_role', '<?php echo addslashes($_SESSION['employee_role']); ?>');
+        }
+        <?php endif; ?>
+
         // Debounce function to limit the rate of search requests
         function debounce(func, delay) {
             let debounceTimer;

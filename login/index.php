@@ -43,7 +43,14 @@ if (isset($_POST['submit'])) {
                 $_SESSION['employee_name'] = $employee['emp_name'];
                 $_SESSION['employee_role'] = $employee['role'];
 
-                header("Location: ../index.php");
+                // Save user data to localStorage via JavaScript
+                echo "<script>
+                    localStorage.setItem('employee_id', '" . $employee['employ_id'] . "');
+                    localStorage.setItem('employee_name', '" . addslashes($employee['emp_name']) . "');
+                    localStorage.setItem('employee_role', '" . addslashes($employee['role']) . "');
+                    window.location.href = '../index.php';
+                </script>";
+                exit;
             } else {
                 // invalid username and Password
                 $errors[] = "invalid username and password";

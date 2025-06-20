@@ -9,6 +9,15 @@
 
     if (!isset($_SESSION['employee_name'])) {
         header("Location: /login");
+    } else {
+        // Save user data to localStorage if session exists
+        echo "<script>
+            if (!localStorage.getItem('employee_id')) {
+                localStorage.setItem('employee_id', '" . $_SESSION['employee_id'] . "');
+                localStorage.setItem('employee_name', '" . addslashes($_SESSION['employee_name']) . "');
+                localStorage.setItem('employee_role', '" . addslashes($_SESSION['employee_role']) . "');
+            }
+        </script>";
     } ?>
     <script src="https://kit.fontawesome.com/dc35af580f.js" crossorigin="anonymous"></script>
 
