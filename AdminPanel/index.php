@@ -79,7 +79,7 @@ include 'nav.php';
                     // Get each Item Full Cost (Cost x qty)
                     $item_capital = array();
                     // Product Capital
-                    $sql = "SELECT * FROM products";
+                    $sql = "SELECT * FROM products WHERE product_type = 'standard'";
                     $result = mysqli_query($con, $sql);
                     if ($result && mysqli_num_rows($result) > 0) {
                         while ($item_capital_sql = mysqli_fetch_array($result)) {
