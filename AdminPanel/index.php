@@ -19,9 +19,10 @@ include 'nav.php';
             echo "<p><b> You have <a href='erros.php'> $error_count  Critical Unsolved Errors.</a> Immediate action is required to prevent potential system failure. Solve them NOW! For any help, please contact the developer. </b></p>";
         }
     } else {
-        echo "Database Query Failed. Contact Developer";
+        echo "Database Query Failed";
     }
     ?>
+    <p><b>Admin Panel is currently under construction. Some functions may not work.!</b></p>
 
     <!-- One-Time-Products -->
     <?php
@@ -31,10 +32,10 @@ include 'nav.php';
         $uncleared_oneTimeProducts_count = mysqli_fetch_array($result);
         $uncleared_oneTimeProducts_count = $uncleared_oneTimeProducts_count['COUNT(*)'];
         if ($uncleared_oneTimeProducts_count > 0) {
-            echo "<p><b> You have  $uncleared_oneTimeProducts_count  Uncleared Service Bills. <a href='one_time_products.php'>Solve them NOW !</a>  </b></p>";
+            echo "<p><b> You have  $uncleared_oneTimeProducts_count  Uncleared One-Time-Products. <a href='one_time_products.php'>Solve them NOW !</a>  </b></p>";
         }
     } else {
-        echo "Database Query Failed. Contact Developer";
+        echo "Database Query Failed";
     }
     ?>
 
@@ -46,15 +47,42 @@ include 'nav.php';
         $low_stock_count = mysqli_fetch_array($result);
         $low_stock_count = $low_stock_count['COUNT(*)'];
         if ($low_stock_count > 0) {
-            echo "<p><b>Stock Alert :    You have  $low_stock_count  Items with Low Stock. <a href='/comboProduct/LowItemList.php'>Update Stock NOW !</a>  </b></p>";
+            echo "<p><b>Stock Alert :    You have  $low_stock_count  Items with Low Stock. <a href='/products/LowItemList.php'>Update Stock NOW !</a>  </b></p>";
         }
     } else {
-        echo "Database Query Failed. Contact Developer";
-    }
+        echo "Database Query Failed. Contact Developer";    }
     ?>
 
-    <!-- -->
-
+    <!-- Add Printer Counter Alert -->
+    <?php
+    $db_user = "srijayalk_shopprintercounter";
+    $db_pwd = "srijayalk_shopprintercounter";
+    $dbname = "srijayalk_shopprintercounter";
+    $PrinterCounterDB = "srijayalk_shopprintercounter";
+    $printerCounterConn = mysqli_connect($server, $db_user, $db_pwd, $PrinterCounterDB);
+    if (mysqli_connect_errno()) {
+        die('Database connection failed' . mysqli_connect_error());
+    } else {
+        $lastDBUpdateDate = "SELECT MAX(date) FROM `count`;";
+        $result = mysqli_query($printerCounterConn, $lastDBUpdateDate);
+        // echo
+        if ($result) {
+            $lastDBUpdateDate = mysqli_fetch_array($result);
+            $lastDBUpdateDate = $lastDBUpdateDate['MAX(date)'];
+            $today = date("Y-m-d");
+            $diff = abs(strtotime($today) - strtotime($lastDBUpdateDate));
+            $days = floor($diff / (60 * 60 * 24));
+            // Check Time is after 7PM (19:00)
+            $time = date("H:i:s");
+            $time = date("H:i:s", strtotime($time) + 12600);
+            if ($days > 0 && $time > "18:00:00") {
+                echo "<p><b>Printer Counter Alert : The print counter database has not been updated in $days days. <a href='/printerCount'>Add Printer Counters NOW !</a>  </b></p>";
+            }
+        } else {
+            echo "Database Query Failed";
+        }
+    }
+    ?>
 </div>
 
 <div id="cards">
@@ -78,26 +106,23 @@ include 'nav.php';
             <h2> <?php
                     // Get each Item Full Cost (Cost x qty)
                     $item_capital = array();
-                    // Product Capital
-                    $sql = "SELECT * FROM products WHERE product_type = 'standard'";
+                    $sql = "SELECT * FROM product_batch, products WHERE product_batch.product_id = products.product_id AND products.product_type = 'standard';";
                     $result = mysqli_query($con, $sql);
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        while ($item_capital_sql = mysqli_fetch_array($result)) {
-                            $item_capital[] = ($item_capital_sql['cost'] ?? 0) * ($item_capital_sql['stock_qty'] ?? 0);
+                    if ($result) {
+                        // qury success
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($item_capital_sql = mysqli_fetch_array($result)) {
+                                $item_cost = $item_capital_sql['cost'] ?? 0;
+                                $item_qty = $item_capital_sql['quantity'] ?? 0;
+                                $item_fullcost = $item_cost * $item_qty;
+                                // echo $item_fullcost;
+                                array_push($item_capital, $item_fullcost);
+                            }
+                        } else {
+                            echo "No any Item";
                         }
                     } else {
-                        echo $result ? "No any Item" : "Database Query Failed";
-                    }
-
-                    // Repair Stock Capital
-                    $sql = "SELECT * FROM product_view";
-                    $result = mysqli_query($con, $sql);
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        while ($item_capital_sql = mysqli_fetch_array($result)) {
-                            $item_capital[] = ($item_capital_sql['stock_qty'] ?? 0) * ($item_capital_sql['cost'] ?? 0);
-                        }
-                    } else {
-                        echo $result ? "No any Item" : "Database Query Failed";
+                        echo "Database Query Failed";
                     }
 
                     $capital_currency = array_sum($item_capital);
@@ -128,7 +153,7 @@ include 'nav.php';
                     ?></h2>
         </div>
     </div>
-    <!-- <a href="/AdminPanel/hrm/index.php">
+    <a href="/AdminPanel/hrm/index.php">
         <div class="card">
             <i class="fas fa-user-friends"></i>
             <div class="info">
@@ -140,7 +165,7 @@ include 'nav.php';
                         ?></h2>
             </div>
         </div>
-    </a> -->
+    </a>
     <div class="card">
         <i class="fas fa-right-to-bracket"></i>
         <div class="info">
@@ -149,7 +174,7 @@ include 'nav.php';
             <h2> </h2>
         </div>
     </div>
-    <!-- <div class="card">
+    <div class="card">
         <i class="fa-solid fa-hand-holding-dollar"></i>
         <div class="info">
             <h3>Cash In Hand</h3>
@@ -166,7 +191,7 @@ include 'nav.php';
                 ?></h2>
             <button class='smallIcon' onclick='edit_CashInHand_balance(<?php echo "$cash_in_hand_amountRS" ?>)'><i class='fa-solid fa-pen'></i></button>
         </div>
-    </div> -->
+    </div>
     <!-- <a href="/AdminPanel/creditBills.php">
         <div class="card">
             <i class="fa-solid fa-receipt"></i>
@@ -373,58 +398,4 @@ Answer: apexcharts
 
     var chart = new ApexCharts(document.querySelector("#chart"), options);
     chart.render();
-
-    // Function to print the last closed cash register report
-    function printLastClosedRegister() {
-        // Show loading animation
-        showLoadingAnimation('Finding last closed register...');
-        
-        // Fetch the last closed register
-        $.ajax({
-            url: 'api/cash_register.php',
-            method: 'POST',
-            data: {
-                action: 'get_last_closed_register'
-            },
-            success: function(response) {
-                // Hide loading animation
-                hideLoadingAnimation();
-                
-                try {
-                    const data = typeof response === 'object' ? response : JSON.parse(response);
-                    if (data.success && data.data) {
-                        const registerId = data.data.id;
-                        // Open print window
-                        window.open(`/AdminPanel/cash_register_print.php?id=${registerId}`, '_blank');
-                    } else {
-                        Swal.fire({
-                            title: 'No Closed Register Found',
-                            text: data.message || 'No closed cash register session found.',
-                            icon: 'info'
-                        });
-                    }
-                } catch (e) {
-                    console.error('JSON Parse error:', e);
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Failed to parse server response.',
-                        icon: 'error'
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                // Hide loading animation
-                hideLoadingAnimation();
-                
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Server error: ' + error,
-                    icon: 'error'
-                });
-            }
-        });
-    }
 </script>
-
-<!-- Include the cash register functionality -->
-<script src="js/cash_register.js"></script>
