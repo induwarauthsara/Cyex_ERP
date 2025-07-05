@@ -55,6 +55,16 @@
 
         <li class="dashboard_icon adminOnly"> <a href="/AdminPanel/sales_returns/"> <i class="fas fa-undo header_icons"> </i> Sales Return </a> </li>
         
+        <li class="dropdown dashboard_icon adminOnly"> 
+            <a href="/printerCount/"><i class="fas fa-print header_icons"></i> Printer Counter</a>
+            <div class="dropdown-content">
+                <a href="/printerCount/">Dashboard</a>
+                <a href="/printerCount/printers.php">Manage Printers</a>
+                <a href="/printerCount/bankdeposit.php">Bank Deposits</a>
+                <a href="/printerCount/analytics.php">Analytics</a>
+            </div>
+        </li>
+        
         <li class="dashboard_icon adminOnly"> <a href="/AdminPanel/"> <i class="fas fa-cogs header_icons"> </i> Admin Panel </a> </li>
 
         <!-- <li><a href="/message"><i class="fas fa-comments header_icons"></i></a></li> -->

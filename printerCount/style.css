@@ -1,0 +1,81 @@
+    * {
+        margin: 0;
+        padding: 0;
+        font-family: Poppins, sans-serif;
+    }
+    
+    .nav {
+        background-color: #333;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        left: 0;
+        top: 0;
+        width: 120px;
+        height: 100%;
+        position: fixed;
+        color: red;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        justify-content: flex-start
+    }
+    
+    .nav a {
+        color: white;
+        text-decoration: none;
+        border: 1px solid white;
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 5px;
+        line-height: 1.3rem;
+    }
+    
+    .nav a:hover {
+        background-color: white;
+        color: black;
+    }
+    
+    body {
+        margin-left: 140px;
+        padding: 20px;
+    }
+    
+    .bankDeposit {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background-color: blanchedalmond;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    input {
+        padding: 5px;
+        margin: 5px;
+        border-radius: 5px;
+        border: 1px solid #333;
+    }
+    
+    input[type="submit"] {
+        background-color: #086400;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 8px 20px;
+    }
+    
+    h1,
+    h2,
+    h3 {
+        text-align: center;
+    }
+    
+    .nav-logo {
+        background-color: blanchedalmond;
+        padding: 20px 10px !important;
+        margin-bottom: 20px;
+        margin: 10px;
+    }
