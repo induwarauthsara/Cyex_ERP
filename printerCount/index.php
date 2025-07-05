@@ -1,13 +1,6 @@
 <?php
 include 'conn.php';
-// Get The Total Count of Types for the Printer for Row Span
-$sql = "SELECT COUNT(printer_counter_types.typeName) 
-                    FROM printer_counter_types,printer_counter_printers 
-                    WHERE printer_counter_printers.printerName = '$printerName'
-                        AND printer_counter_printers.active = '1'
-                        AND printer_counter_types.printerID = printer_counter_printers.printerID;";
 ?>
-
 <!DOCTYPE html>
 <html>
 
@@ -15,6 +8,8 @@ $sql = "SELECT COUNT(printer_counter_types.typeName)
     <title>Home</title>
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
+
+<body>
 <table border="1">
     <form action="submit.php" method="post">
         <tr>
@@ -77,6 +72,7 @@ $sql = "SELECT COUNT(printer_counter_types.typeName)
         </tr>
     </form>
 </table>
+
 <style>
     table {
         width: 100%;
@@ -126,3 +122,6 @@ $sql = "SELECT COUNT(printer_counter_types.typeName)
         todayCount.innerHTML = input.value - LastTotalTypeCount;
     }
 </script>
+
+</body>
+</html>

@@ -1,10 +1,9 @@
 <link rel="stylesheet" href="style.css">
 <?php
-include 'nav.php';
-
 // Use the main system's database connection
 // Include the main config file that has the database connection
 include '../inc/config.php';
+include 'nav.php';
 
 // statistics Bank Deposit Balance
 $sql = "SELECT * FROM printer_counter_statistics where name='to_deposit_balance'";
