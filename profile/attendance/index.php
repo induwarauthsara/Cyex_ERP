@@ -130,24 +130,22 @@ include '../UCPnav.php';
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Send data to server
-                    return fetch("attendance-submit.php?action=" + action, {
+                    fetch("attendance-submit.php?action=" + action, {
                             method: 'GET',
                         })
                         .then(response => {
-                            if (response.ok) {
-                                return response.text();
+                            // Check if it's a redirect (which means success)
+                            if (response.redirected || response.ok) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: `You have successfully ${action.toLowerCase()}. Good ${getGreeting(action)}!`,
+                                    icon: 'success'
+                                });
+                                // Refresh Page
+                                location.reload();
+                            } else {
+                                throw new Error('Network response was not ok.');
                             }
-                            throw new Error('Network response was not ok.');
-                        })
-                        .then(data => {
-                            console.log(data);
-                            Swal.fire({
-                                title: 'Success!',
-                                text: `You have successfully ${action.toLowerCase()}. Good ${getGreeting(action)}!`,
-                                icon: 'success'
-                            });
-                            // Refresh Page
-                            location.reload();
                         })
                         .catch(error => {
                             console.error('Error:', error);
