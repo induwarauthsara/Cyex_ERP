@@ -702,7 +702,7 @@
                 let row = `<tr>
                     <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input id="quantity-${index}" type="number" min="0.001" step="0.001" value="${product.quantity}" 
+                        <input id="quantity-${index}" type="number" value="${product.quantity}" 
                             onchange="updateQuantity(${index}, this.value)">
                     </td>`;
 
@@ -710,11 +710,11 @@
                     // In individual discount mode, show both regular and discount price
                     row += `
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input type="number" step="0.01" min="0" value="${product.regular_price}" 
+                        <input type="number" min="0" value="${product.regular_price}" 
                             onchange="updateRegularPrice(${index}, this.value)">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input type="number" step="0.01" min="0" value="${product.discount_price}" 
+                        <input type="number" min="0" value="${product.discount_price}" 
                             onchange="updateDiscountPrice(${index}, this.value)">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.discount_price).toFixed(2))}</td>`;
@@ -722,7 +722,7 @@
                     // In regular mode, just show the regular price
                     row += `
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input type="number" step="0.01" min="0" value="${product.regular_price}" 
+                        <input type="number" min="0" value="${product.regular_price}" 
                             onchange="updateRegularPrice(${index}, this.value)">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.regular_price).toFixed(2))}</td>`;
@@ -1294,7 +1294,7 @@
                 html: `
                     <div class="form-group">
                         <label for="opening_balance">Opening Balance (Rs.)</label>
-                        <input type="number" id="opening_balance" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                        <input type="number" id="opening_balance" class="swal2-input" placeholder="0.00" min="0">
                     </div>
                     <div class="form-group">
                         <label for="register_notes">Notes (Optional)</label>
@@ -1373,11 +1373,11 @@
                 html: `
                     <div class="form-group">
                         <label for="cash_out">Cash Out (Rs.)</label>
-                        <input type="number" id="cash_out" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                        <input type="number" id="cash_out" class="swal2-input" placeholder="0.00" min="0">
                     </div>
                     <div class="form-group">
                         <label for="cash_drawer_balance">Cash Drawer Balance (Rs.)</label>
-                        <input type="number" id="cash_drawer_balance" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                        <input type="number" id="cash_drawer_balance" class="swal2-input" placeholder="0.00" min="0">
                     </div>
                     <div class="form-group">
                         <label for="closing_notes">Notes (Optional)</label>
@@ -1488,7 +1488,7 @@
                 html: `
                     <div class="form-group">
                         <label for="amount">Amount (Rs.)</label>
-                        <input type="number" id="amount" class="swal2-input" placeholder="0.00" step="0.01" min="0">
+                        <input type="number" id="amount" class="swal2-input" placeholder="0.00" min="0">
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
