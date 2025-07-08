@@ -164,6 +164,19 @@
         let individualDiscountMode = JSON.parse(localStorage.getItem('individualDiscountMode')) || false;
         let selectedSearchIndex = -1; // Track selected search result index for arrow key navigation
 
+        // Debounced update functions for better performance
+        const debouncedUpdateQuantity = debounce((index, value) => {
+            updateQuantity(index, value);
+        }, 300);
+
+        const debouncedUpdateRegularPrice = debounce((index, value) => {
+            updateRegularPrice(index, value);
+        }, 300);
+
+        const debouncedUpdateDiscountPrice = debounce((index, value) => {
+            updateDiscountPrice(index, value);
+        }, 300);
+
         // Ensure user session data is saved to localStorage
         <?php if (isset($_SESSION['employee_id'])): ?>
         if (!localStorage.getItem('employee_id')) {
@@ -702,7 +715,8 @@
                 let row = `<tr>
                     <td style="padding: 10px; border: 1px solid #ccc;">${product.name}</td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input id="quantity-${index}" type="number" value="${product.quantity}" 
+                        <input id="quantity-${index}" type="number" min="0" step="1" value="${product.quantity}" 
+                            oninput="debouncedUpdateQuantity(${index}, this.value)" 
                             onchange="updateQuantity(${index}, this.value)">
                     </td>`;
 
@@ -710,22 +724,25 @@
                     // In individual discount mode, show both regular and discount price
                     row += `
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input type="number" min="0" value="${product.regular_price}" 
+                        <input id="regular-price-${index}" type="number" min="0" value="${product.regular_price}" 
+                            oninput="debouncedUpdateRegularPrice(${index}, this.value)"
                             onchange="updateRegularPrice(${index}, this.value)">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input type="number" min="0" value="${product.discount_price}" 
+                        <input id="discount-price-${index}" type="number" min="0" value="${product.discount_price}" 
+                            oninput="debouncedUpdateDiscountPrice(${index}, this.value)"
                             onchange="updateDiscountPrice(${index}, this.value)">
                     </td>
-                    <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.discount_price).toFixed(2))}</td>`;
+                    <td id="subtotal-${index}" style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.discount_price).toFixed(2))}</td>`;
                 } else {
                     // In regular mode, just show the regular price
                     row += `
                     <td style="padding: 10px; border: 1px solid #ccc;">
-                        <input type="number" min="0" value="${product.regular_price}" 
+                        <input id="regular-price-${index}" type="number" min="0" value="${product.regular_price}" 
+                            oninput="debouncedUpdateRegularPrice(${index}, this.value)"
                             onchange="updateRegularPrice(${index}, this.value)">
                     </td>
-                    <td style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.regular_price).toFixed(2))}</td>`;
+                    <td id="subtotal-${index}" style="padding: 10px; border: 1px solid #ccc;">Rs.${formatNumber((product.quantity * product.regular_price).toFixed(2))}</td>`;
                 }
 
                 row += `
@@ -738,24 +755,68 @@
             });
         }
 
+        // Function to update only the subtotal display for a specific row
+        function updateSubtotalDisplay(index) {
+            const product = productList[index];
+            const subtotal = individualDiscountMode ? 
+                (product.quantity * product.discount_price) : 
+                (product.quantity * product.regular_price);
+            
+            // Update the subtotal cell for this row
+            const subtotalCell = $(`#subtotal-${index}`);
+            if (subtotalCell.length) {
+                subtotalCell.text('Rs.' + formatNumber(subtotal.toFixed(2)));
+            }
+        }
+
         function updateQuantity(index, value) {
-            productList[index].quantity = parseFloat(value);
+            const quantity = parseFloat(value) || 0;
+            productList[index].quantity = quantity;
 
             // Update subtotal based on current mode
             productList[index].subtotal = productList[index].quantity *
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
 
             localStorage.setItem('productList', JSON.stringify(productList));
-            renderProductList();
+            
+            // Update only the subtotal display for this row instead of re-rendering entire table
+            updateSubtotalDisplay(index);
             calculateInvoiceTotal();
+            
+            // Update individual discount savings if in individual discount mode
+            if (individualDiscountMode) {
+                calculateIndividualDiscountSavings();
+            }
         }
 
         function updatePrice(index, value) {
-            productList[index].price = parseFloat(value);
-            productList[index].subtotal = productList[index].quantity * productList[index].price;
+            const price = parseFloat(value) || 0;
+            productList[index].regular_price = price;
+            
+            // If discount price is not set or higher than regular price, set it to match regular price
+            if (!productList[index].discount_price || productList[index].discount_price > productList[index].regular_price) {
+                productList[index].discount_price = productList[index].regular_price;
+                // Update the discount price input field if it exists
+                const discountInput = $(`#discount-price-${index}`);
+                if (discountInput.length) {
+                    discountInput.val(productList[index].discount_price);
+                }
+            }
+            
+            // Update subtotal based on current mode
+            productList[index].subtotal = productList[index].quantity *
+                (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
+                
             localStorage.setItem('productList', JSON.stringify(productList));
-            renderProductList();
+            
+            // Update only the subtotal display for this row instead of re-rendering entire table
+            updateSubtotalDisplay(index);
             calculateInvoiceTotal();
+            
+            // Update individual discount savings if in individual discount mode
+            if (individualDiscountMode) {
+                calculateIndividualDiscountSavings();
+            }
         }
 
         function removeProduct(index) {
@@ -763,6 +824,11 @@
             localStorage.setItem('productList', JSON.stringify(productList));
             renderProductList();
             calculateInvoiceTotal();
+            
+            // Update individual discount savings if in individual discount mode
+            if (individualDiscountMode) {
+                calculateIndividualDiscountSavings();
+            }
         }
 
         function openDiscountModal() {
@@ -919,11 +985,17 @@
 
         // Update the updateRegularPrice function
         function updateRegularPrice(index, value) {
-            productList[index].regular_price = parseFloat(value);
+            const regularPrice = parseFloat(value) || 0;
+            productList[index].regular_price = regularPrice;
 
             // If discount price is not set or higher than regular price, set it to match regular price
             if (!productList[index].discount_price || productList[index].discount_price > productList[index].regular_price) {
                 productList[index].discount_price = productList[index].regular_price;
+                // Update the discount price input field if it exists
+                const discountInput = $(`#discount-price-${index}`);
+                if (discountInput.length) {
+                    discountInput.val(productList[index].discount_price);
+                }
             }
 
             // Update subtotal based on current mode
@@ -931,7 +1003,9 @@
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
 
             localStorage.setItem('productList', JSON.stringify(productList));
-            renderProductList();
+            
+            // Update only the subtotal display for this row instead of re-rendering entire table
+            updateSubtotalDisplay(index);
             calculateInvoiceTotal();
 
             // Update individual discount savings if in individual discount mode
@@ -942,7 +1016,7 @@
 
         // Update the updateDiscountPrice function
         function updateDiscountPrice(index, value) {
-            const discountPrice = parseFloat(value);
+            const discountPrice = parseFloat(value) || 0;
 
             // Ensure discount price is not higher than regular price
             if (discountPrice > productList[index].regular_price) {
@@ -953,8 +1027,13 @@
                     confirmButtonText: 'OK'
                 });
 
-                // Reset to regular price
+                // Reset to regular price and update the input field
                 productList[index].discount_price = productList[index].regular_price;
+                const discountInput = $(`#discount-price-${index}`);
+                if (discountInput.length) {
+                    discountInput.val(productList[index].discount_price);
+                }
+                return;
             } else {
                 productList[index].discount_price = discountPrice;
             }
@@ -964,7 +1043,9 @@
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
 
             localStorage.setItem('productList', JSON.stringify(productList));
-            renderProductList();
+            
+            // Update only the subtotal display for this row instead of re-rendering entire table
+            updateSubtotalDisplay(index);
             calculateInvoiceTotal();
 
             // Update individual discount savings if in individual discount mode
