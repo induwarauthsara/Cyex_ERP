@@ -74,7 +74,7 @@
         </div>
 
         <!-- Cart Right Side -->
-        <div id="cart-rightSide">            <!-- Invoice Summary -->
+        <div id="cart-rightSide"> <!-- Invoice Summary -->
             <div class="invoice-summary">
                 <div class="summary-counts">
                     <div class="count-item">
@@ -114,7 +114,7 @@
                 <hr />
 
                 <p>Total Payable <span class="total-payable"> Rs. <span id="total-payable">0.00</span></span></p>
-            </div>            <!-- Print Preferences -->
+            </div> <!-- Print Preferences -->
             <div class="print-preferences">
                 <div class="print-row">
                     <div class="print-checkbox-container">
@@ -162,6 +162,7 @@
         let discountType = localStorage.getItem('discountType') || 'flat'; // Load discount type from localStorage
         let discountValue = parseFloat(localStorage.getItem('discountValue')) || 0; // Load discount value from localStorage
         let individualDiscountMode = JSON.parse(localStorage.getItem('individualDiscountMode')) || false;
+        let selectedSearchIndex = -1; // Track selected search result index for arrow key navigation
 
         // Ensure user session data is saved to localStorage
         <?php if (isset($_SESSION['employee_id'])): ?>
@@ -169,7 +170,7 @@
             localStorage.setItem('employee_id', '<?php echo $_SESSION['employee_id']; ?>');
             localStorage.setItem('employee_name', '<?php echo addslashes($_SESSION['employee_name']); ?>');
             localStorage.setItem('employee_role', '<?php echo addslashes($_SESSION['employee_role']); ?>');
-        }
+            }
         <?php endif; ?>
 
         // Debounce function to limit the rate of search requests
@@ -194,18 +195,46 @@
                 $('#product-input').val('');
             });
 
-            // Keydown event for Enter on the barcode or product input field
+            // Keydown event for arrow key navigation and Enter on the product input field
             $('#product-input').on('keydown', function(e) {
-                if (e.key === "Enter") {
+                const $searchResults = $('#search-results');
+                const $searchItems = $searchResults.find('.search-result-item');
+
+                if (e.key === "ArrowDown") {
                     e.preventDefault();
-                    let query = $(this).val().trim();
-                    if (query) {
-                        fetchProduct(query, true);
-                        // clear input field
-                        $('#product-input').val('');
+                    if ($searchResults.is(':visible') && $searchItems.length > 0) {
+                        selectedSearchIndex = (selectedSearchIndex + 1) % $searchItems.length;
+                        highlightSearchResult();
                     }
+                } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    if ($searchResults.is(':visible') && $searchItems.length > 0) {
+                        selectedSearchIndex = selectedSearchIndex <= 0 ? $searchItems.length - 1 : selectedSearchIndex - 1;
+                        highlightSearchResult();
+                    }
+                } else if (e.key === "Enter") {
+                    e.preventDefault();
+                    if ($searchResults.is(':visible') && selectedSearchIndex >= 0 && $searchItems.length > 0) {
+                        // Select the highlighted search result
+                        $searchItems.eq(selectedSearchIndex).click();
+                    } else {
+                        // Original Enter functionality
+                        let query = $(this).val().trim();
+                        if (query) {
+                            fetchProduct(query, true);
+                            // clear input field
+                            $('#product-input').val('');
+                        }
+                    }
+                } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    $searchResults.hide();
+                    selectedSearchIndex = -1;
+                } else {
+                    // Reset selection when typing other keys
+                    selectedSearchIndex = -1;
                 }
-            });            //Shortcut Key Listeners
+            }); //Shortcut Key Listeners
             $(document).on('keydown', function(event) {
                 // Only trigger if no input fields are focused
                 if (!$(event.target).is('input, textarea, select')) {
@@ -240,6 +269,7 @@
 
             // Trigger search with debouncing
             $('#product-input').off('input').on('input', debounce(function() {
+                selectedSearchIndex = -1; // Reset selection index when typing
                 const query = $(this).val().trim();
                 // if search result has only one, fetch it
                 if (query.length > 0 && $('#search-results').find('.search-result-item').length === 1) {
@@ -280,6 +310,7 @@
             $(document).on('click', function(event) {
                 if (!$(event.target).closest('#product-input, #search-results').length) {
                     $('#search-results').hide();
+                    selectedSearchIndex = -1; // Reset selection index when hiding results
                 }
             });
 
@@ -305,11 +336,14 @@
 
             // Load print preferences from localStorage
             loadPrintPreferences();
-        });        function showShortcuts() {
+        });
+
+        function showShortcuts() {
             Swal.fire({
                 title: 'Keyboard Shortcuts',
                 html: `<table> <thead> <tr> <th>Shortcut</th> <th>Description</th> </tr> </thead> <tbody>
                             <tr> <td><kbd>Insert</kbd></td> <td>Focus on product input</td> </tr>
+                            <tr> <td><kbd>↑</kbd> / <kbd>↓</kbd></td> <td>Navigate search results</td> </tr>
                             <tr> <td><kbd>+</kbd></td> <td>Select Customer</td> </tr>
                             <tr> <td><kbd>Alt</kbd> + <kbd>D</kbd></td> <td>Open Discount</td> </tr>
                             <tr> <td><kbd>Alt</kbd> + <kbd>H</kbd></td> <td>Hold Bill</td> </tr>
@@ -325,7 +359,8 @@
                             </tbody> </table> 
                             <br>
                             <p style="font-size: 12px; color: #666; text-align: left;">
-                                <strong>Note:</strong> Alt key shortcuts work when you're not typing in input fields.
+                                <strong>Note:</strong> Alt key shortcuts work when you're not typing in input fields.<br>
+                                <strong>Search Navigation:</strong> Use arrow keys to navigate through search results, Enter to select, and Escape to close.
                             </p>`,
                 icon: 'info',
                 showConfirmButton: false
@@ -434,11 +469,43 @@
 
         // Display search results in dropdown
         function displaySearchResults(products) {
+            selectedSearchIndex = -1; // Reset selection index when new results are displayed
             let resultsHtml = products.map(product => `
                 <div class="search-result-item" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #ddd;" data-product='${JSON.stringify(product)}'>
                     ${product.product_name} - ${product.sku || ''} (${product.barcode || 'No Barcode'})
                 </div> `).join('');
             $('#search-results').html(resultsHtml).show();
+        }
+
+        // Highlight the selected search result item
+        function highlightSearchResult() {
+            const $searchItems = $('#search-results .search-result-item');
+            
+            // Remove previous highlighting
+            $searchItems.removeClass('search-highlighted');
+            
+            // Add highlighting to selected item
+            if (selectedSearchIndex >= 0 && selectedSearchIndex < $searchItems.length) {
+                const $selectedItem = $searchItems.eq(selectedSearchIndex);
+                $selectedItem.addClass('search-highlighted');
+                
+                // Scroll the selected item into view if needed
+                const searchContainer = document.getElementById('search-results');
+                const selectedElement = $selectedItem[0];
+                
+                if (searchContainer && selectedElement) {
+                    const containerTop = searchContainer.scrollTop;
+                    const containerBottom = containerTop + searchContainer.clientHeight;
+                    const elementTop = selectedElement.offsetTop;
+                    const elementBottom = elementTop + selectedElement.offsetHeight;
+                    
+                    if (elementTop < containerTop) {
+                        searchContainer.scrollTop = elementTop;
+                    } else if (elementBottom > containerBottom) {
+                        searchContainer.scrollTop = elementBottom - searchContainer.clientHeight;
+                    }
+                }
+            }
         }
 
         // Handle click on search result item
@@ -448,6 +515,7 @@
             fetchProduct(productName, true);
             $('#search-results').hide();
             $('#product-input').val('');
+            selectedSearchIndex = -1; // Reset selection index after selection
         });
 
         function formatNumber(input) {
@@ -937,13 +1005,13 @@
         function togglePrintTypeOptions() {
             const printCheckbox = document.getElementById('print-bill-checkbox');
             const printTypeContainer = document.getElementById('print-type-container');
-            
+
             if (printCheckbox.checked) {
                 printTypeContainer.style.display = 'block';
             } else {
                 printTypeContainer.style.display = 'none';
             }
-            
+
             // Save print preference to localStorage
             localStorage.setItem('printBillEnabled', printCheckbox.checked);
         }
@@ -951,7 +1019,7 @@
         function updatePrintType() {
             const printTypeToggle = document.getElementById('print-type-toggle');
             const printType = printTypeToggle.checked ? 'standard' : 'receipt';
-            
+
             // Save print type to localStorage
             localStorage.setItem('printType', printType);
         }
@@ -964,7 +1032,7 @@
                 printCheckbox.checked = printBillEnabled === 'true';
                 togglePrintTypeOptions(); // Show/hide print type options based on checkbox state
             }
-            
+
             // Load print type from localStorage
             const printType = localStorage.getItem('printType');
             if (printType !== null) {
@@ -1058,7 +1126,7 @@
                                     <button class="swal2-confirm swal2-styled close-register-btn" onclick="closeRegister()">Close Register</button>
                                     <button class="swal2-confirm swal2-styled print-register-btn" onclick="printRegister(${registerData.register_id})">Print Report</button>
                                 `;
-                            } else {                                // Register is not open, show open button
+                            } else { // Register is not open, show open button
                                 content += `
                                     <div class="register-info">
                                         <p>No open register found.</p>
@@ -1523,7 +1591,8 @@
 
     <!-- Other scripts -->
     <script src="inc/searchCustomer function.js"></script>
-    <script src="inc/hold_invoices/hold_invoices_logics.js"></script>    <style>
+    <script src="inc/hold_invoices/hold_invoices_logics.js"></script>
+    <style>
         .loading-spinner {
             display: inline-block;
             width: 60px;
@@ -1543,14 +1612,16 @@
             100% {
                 transform: rotate(360deg);
             }
-        }        /* Print Preferences Styles */
+        }
+
+        /* Print Preferences Styles */
         .print-preferences {
             margin: 15px 0;
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
             background-color: #f8f9fa !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             color: #333 !important;
             font-family: inherit;
         }
@@ -1606,7 +1677,7 @@
             border-radius: 6px;
             font-size: 13px;
             gap: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .toggle-label {
@@ -1653,18 +1724,18 @@
             background-color: white;
             transition: .4s;
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        input:checked + .slider {
+        input:checked+.slider {
             background-color: #2196F3;
         }
 
-        input:focus + .slider {
+        input:focus+.slider {
             box-shadow: 0 0 1px #2196F3;
         }
 
-        input:checked + .slider:before {
+        input:checked+.slider:before {
             transform: translateX(22px);
         }
 
@@ -1674,26 +1745,28 @@
 
         .slider.round:before {
             border-radius: 50%;
-        }        /* Responsive adjustments */
+        }
+
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             .print-row {
                 gap: 15px;
                 flex-wrap: wrap;
             }
-            
+
             .print-checkbox-container {
                 flex: 0 0 auto;
             }
-            
+
             #print-type-container {
                 min-width: 150px;
             }
-            
+
             .print-type-toggle {
                 gap: 6px;
                 padding: 5px 10px;
             }
-            
+
             .toggle-label {
                 font-size: 11px;
             }
@@ -1705,12 +1778,12 @@
                 align-items: flex-start;
                 gap: 10px;
             }
-            
+
             #print-type-container {
                 width: 100%;
                 min-width: unset;
             }
-            
+
             .print-type-toggle {
                 justify-content: space-between;
                 width: 100%;
@@ -1723,6 +1796,34 @@
 
         .slider.round:before {
             border-radius: 50%;
+        }
+
+        /* Search Results Navigation Styles */
+        .search-highlighted {
+            background-color: #007bff !important;
+            color: white !important;
+            border-left: 4px solid #0056b3 !important;
+            font-weight: bold !important;
+        }
+
+        .search-result-item {
+            transition: background-color 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background-color: #007bff !important;
+        }
+
+        .search-highlighted:hover {
+            background-color: #0056b3 !important;
+        }
+
+        /* Ensure search results are properly styled */
+        #search-results .search-result-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+            user-select: none;
         }
     </style>
 </body>
