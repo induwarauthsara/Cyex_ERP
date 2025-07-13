@@ -3,6 +3,34 @@ header('Content-Type: application/json');
 session_start();
 require_once 'inc/config.php';
 
+// CONFIGURATION: Get settings from database
+// Default values in case database is not available
+$sell_Insufficient_stock_item = 1;
+$sell_Inactive_batch_products = 1;
+
+// Fetch configuration values from settings table
+try {
+    $settings_query = "SELECT setting_name, setting_value FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products')";
+    $settings_result = mysqli_query($con, $settings_query);
+    
+    if ($settings_result) {
+        while ($setting = mysqli_fetch_assoc($settings_result)) {
+            switch ($setting['setting_name']) {
+                case 'sell_Insufficient_stock_item':
+                    $sell_Insufficient_stock_item = intval($setting['setting_value']);
+                    break;
+                case 'sell_Inactive_batch_products':
+                    $sell_Inactive_batch_products = intval($setting['setting_value']);
+                    break;
+            }
+        }
+        mysqli_free_result($settings_result);
+    }
+} catch (Exception $e) {
+    // If settings table doesn't exist or query fails, use default values
+    error_log("Warning: Could not load settings from database. Using default values. Error: " . $e->getMessage());
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 if ($data === null) {
@@ -368,28 +396,30 @@ try {
         }
     }
 
-    // Update product stock - improved function to handle stock validation
-    function updateStock($con, $batch_id, $quantity, $productName = '')
+    // Update product stock - configurable stock validation
+    function updateStock($con, $batch_id, $quantity, $productName = '', $sell_Insufficient_stock_item = 0)
     {
-        // First check if there's enough stock
-        $checkQuery = "SELECT quantity FROM product_batch WHERE batch_id = ?";
-        $stmt = mysqli_prepare($con, $checkQuery);
-        if (!$stmt) {
-            throw new Exception("Error checking stock for batch");
+        if ($sell_Insufficient_stock_item == 0) {
+            // Stock validation enabled - check if there's enough stock
+            $checkQuery = "SELECT quantity FROM product_batch WHERE batch_id = ?";
+            $stmt = mysqli_prepare($con, $checkQuery);
+            if (!$stmt) {
+                throw new Exception("Error checking stock for batch");
+            }
+            
+            mysqli_stmt_bind_param($stmt, 's', $batch_id);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $currentStock);
+            mysqli_stmt_fetch($stmt);
+            mysqli_stmt_close($stmt);
+            
+            if ($currentStock < $quantity) {
+                throw new Exception("Insufficient stock for product: " . $productName . ", Batch: " . $batch_id . 
+                                   " (Requested: " . $quantity . ", Available: " . $currentStock . ")");
+            }
         }
         
-        mysqli_stmt_bind_param($stmt, 's', $batch_id);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $currentStock);
-        mysqli_stmt_fetch($stmt);
-        mysqli_stmt_close($stmt);
-        
-        if ($currentStock < $quantity) {
-            throw new Exception("Insufficient stock for product: " . $productName . ", Batch: " . $batch_id . 
-                               " (Requested: " . $quantity . ", Available: " . $currentStock . ")");
-        }
-        
-        // Update the stock
+        // Update the stock (quantity can go negative if $sell_Insufficient_stock_item = 1)
         $query = "UPDATE product_batch SET quantity = quantity - ? WHERE batch_id = ?";
         $stmt = mysqli_prepare($con, $query);
         if (!$stmt) {
@@ -399,9 +429,11 @@ try {
         mysqli_stmt_bind_param($stmt, 'ds', $quantity, $batch_id);
         mysqli_stmt_execute($stmt);
         
-        // Verify update was successful
-        if (mysqli_affected_rows($con) !== 1) {
-            throw new Exception("Failed to update stock for batch: " . $batch_id);
+        if ($sell_Insufficient_stock_item == 0) {
+            // Only verify update if stock validation is enabled
+            if (mysqli_affected_rows($con) !== 1) {
+                throw new Exception("Failed to update stock for batch: " . $batch_id);
+            }
         }
         mysqli_stmt_close($stmt);
         
@@ -431,6 +463,11 @@ try {
         // Calculate pricing based on the mode
         $price = $individualDiscountMode ? $discountPrice : $regularPrice;
         $amount = $quantity * $price;
+        
+        // Debug logging for one-time products
+        if ($isOneTimeProduct) {
+            error_log("One-time product debug - Product: $productName, Quantity: $quantity, Regular Price: $regularPrice, Discount Price: $discountPrice, Amount: $amount, Individual Discount Mode: " . ($individualDiscountMode ? 'true' : 'false'));
+        }
         
         // Get product cost from batch if available
         $cost = 0;
@@ -585,7 +622,7 @@ try {
         switch ($productType) {
             case 'standard':
                 // For standard products, update the stock directly
-                updateStock($con, $batch_id, $quantity, $productName);
+                updateStock($con, $batch_id, $quantity, $productName, $sell_Insufficient_stock_item);
                 break;
                 
             case 'combo':
@@ -607,21 +644,45 @@ try {
                     // Calculate total quantity needed for this component
                     $totalQtyNeeded = $row['required_qty'] * $quantity;
 
-                    // Find suitable batch with enough quantity
-                    $batchQuery = "SELECT batch_id FROM product_batch 
-                                   WHERE product_id = ? AND status = 'active' AND quantity >= ? 
-                                   ORDER BY expiry_date ASC, restocked_at ASC LIMIT 1";
-                    $batchStmt = mysqli_prepare($con, $batchQuery);
-                    mysqli_stmt_bind_param($batchStmt, 'id', $row['component_product_id'], $totalQtyNeeded);
-                    mysqli_stmt_execute($batchStmt);
-                    mysqli_stmt_bind_result($batchStmt, $componentBatchID);
-                    $batchFound = mysqli_stmt_fetch($batchStmt);
-                    mysqli_stmt_close($batchStmt);
+                    // Build batch query based on configuration variables
+                    $statusCondition = ($sell_Inactive_batch_products == 1) ? "" : "AND status = 'active'";
+                    
+                    if ($sell_Insufficient_stock_item == 1) {
+                        // Allow out-of-stock sales: Find batch regardless of quantity
+                        $batchQuery = "SELECT batch_id FROM product_batch 
+                                       WHERE product_id = ? $statusCondition 
+                                       ORDER BY expiry_date ASC, restocked_at ASC LIMIT 1";
+                        $batchStmt = mysqli_prepare($con, $batchQuery);
+                        mysqli_stmt_bind_param($batchStmt, 'i', $row['component_product_id']);
+                        mysqli_stmt_execute($batchStmt);
+                        mysqli_stmt_bind_result($batchStmt, $componentBatchID);
+                        $batchFound = mysqli_stmt_fetch($batchStmt);
+                        mysqli_stmt_close($batchStmt);
 
-                    if ($batchFound && $componentBatchID) {
-                        updateStock($con, $componentBatchID, $totalQtyNeeded, $row['product_name']);
+                        if ($batchFound && $componentBatchID) {
+                            updateStock($con, $componentBatchID, $totalQtyNeeded, $row['product_name'], $sell_Insufficient_stock_item);
+                        } else {
+                            $batchType = ($sell_Inactive_batch_products == 1) ? "any" : "active";
+                            error_log("Warning: No $batchType batch found for combo component: " . $row['product_name'] . " (Product ID: " . $row['component_product_id'] . ")");
+                        }
                     } else {
-                        throw new Exception("Insufficient stock for component: " . $row['product_name']);
+                        // Stock validation enabled: Find suitable batch with enough quantity
+                        $batchQuery = "SELECT batch_id FROM product_batch 
+                                       WHERE product_id = ? $statusCondition AND quantity >= ? 
+                                       ORDER BY expiry_date ASC, restocked_at ASC LIMIT 1";
+                        $batchStmt = mysqli_prepare($con, $batchQuery);
+                        mysqli_stmt_bind_param($batchStmt, 'id', $row['component_product_id'], $totalQtyNeeded);
+                        mysqli_stmt_execute($batchStmt);
+                        mysqli_stmt_bind_result($batchStmt, $componentBatchID);
+                        $batchFound = mysqli_stmt_fetch($batchStmt);
+                        mysqli_stmt_close($batchStmt);
+
+                        if ($batchFound && $componentBatchID) {
+                            updateStock($con, $componentBatchID, $totalQtyNeeded, $row['product_name'], $sell_Insufficient_stock_item);
+                        } else {
+                            $batchType = ($sell_Inactive_batch_products == 1) ? "any" : "active";
+                            throw new Exception("Insufficient stock for component: " . $row['product_name'] . " (No $batchType batch with sufficient quantity found)");
+                        }
                     }
                 }
                 mysqli_stmt_close($stmt);

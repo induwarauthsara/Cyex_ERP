@@ -15,19 +15,36 @@ body {
     background-color: #333;
     color: white;
     padding: 15px;
-    /* text-align: center; */
     left: 0;
     top: 60px;
     width: 200px;
-    height: 100%;
+    height: calc(100vh - 90px);
     position: fixed;
     color: red;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     justify-content: flex-start;
-    overflow: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-bottom: 100px;
+    z-index: 1000;
+}
+
+.nav::-webkit-scrollbar {
+    width: 5px;
+}
+
+.nav::-webkit-scrollbar-track {
+    background: #444;
+}
+
+.nav::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 3px;
+}
+
+.nav::-webkit-scrollbar-thumb:hover {
+    background: #888;
 }
 
 .nav a {
@@ -276,4 +293,104 @@ div#DataTable_wrapper input {
     cursor: pointer;
     text-align: center;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Mobile Responsive for Admin Panel */
+
+@media (max-width: 768px) {
+    body {
+        margin-left: 0;
+        margin-top: 140px;
+        margin: 140px 10px 5px 10px;
+    }
+    .nav {
+        width: 100%;
+        height: auto;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: #333;
+        z-index: 1001;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-height: calc(100vh - 60px);
+    }
+    .nav h1 {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+    }
+    .nav a {
+        margin: 8px 0;
+        padding: 12px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        width: 100%;
+        text-align: left;
+        justify-content: flex-start;
+        gap: 10px;
+        display: flex;
+        align-items: center;
+    }
+    .nav a i {
+        font-size: large;
+        margin-right: 8px;
+        min-width: 20px;
+    }
+}
+
+
+/* Improved scrollbar for better UX */
+
+.nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nav::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+
+/* Enhanced navigation link styling */
+
+.nav a {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(5px);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.nav a.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    transform: translateX(5px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+}
+
+.nav a.active i {
+    color: white;
 }

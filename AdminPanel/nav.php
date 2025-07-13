@@ -25,7 +25,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 
 <link rel="stylesheet" href="<?php __DIR__ ?>/AdminPanel/acp.css">
-<div class="nav">
+
+<div class="nav" id="adminNav">
     <h1>Admin Panel</h1>
 </div>
 
@@ -71,10 +72,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Salary Payrolls",
             icon: "fas fa-receipt"
         },
-        "/AdminPanel/hrm/viewPayrolls.php": {
-            name: "Salary Payrolls",
-            icon: "fas fa-receipt"
-        },
         "/AdminPanel/hrm": {
             name: "HRM",
             icon: "fas fa-user-friends"
@@ -87,7 +84,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Pettycash",
             icon: "fas fa-money-bill-wave"
         },
-        "/AdminPanel/logs/transactionLog.php": { // After Developing "Report" page move this to "Report" page
+        "/AdminPanel/logs/transactionLog.php": {
             name: "Transaction Log",
             icon: "fas fa-file-invoice-dollar"
         },
@@ -95,18 +92,24 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Bank",
             icon: "fas fa-university"
         },
+        "/AdminPanel/settings.php": {
+            name: "Settings",
+            icon: "fas fa-cog"
+        }
     };
 
+    // Build navigation
     var nav = document.querySelector('.nav');
     const current_page = window.location.pathname;
 
-    for (var key in NavLinkList) {
+    // Create navigation links
+    Object.keys(NavLinkList).forEach(function(key) {
         var a = document.createElement('a');
         a.href = key;
         a.innerHTML = `<i class="${NavLinkList[key].icon}"></i> ${NavLinkList[key].name}`;
         a.className = key === current_page ? 'active' : '';
         nav.appendChild(a);
-    }
+    });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
