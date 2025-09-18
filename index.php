@@ -35,6 +35,7 @@
                     <!-- <button class="print-last-invoice" onclick="printLastInvoice()"><i class="fas fa-print"></i> &nbsp; Print Last Invoice</button> -->
                     <button class="clear-search-cache-button" onclick="clearQuickSearch()"><i class="fas fa-broom"></i> &nbsp; Clear Quick Search</button>
                     <button class="cash-register-button" onclick="openCashRegister()"><i class="fa-solid fa-cash-register"></i> &nbsp; Cash Register</button>
+                    <button class="petty-cash-button" onclick="cashOut()"><i class="fas fa-wallet"></i> &nbsp; Petty Cash</button>
                     <button class="pos-settings-button" onclick="openPOSSettings()"><i class="fas fa-cog"></i> &nbsp; POS Settings</button>
                 </div>
             </div>
@@ -303,6 +304,10 @@
                         event.preventDefault(); // Prevent any default action for Alt + S
                         openPOSSettings(); // Call the POS settings function
                     }
+                    if (event.altKey && event.key === 't') {
+                        event.preventDefault(); // Prevent any default action for Alt + T
+                        cashOut(); // Call the cash out function directly
+                    }
                 }
             });
 
@@ -412,6 +417,7 @@
                             <tr> <td><kbd>Alt</kbd> + <kbd>P</kbd></td> <td>Print Last Invoice</td> </tr>
                             <tr> <td><kbd>Alt</kbd> + <kbd>C</kbd></td> <td>Cancel and Clear Bill</td> </tr>
                             <tr> <td><kbd>Alt</kbd> + <kbd>S</kbd></td> <td>POS Settings</td> </tr>
+                            <tr> <td><kbd>Alt</kbd> + <kbd>T</kbd></td> <td>Petty Cash</td> </tr>
                             <!-- Additional Shortcuts from the Invoice Confirm -->
                             <tr> <td><kbd>F1</kbd></td> <td><b>Cash Payment </b> </td> </tr>
                             <tr> <td><kbd>F2</kbd></td> <td><b>Card Payment</b> </td> </tr>
@@ -1681,6 +1687,11 @@
                         <label for="description">Description</label>
                         <input type="text" id="description" class="swal2-input" placeholder="Purpose of petty cash">
                     </div>
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; text-align: center;">
+                        <a href="/pettycash.php" target="_blank" style="color: #6f42c1; text-decoration: none; font-size: 14px;">
+                            <i class="fas fa-list"></i> View Petty Cash Records
+                        </a>
+                    </div>
                 `,
                 focusConfirm: false,
                 showCancelButton: true,
@@ -1819,6 +1830,62 @@
 
         .pos-settings-button i {
             margin-right: 5px;
+        }
+
+        /* Cash Register Button Styles */
+        .cash-register-button {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .cash-register-button:hover {
+            background-color: #c82333 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .cash-register-button i {
+            margin-right: 5px;
+        }
+
+        .cash-register-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Petty Cash Button Styles */
+        .petty-cash-button {
+            background-color: #6f42c1 !important;
+            color: white !important;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .petty-cash-button:hover {
+            background-color: #5a32a3 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .petty-cash-button i {
+            margin-right: 5px;
+        }
+
+        .petty-cash-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         /* Print Preferences Styles */
