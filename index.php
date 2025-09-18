@@ -50,9 +50,14 @@
                 </div>
             </div>
             <div class="product-container">
-                <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off">
+                <div class="product-input-wrapper">
+                    <input type="text" id="product-input" placeholder="Enter Product Name / SKU / Scan Code" autocomplete="off">
+                    <button id="add-onetime-product-btn" class="add-onetime-btn" title="Add One-Time Product">
+                        <i class="fas fa-plus"></i> One-Time Product
+                    </button>
+                </div>
                 <button id="add-product" style="display: none;">Add Product</button>
-                <div id="search-results" style="position: absolute; background-color: white; border: 1px solid #ccc; width: 100%; z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"> </div>
+                <div id="search-results" style="position: absolute; background-color: white; border: 1px solid #ccc; width: calc(100% - 140px); z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"> </div>
             </div>
             <!-- Product List Table -->
             <div class="product-list">
@@ -208,6 +213,17 @@
                 $('#product-input').val('');
             });
 
+            // Add One-Time Product button click handler
+            $('#add-onetime-product-btn').click(function(e) {
+                e.preventDefault();
+                const productName = $('#product-input').val().trim();
+                if (productName) {
+                    addonetimeproductModal(productName);
+                } else {
+                    addonetimeproductModal('');
+                }
+            });
+
             // Keydown event for arrow key navigation and Enter on the product input field
             $('#product-input').on('keydown', function(e) {
                 const $searchResults = $('#search-results');
@@ -297,25 +313,12 @@
                 } else if (query.length === 0 || query === '') {
                     $('#search-results').hide();
                 } else {
-                    // $('#search-results').hide();
-                    // show as no product found
-                    $('#search-results').html(`
-                        <div style="padding: 10px; border-bottom: 1px solid #ddd;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span>No product found</span>
-                                <button id="add-onetime-product" class="btn-sm btn-success" style="padding: 3px 8px; background-color: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                                    <i class="fas fa-plus"></i> Add One-Time Product
-                                </button>
-                            </div>
-                        </div>
-                    `).show();
-
-                    // Attach event listener to the Add One-Time Product button
-                    $('#add-onetime-product').off('click').on('click', function() {
-                        const productName = $('#product-input').val().trim();
-                        addonetimeproductModal(productName);
-                        $('#search-results').hide();
-                    });
+                    // Hide search results and show small alert instead
+                    $('#search-results').hide();
+                    const productName = $('#product-input').val().trim();
+                    if (productName) {
+                        showSmallAlert(`No product found: "${productName}"`);
+                    }
                 }
             }, 500));
 
@@ -350,6 +353,37 @@
             // Load print preferences from localStorage
             loadPrintPreferences();
         });
+
+        // Function to show small alert at bottom left corner
+        function showSmallAlert(message, duration = 3000) {
+            const alertContainer = $('#small-alert');
+            const alertText = $('#small-alert-text');
+            const alertClose = $('#small-alert-close');
+            
+            // Set the message
+            alertText.text(message);
+            
+            // Show the alert
+            alertContainer.show().addClass('show');
+            
+            // Close button functionality
+            alertClose.off('click').on('click', function() {
+                hideSmallAlert();
+            });
+            
+            // Auto-hide after specified duration
+            setTimeout(function() {
+                hideSmallAlert();
+            }, duration);
+        }
+        
+        function hideSmallAlert() {
+            const alertContainer = $('#small-alert');
+            alertContainer.css('animation', 'slideOutToLeft 0.3s ease-in');
+            setTimeout(function() {
+                alertContainer.hide().removeClass('show').css('animation', '');
+            }, 300);
+        }
 
         function showShortcuts() {
             Swal.fire({
@@ -450,25 +484,15 @@
                 // Show search results if multiple products match
                 displaySearchResults(response.products);
             } else if (response.products.length === 0) {
-                // Show no product found message with option to add one-time product
+                // Show small alert instead of SweetAlert popup
                 const query = $('#product-input').val().trim();
                 $('#search-results').hide();
-
-                Swal.fire({
-                    title: 'No Product Found',
-                    html: `
-                        <p>Would you like to add "${query}" as a one-time product?</p>
-                    `,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Add One-Time Product',
-                    confirmButtonColor: '#28a745',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        addonetimeproductModal(query);
-                    }
-                });
+                
+                if (query) {
+                    showSmallAlert(`No product found: "${query}"`);
+                } else {
+                    showSmallAlert('No product found');
+                }
             } else {
                 $('#search-results').hide();
                 Swal.fire({
@@ -1907,6 +1931,12 @@
             user-select: none;
         }
     </style>
+    
+    <!-- Small Alert Container -->
+    <div id="small-alert" class="small-alert-container" style="display: none;">
+        <span id="small-alert-text"></span>
+        <button id="small-alert-close" class="small-alert-close">&times;</button>
+    </div>
 </body>
 
 </html>

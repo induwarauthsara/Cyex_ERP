@@ -196,14 +196,52 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.product-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 #product-input {
-    width: 100%;
+    flex: 1;
     padding: 0.75rem 1rem;
     font-size: 1rem;
     border: 2px solid var(--primary);
     border-radius: var(--border-radius);
     background-color: white;
     transition: all 0.3s;
+}
+
+.add-onetime-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background-color: var(--success);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.add-onetime-btn:hover {
+    background-color: #3ba0d3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.add-onetime-btn:active {
+    transform: translateY(0);
+}
+
+#search-results {
+    top: 100%;
+    left: 0;
+    right: auto;
 }
 
 #product-input:focus {
@@ -1049,4 +1087,68 @@ input:checked+.slider:before {
 
 .individual-discount-toggle input:checked+.slider:before {
     transform: translateX(20px);
+}
+
+
+/* Small Alert Container Styles */
+
+.small-alert-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    padding: 10px 40px 10px 15px;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 300px;
+    z-index: 10000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    animation: slideInFromLeft 0.3s ease-out;
+}
+
+.small-alert-container.show {
+    display: block !important;
+}
+
+.small-alert-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: #721c24;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.7;
+}
+
+.small-alert-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideInFromLeft {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutToLeft {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
 }
