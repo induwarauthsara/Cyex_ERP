@@ -455,6 +455,9 @@ try {
             throw new Exception("Invalid product data: Invalid values");
         }
         
+        // Check if this is a one-time product
+        $isOneTimeProduct = isset($product['isOneTimeProduct']) && $product['isOneTimeProduct'] === true;
+        
         // Extract pricing information
         $regularPrice = isset($product['regular_price']) ? floatval($product['regular_price']) : 
                       (isset($product['price']) ? floatval($product['price']) : 0);
@@ -486,9 +489,6 @@ try {
         $profit = $amount - ($cost * $quantity);
         $individual_discount_mode_int = $individualDiscountMode ? 1 : 0;
         
-        // Check if this is a one-time product
-        $isOneTimeProduct = isset($product['isOneTimeProduct']) && $product['isOneTimeProduct'] === true;
-
         // Insert sales record
         $query = "INSERT INTO sales (
                     invoice_number, product, batch, qty, rate, discount_price, 
