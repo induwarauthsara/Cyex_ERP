@@ -35,6 +35,7 @@
                     <!-- <button class="print-last-invoice" onclick="printLastInvoice()"><i class="fas fa-print"></i> &nbsp; Print Last Invoice</button> -->
                     <button class="clear-search-cache-button" onclick="clearQuickSearch()"><i class="fas fa-broom"></i> &nbsp; Clear Quick Search</button>
                     <button class="cash-register-button" onclick="openCashRegister()"><i class="fa-solid fa-cash-register"></i> &nbsp; Cash Register</button>
+                    <button class="pos-settings-button" onclick="openPOSSettings()"><i class="fas fa-cog"></i> &nbsp; POS Settings</button>
                 </div>
             </div>
             <!-- Customer Details -->
@@ -169,6 +170,13 @@
         let individualDiscountMode = JSON.parse(localStorage.getItem('individualDiscountMode')) || false;
         let selectedSearchIndex = -1; // Track selected search result index for arrow key navigation
         let lastSearchQuery = ''; // Track the last search query for exact matching
+        
+        // POS Settings - Initialize from localStorage or set default
+        let addAsNewLine = JSON.parse(localStorage.getItem('addAsNewLine'));
+        if (addAsNewLine === null) {
+            addAsNewLine = true; // Default enabled
+            localStorage.setItem('addAsNewLine', JSON.stringify(addAsNewLine));
+        }
 
         // Debounced update functions for better performance
         const debouncedUpdateQuantity = debounce((index, value) => {
@@ -291,6 +299,10 @@
                         event.preventDefault(); // Prevent any default action for Alt + P
                         printLastInvoice(); // Call the print last invoice function
                     }
+                    if (event.altKey && event.key === 's') {
+                        event.preventDefault(); // Prevent any default action for Alt + S
+                        openPOSSettings(); // Call the POS settings function
+                    }
                 }
             });
 
@@ -399,6 +411,7 @@
                             <tr> <td><kbd>Alt</kbd> + <kbd>L</kbd></td> <td>Show Held Bill List</td> </tr>
                             <tr> <td><kbd>Alt</kbd> + <kbd>P</kbd></td> <td>Print Last Invoice</td> </tr>
                             <tr> <td><kbd>Alt</kbd> + <kbd>C</kbd></td> <td>Cancel and Clear Bill</td> </tr>
+                            <tr> <td><kbd>Alt</kbd> + <kbd>S</kbd></td> <td>POS Settings</td> </tr>
                             <!-- Additional Shortcuts from the Invoice Confirm -->
                             <tr> <td><kbd>F1</kbd></td> <td><b>Cash Payment </b> </td> </tr>
                             <tr> <td><kbd>F2</kbd></td> <td><b>Card Payment</b> </td> </tr>
@@ -413,6 +426,43 @@
                             </p>`,
                 icon: 'info',
                 showConfirmButton: false
+            });
+        }
+
+        function openPOSSettings() {
+            Swal.fire({
+                title: 'POS Settings',
+                html: `
+                    <div style="text-align: left; padding: 20px; max-width: 400px; margin: 0 auto;">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: flex; align-items: center; cursor: pointer; font-size: 16px; font-weight: 500;">
+                                <input type="checkbox" id="add-as-new-line-toggle" ${addAsNewLine ? 'checked' : ''} 
+                                       style="margin-right: 12px; width: 18px; height: 18px; accent-color: #2196F3;">
+                                Add products as new lines
+                            </label>
+                            <p style="margin-top: 8px; font-size: 13px; color: #666; line-height: 1.4;">
+                                When enabled, adding an existing product to the cart will create a new line instead of increasing the quantity of the existing line.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Save Settings',
+                cancelButtonText: 'Cancel',
+                width: '500px',
+                preConfirm: () => {
+                    const newSetting = document.getElementById('add-as-new-line-toggle').checked;
+                    addAsNewLine = newSetting;
+                    localStorage.setItem('addAsNewLine', JSON.stringify(addAsNewLine));
+                    
+                    Swal.fire({
+                        title: 'Settings Saved!',
+                        text: 'POS settings have been updated successfully.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
             });
         }
 
@@ -702,8 +752,11 @@
             let existingBatch = productList.find(p => p.product_id === batch.product_id && p.batch_id === batch.batch_id);
 
             let productIndex; // Store the index of the product to focus on later
-            if (existingBatch) {
-                // Increment the quantity if the batch already exists in the cart
+            
+            // If addAsNewLine setting is disabled and existing batch found, increment quantity
+            // If addAsNewLine setting is enabled, always add as new line (skip existing check)
+            if (existingBatch && !addAsNewLine) {
+                // Increment the quantity if the batch already exists in the cart and setting allows it
                 existingBatch.quantity++;
                 existingBatch.subtotal = existingBatch.quantity *
                     (individualDiscountMode ? existingBatch.discount_price : existingBatch.regular_price);
@@ -714,7 +767,7 @@
                 // Use discount_price from batch if available, otherwise default to regularPrice
                 const discountPrice = (batch.discount_price && batch.discount_price !== 'N/A') ? parseFloat(batch.discount_price) : regularPrice;
 
-                // Add new entry if batch doesn't exist in cart
+                // Add new entry - either batch doesn't exist in cart OR addAsNewLine setting is enabled
                 productList.push({
                     product_id: batch.product_id,
                     batch_id: batch.batch_id,
@@ -1746,6 +1799,26 @@
             100% {
                 transform: rotate(360deg);
             }
+        }
+
+        /* POS Settings Button Styles */
+        .pos-settings-button {
+            background-color: #28a745 !important;
+            color: white !important;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pos-settings-button:hover {
+            background-color: #218838 !important;
+        }
+
+        .pos-settings-button i {
+            margin-right: 5px;
         }
 
         /* Print Preferences Styles */
