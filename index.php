@@ -168,6 +168,7 @@
         let discountValue = parseFloat(localStorage.getItem('discountValue')) || 0; // Load discount value from localStorage
         let individualDiscountMode = JSON.parse(localStorage.getItem('individualDiscountMode')) || false;
         let selectedSearchIndex = -1; // Track selected search result index for arrow key navigation
+        let lastSearchQuery = ''; // Track the last search query for exact matching
 
         // Debounced update functions for better performance
         const debouncedUpdateQuantity = debounce((index, value) => {
@@ -300,6 +301,7 @@
             $('#product-input').off('input').on('input', debounce(function() {
                 selectedSearchIndex = -1; // Reset selection index when typing
                 const query = $(this).val().trim();
+                lastSearchQuery = query; // Track the current search query
                 // if search result has only one, fetch it
                 if (query.length > 0 && $('#search-results').find('.search-result-item').length === 1) {
                     // fetch result product name                   
@@ -432,6 +434,7 @@
 
         function fetchProduct(query, selectFirstMatch = false) {
             // console.log('Fetching product for query:', query, 'selectFirstMatch', selectFirstMatch);
+            lastSearchQuery = query; // Update the last search query
             if (productsCache[query]) {
                 // If product is in cache, use it directly
                 handleProductResponse(productsCache[query], selectFirstMatch);
@@ -481,7 +484,33 @@
                 $('#search-results').hide();
                 $('#product-input').val('');
             } else if (response.products.length > 1) {
-                // Show search results if multiple products match
+                if (selectFirstMatch) {
+                    // When selectFirstMatch is true (clicked from search results), find the exact match
+                    let query = $('#product-input').val().trim() || lastSearchQuery;
+                    let exactMatch = response.products.find(p => p.product_name === query);
+                    
+                    if (exactMatch) {
+                        // Find the corresponding batch for this exact product
+                        let exactBatch = response.batches.find(b => b.product_id === exactMatch.product_id);
+                        if (exactBatch) {
+                            addToCart(exactMatch, exactBatch);
+                            $('#search-results').hide();
+                            $('#product-input').val('');
+                            return;
+                        }
+                    }
+                    
+                    // Fallback: if no exact match found, use the first product
+                    let product = response.products[0];
+                    let batch = response.batches.find(b => b.product_id === product.product_id);
+                    if (batch) {
+                        addToCart(product, batch);
+                        $('#search-results').hide();
+                        $('#product-input').val('');
+                        return;
+                    }
+                }
+                // Show search results if not selectFirstMatch or no batch found
                 displaySearchResults(response.products);
             } else if (response.products.length === 0) {
                 // Show small alert instead of SweetAlert popup
