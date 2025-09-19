@@ -174,7 +174,9 @@ if (!empty($errors)) {
 // Start database transaction
 mysqli_begin_transaction($con);
 
-
+// Initialize total cost and profit for invoice
+$totalInvoiceCost = 0;
+$totalInvoiceProfit = 0;
 
 try {
     // Check if customer exists and get or create customer ID
@@ -221,7 +223,7 @@ try {
         throw new Exception("Customer does not have enough funds. Available: " . $currentExtraFund);
     }
 
-    // Insert invoice with updated column structure
+    // Insert invoice with basic information (cost and profit will be updated after product processing)
     $query = "INSERT INTO invoice (
                 customer_name, customer_mobile, customer_id, total, discount, amount_received, 
                 cash_change, advance, balance, paymentMethod, full_paid, invoice_description, biller,
@@ -240,9 +242,29 @@ try {
     $individual_discount_mode_int = $individualDiscountMode ? 1 : 0;
     $credit_payment_int = $bool_creditPayment ? 1 : 0;
 
+    // DEBUG: Log values before invoice insertion
+    // error_log("=== INVOICE INSERTION DEBUG ===");
+    // error_log("Customer Name: " . $customerName);
+    // error_log("Customer Number: " . $customerNumber);
+    // error_log("Customer ID: " . $customerId);
+    // error_log("Subtotal: " . $subtotal);
+    // error_log("Discount: " . $discount);
+    // error_log("Amount Received: " . $amount_received);
+    // error_log("Cash Change: " . $cash_change);
+    // error_log("Advance: " . $advance);
+    // error_log("Balance: " . $balance);
+    // error_log("Payment Method: " . $paymentMethod);
+    // error_log("Full Paid: " . $fullPaid);
+    // error_log("Invoice Description: " . $invoiceDescription);
+    // error_log("Biller: " . $biller);
+    // error_log("Individual Discount Mode: " . $individual_discount_mode_int);
+    // error_log("Credit Payment: " . $credit_payment_int);
+    // error_log("NOTE: Cost and profit will be calculated and updated after product processing");
+    // error_log("=== END INVOICE INSERTION DEBUG ===");
+
     mysqli_stmt_bind_param(
         $stmt,
-        'ssidddddsssiiii',
+        'ssidddddsissiii',
         $customerName,
         $customerNumber,
         $customerId,
@@ -469,7 +491,7 @@ try {
         
         // Debug logging for one-time products
         if ($isOneTimeProduct) {
-            error_log("One-time product debug - Product: $productName, Quantity: $quantity, Regular Price: $regularPrice, Discount Price: $discountPrice, Amount: $amount, Individual Discount Mode: " . ($individualDiscountMode ? 'true' : 'false'));
+            // error_log("One-time product debug - Product: $productName, Quantity: $quantity, Regular Price: $regularPrice, Discount Price: $discountPrice, Amount: $amount, Individual Discount Mode: " . ($individualDiscountMode ? 'true' : 'false'));
         }
         
         // Get product cost from batch if available
@@ -488,6 +510,10 @@ try {
         
         $profit = $amount - ($cost * $quantity);
         $individual_discount_mode_int = $individualDiscountMode ? 1 : 0;
+        
+        // Accumulate total cost and profit for invoice
+        $totalInvoiceCost += ($cost * $quantity);
+        $totalInvoiceProfit += $profit;
         
         // Insert sales record
         $query = "INSERT INTO sales (
@@ -698,6 +724,27 @@ try {
         }
     }
 
+    // Update invoice with calculated cost and profit totals
+    // error_log("=== UPDATING INVOICE WITH CALCULATED TOTALS ===");
+    // error_log("Final Total Invoice Cost: " . $totalInvoiceCost);
+    // error_log("Final Total Invoice Profit: " . $totalInvoiceProfit);
+    
+    $updateInvoiceQuery = "UPDATE invoice SET cost = ?, profit = ? WHERE invoice_number = ?";
+    $updateStmt = mysqli_prepare($con, $updateInvoiceQuery);
+    if (!$updateStmt) {
+        throw new Exception("Error preparing invoice update query: " . mysqli_error($con));
+    }
+    
+    mysqli_stmt_bind_param($updateStmt, 'ddi', $totalInvoiceCost, $totalInvoiceProfit, $invoiceNumber);
+    mysqli_stmt_execute($updateStmt);
+    
+    if (mysqli_affected_rows($con) !== 1) {
+        // error_log("WARNING: Invoice update affected " . mysqli_affected_rows($con) . " rows");
+    } else {
+        // error_log("SUCCESS: Invoice cost and profit updated successfully");
+    }
+    mysqli_stmt_close($updateStmt);
+
     // Ensure payment_details table exists and insert payment details
     try {
         // Load the table creation script
@@ -722,6 +769,70 @@ try {
         // If we can't insert payment details, it's a serious issue, so let the transaction fail
         throw new Exception("Failed to save payment details: " . $e->getMessage());
     }
+
+    // DEBUGGING: Log all database insertions
+    error_log("=== INVOICE SUBMISSION DEBUG INFO ===");
+    error_log("Invoice Number: " . $invoiceNumber);
+    error_log("Total Invoice Cost: " . $totalInvoiceCost);
+    error_log("Total Invoice Profit: " . $totalInvoiceProfit);
+    error_log("Customer: " . $customerName . " (" . $customerNumber . ")");
+    error_log("Subtotal: " . $subtotal);
+    error_log("Discount: " . $discount);
+    error_log("Final Total: " . ($subtotal - $discount));
+    error_log("Amount Received: " . $amount_received);
+    error_log("Cash Change: " . $cash_change);
+    error_log("Advance: " . $advance);
+    error_log("Balance: " . $balance);
+    
+    // Verify what was actually inserted into invoice table
+    $verifyQuery = "SELECT invoice_number, total, discount, cost, profit, customer_name, biller 
+                    FROM invoice WHERE invoice_number = ?";
+    $verifyStmt = mysqli_prepare($con, $verifyQuery);
+    if ($verifyStmt) {
+        mysqli_stmt_bind_param($verifyStmt, 'i', $invoiceNumber);
+        mysqli_stmt_execute($verifyStmt);
+        $verifyResult = mysqli_stmt_get_result($verifyStmt);
+        if ($row = mysqli_fetch_assoc($verifyResult)) {
+            error_log("ACTUAL INVOICE DB DATA:");
+            error_log("- Invoice Number: " . $row['invoice_number']);
+            error_log("- Total: " . $row['total']);
+            error_log("- Discount: " . $row['discount']);
+            error_log("- Cost: " . $row['cost']);
+            error_log("- Profit: " . $row['profit']);
+            error_log("- Customer: " . $row['customer_name']);
+            error_log("- Biller: " . $row['biller']);
+        } else {
+            error_log("ERROR: Could not verify invoice data in database");
+        }
+        mysqli_stmt_close($verifyStmt);
+    }
+    
+    // Verify sales records
+    $salesQuery = "SELECT product, qty, cost, profit, amount FROM sales WHERE invoice_number = ?";
+    $salesStmt = mysqli_prepare($con, $salesQuery);
+    if ($salesStmt) {
+        mysqli_stmt_bind_param($salesStmt, 'i', $invoiceNumber);
+        mysqli_stmt_execute($salesStmt);
+        $salesResult = mysqli_stmt_get_result($salesStmt);
+        $salesCount = 0;
+        $totalSalesCost = 0;
+        $totalSalesProfit = 0;
+        while ($salesRow = mysqli_fetch_assoc($salesResult)) {
+            $salesCount++;
+            $totalSalesCost += $salesRow['cost'] * $salesRow['qty'];
+            $totalSalesProfit += $salesRow['profit'];
+            error_log("SALES RECORD " . $salesCount . ": " . $salesRow['product'] . 
+                     " - Qty: " . $salesRow['qty'] . 
+                     ", Cost: " . $salesRow['cost'] . 
+                     ", Profit: " . $salesRow['profit'] . 
+                     ", Amount: " . $salesRow['amount']);
+        }
+        error_log("TOTAL SALES RECORDS: " . $salesCount);
+        error_log("CALCULATED TOTAL SALES COST: " . $totalSalesCost);
+        error_log("CALCULATED TOTAL SALES PROFIT: " . $totalSalesProfit);
+        mysqli_stmt_close($salesStmt);
+    }
+    error_log("=== END DEBUG INFO ===");
 
     // Commit transaction
     mysqli_commit($con);    // Send success response
