@@ -282,6 +282,18 @@
                                 <button type="button" class="btn btn-outline-primary mt-3" id="addComboProductBtn">
                                     <i class="fas fa-plus"></i> Add Product to Combo
                                 </button>
+                                
+                                <!-- Combo Summary Section -->
+                                <div class="combo-summary p-3 border-top mt-3 bg-light rounded">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-0"><strong>Total Products:</strong> <span id="comboProductCount">0</span></p>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <p class="mb-0"><strong>Total Combo Cost:</strong> <span id="totalComboCost">Rs. 0.00</span></p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -548,6 +560,17 @@
                         quantity: component.quantity
                     });
                 });
+                
+                // Update totals after all components are loaded with sufficient delay
+                setTimeout(() => {
+                    console.log('Triggering total calculation for loaded combo products');
+                    $('#comboProductsContainer .combo-item').each(function() {
+                        const $select = $(this).find('.combo-product-select');
+                        if ($select.val()) {
+                            updateComboItemCost($select[0]);
+                        }
+                    });
+                }, 2000); // Increased delay to ensure all async operations complete
             }
         }
 
@@ -662,22 +685,26 @@
             const comboIndex = $('#comboProductsContainer .combo-item').length;
 
             let html = `
-                <div class="combo-item" data-index="${comboIndex}">
+                <div class="combo-item" data-index="${comboIndex}" data-cost="0">
                     <div class="row mb-2">
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <label class="form-label">Product</label>
                             <select class="form-select combo-product-select" name="comboProducts[${comboIndex}][productId]" required>
                                 <option value="">Select Product</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">Quantity</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control combo-quantity" name="comboProducts[${comboIndex}][quantity]" min="0.001" step="0.001" value="${data ? data.quantity || 1 : 1}" required>
-                                <button type="button" class="btn btn-danger remove-combo-btn" onclick="removeComboProduct(this)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            <input type="number" class="form-control combo-quantity" name="comboProducts[${comboIndex}][quantity]" min="0.001" step="0.001" value="${data ? data.quantity || 1 : 1}" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Total Cost</label>
+                            <div class="form-control-plaintext combo-total-cost text-muted">Rs. 0.00</div>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-combo-btn" onclick="removeComboProduct(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -692,20 +719,29 @@
 
         function removeComboProduct(btn) {
             $(btn).closest('.combo-item').remove();
+            updateComboTotals();
         }
+
+        // Store product cost data globally for easy access
+        let productCostData = {};
 
         function loadProductsForCombo(select, selectedValue = null) {
             $.ajax({
-                url: 'API/getAllProducts.php',
+                url: 'API/getProductsWithCost.php',
                 type: 'GET',
                 success: function(response) {
                     let options = '<option value="">Select Product</option>';
+                    productCostData = {}; // Reset cost data
+                    
                     if (response && response.length > 0) {
                         response.forEach(product => {
+                            // Store cost data globally
+                            productCostData[product.id] = parseFloat(product.avg_cost) || 0;
+                            
                             const isInactive = product.active_status != 1;
                             const displayName = isInactive ? `${product.name} [Inactive]` : product.name;
                             const optionClass = isInactive ? 'style="color: #18b6aeff; font-style: italic;"' : '';
-                            options += `<option value="${product.id}" ${selectedValue == product.id ? 'selected' : ''} ${optionClass}>${displayName}</option>`;
+                            options += `<option value="${product.id}" data-cost="${product.avg_cost}" ${selectedValue == product.id ? 'selected' : ''} ${optionClass}>${displayName}</option>`;
                         });
                     }
                     $(select).html(options);
@@ -738,6 +774,18 @@
                             return option.text;
                         }
                     });
+                    
+                    // Trigger calculation when product is selected
+                    $(select).off('change.comboCalc').on('change.comboCalc', function() {
+                        updateComboItemCost(this);
+                    });
+                    
+                    // If this is loading with existing data, trigger calculation
+                    if (selectedValue) {
+                        setTimeout(() => {
+                            updateComboItemCost(select);
+                        }, 100);
+                    }
                 },
                 error: function(xhr, status, error) {
                     console.error('Failed to load products:', error);
@@ -761,6 +809,52 @@
                 title: 'Error',
                 text: message
             });
+        }
+
+        // Function to update individual combo item cost
+        function updateComboItemCost(selectElement) {
+            const $select = $(selectElement);
+            const $comboItem = $select.closest('.combo-item');
+            const $quantityInput = $comboItem.find('.combo-quantity');
+            const $totalCostDisplay = $comboItem.find('.combo-total-cost');
+            
+            const productId = $select.val();
+            const quantity = parseFloat($quantityInput.val()) || 0;
+            
+            let unitCost = 0;
+            if (productId && productCostData[productId] !== undefined) {
+                unitCost = productCostData[productId];
+            } else {
+                // Fallback to data attribute
+                const selectedOption = $select.find('option:selected');
+                unitCost = parseFloat(selectedOption.attr('data-cost')) || 0;
+            }
+            
+            const totalCost = unitCost * quantity;
+            $comboItem.attr('data-cost', totalCost);
+            $totalCostDisplay.text('Rs. ' + totalCost.toFixed(2));
+            
+            console.log('Product ID:', productId, 'Unit Cost:', unitCost, 'Quantity:', quantity, 'Total:', totalCost);
+            
+            updateComboTotals();
+        }
+
+        // Function to update overall combo totals
+        function updateComboTotals() {
+            let totalCost = 0;
+            let productCount = 0;
+            
+            $('#comboProductsContainer .combo-item').each(function() {
+                const itemCost = parseFloat($(this).attr('data-cost')) || 0;
+                totalCost += itemCost;
+                productCount++;
+                console.log('Item cost:', itemCost, 'Running total:', totalCost);
+            });
+            
+            console.log('Final total cost:', totalCost, 'Product count:', productCount);
+            
+            $('#comboProductCount').text(productCount);
+            $('#totalComboCost').text('Rs. ' + totalCost.toFixed(2));
         }
 
         function validateForm() {
@@ -1017,6 +1111,15 @@
                     $('#imageUploadSection').addClass('hidden');
                 }
             });
+
+            // Combo product quantity change listener
+            $(document).on('input change', '.combo-quantity', function() {
+                const $comboItem = $(this).closest('.combo-item');
+                const $select = $comboItem.find('.combo-product-select');
+                if ($select.val()) {
+                    updateComboItemCost($select[0]);
+                }
+            });
         }
 
         // Function to detect barcode symbology based on input
@@ -1205,7 +1308,7 @@
             // loadProductData();
             setupFormValidation();
             setupBarcodeSymbologyDetection();
-            setupEventHandlers();
+            setupListeners();
         });
     </script>
 </body>
