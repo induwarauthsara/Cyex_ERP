@@ -2,6 +2,49 @@
 include 'nav.php';
 ?>
 <title>Admin Panel</title>
+
+<script>
+    // Edit Cash In Hand Balance - Function defined early to avoid reference errors
+    function edit_CashInHand_balance(cash_in_hand_amount) {
+        // Input : New Amount
+        Swal.fire({
+            title: 'Edit Cash In Hand Amount',
+            html: `<label for = "new_cash_in_hand_amount"> Amount : </label>
+                    <input type="number" id="new_cash_in_hand_amount" value="${cash_in_hand_amount}" class="swal2-input">`,
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                const new_cash_in_hand_amount = Swal.getPopup().querySelector('#new_cash_in_hand_amount').value;
+                if (!new_cash_in_hand_amount) {
+                    Swal.showValidationMessage(`Please enter amount`);
+                }
+                return fetch(`/AdminPanel/api/edit_cash_in_hand.php?new_cash_in_hand_amount=${new_cash_in_hand_amount}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(response.statusText)
+                        }
+                        return response.json()
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Request failed: ${error}`)
+                    })
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: `Cash In Hand Balance Updated Successfully`,
+                    icon: 'success',
+                    timer: 1000
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        });
+    }
+</script>
+
 <h1>Dashboard</h1>
 
 <!-- Add Refresh Button -->
@@ -321,47 +364,6 @@ Answer: apexcharts
 
 <!-- Create a Script for Chart -->
 <script>
-    // Edit Cash In Hand Balance
-    function edit_CashInHand_balance(cash_in_hand_amount) {
-        // Input : New Amount
-        Swal.fire({
-            title: 'Edit Cash In Hand Amount',
-            html: `<label for = "new_cash_in_hand_amount"> Amount : </label>
-                    <input type="number" id="new_cash_in_hand_amount" value="${cash_in_hand_amount}" class="swal2-input">`,
-            showCancelButton: true,
-            confirmButtonText: 'Update',
-            showLoaderOnConfirm: true,
-            preConfirm: () => {
-                const new_cash_in_hand_amount = Swal.getPopup().querySelector('#new_cash_in_hand_amount').value;
-                if (!new_cash_in_hand_amount) {
-                    Swal.showValidationMessage(`Please enter amount`);
-                }
-                return fetch(`/AdminPanel/api/edit_cash_in_hand.php?new_cash_in_hand_amount=${new_cash_in_hand_amount}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(response.statusText)
-                        }
-                        return response.json()
-                    })
-                    .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`)
-                    })
-            },
-            allowOutsideClick: () => !Swal.isLoading()
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: `Cash In Hand Balance Updated Successfully`,
-                    icon: 'success',
-                    timer: 1000
-                }).then(() => {
-                    location.reload();
-                });
-            }
-        });
-
-    }
-
     // Chart Example
     var options = {
         series: [{
