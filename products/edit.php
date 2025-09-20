@@ -340,12 +340,12 @@
         function initialize() {
             setupListeners();
             setupFormValidation();
-            
+
             // Don't initialize select2 here - it will be handled in the load functions
-            
+
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
-            
+
             if (productId) {
                 $('#productId').val(productId);
                 loadProductData(productId);
@@ -400,7 +400,7 @@
         // Convert loadBrands to return a promise
         function loadBrandsPromise() {
             var deferred = $.Deferred();
-            
+
             $.ajax({
                 url: 'API/getBrands.php',
                 type: 'GET',
@@ -424,7 +424,7 @@
                     deferred.reject();
                 }
             });
-            
+
             return deferred.promise();
         }
 
@@ -436,7 +436,7 @@
         // Convert loadCategories to return a promise
         function loadCategoriesPromise() {
             var deferred = $.Deferred();
-            
+
             $.ajax({
                 url: 'API/getCategories.php',
                 type: 'GET',
@@ -460,7 +460,7 @@
                     deferred.reject();
                 }
             });
-            
+
             return deferred.promise();
         }
 
@@ -476,18 +476,18 @@
             $('#productCode').val(product.barcode);
             $('#barcodeSymbology').val(product.barcode_symbology || 'CODE128');
             $('#sku').val(product.sku);
-            
+
             // Set brand and category - need to use select2 properly
             if (product.brand_id) {
                 $('#brand').val(product.brand_id);
                 $('#brand').trigger('change.select2');
             }
-            
+
             if (product.category_id) {
                 $('#category').val(product.category_id);
                 $('#category').trigger('change.select2');
             }
-            
+
             $('#showInEcommerce').prop('checked', product.show_in_landing_page == 1);
             $('#activeStatus').prop('checked', product.active_status == 1);
 
@@ -643,7 +643,7 @@
         function removeVariantRow(btn) {
             // Get the batch ID from the hidden input
             const batchId = parseInt($(btn).closest('.variant-row').find('.variant-batch-id').val());
-            
+
             // Add batch ID to deleted batches array if it exists
             if (batchId > 0) {
                 deletedBatches.push(batchId);
@@ -696,16 +696,48 @@
 
         function loadProductsForCombo(select, selectedValue = null) {
             $.ajax({
-                url: 'API/getProducts.php',
+                url: 'API/getAllProducts.php',
                 type: 'GET',
                 success: function(response) {
                     let options = '<option value="">Select Product</option>';
                     if (response && response.length > 0) {
                         response.forEach(product => {
-                            options += `<option value="${product.id}" ${selectedValue == product.id ? 'selected' : ''}>${product.name}</option>`;
+                            const isInactive = product.active_status != 1;
+                            const displayName = isInactive ? `${product.name} [Inactive]` : product.name;
+                            const optionClass = isInactive ? 'style="color: #18b6aeff; font-style: italic;"' : '';
+                            options += `<option value="${product.id}" ${selectedValue == product.id ? 'selected' : ''} ${optionClass}>${displayName}</option>`;
                         });
                     }
                     $(select).html(options);
+
+                    // Initialize Select2 with search functionality
+                    $(select).select2({
+                        placeholder: 'Search and select a product...',
+                        allowClear: true,
+                        width: '100%',
+                        templateResult: function(option) {
+                            if (!option.id) {
+                                return option.text;
+                            }
+                            // Check if product is inactive based on text content
+                            const isInactive = option.text.includes('[Inactive]');
+                            if (isInactive) {
+                                return $('<span style="color: #18b6aeff; font-style: italic;">' + option.text + '</span>');
+                            }
+                            return option.text;
+                        },
+                        templateSelection: function(option) {
+                            if (!option.id) {
+                                return option.text;
+                            }
+                            // Check if product is inactive based on text content
+                            const isInactive = option.text.includes('[Inactive]');
+                            if (isInactive) {
+                                return $('<span style="color: #18b6aeff; font-style: italic;">' + option.text + '</span>');
+                            }
+                            return option.text;
+                        }
+                    });
                 },
                 error: function(xhr, status, error) {
                     console.error('Failed to load products:', error);
@@ -897,7 +929,7 @@
                         const noteValue = $(this).find('.variant-value').val().trim();
                         console.log('Discount value:', discountValue);
                         console.log('Note value:', noteValue);
-                        
+
                         const variant = {
                             batchId: $(this).find('.variant-batch-id').val() || 0,
                             isNew: $(this).find('.variant-is-new').val() === '1',
@@ -945,7 +977,7 @@
                 const productType = $(this).val();
                 toggleProductTypeSections(productType);
             });
-            
+
             // Detect barcode symbology automatically
             $('#productCode').on('input', function() {
                 const barcode = $(this).val().trim();
@@ -986,32 +1018,32 @@
                 }
             });
         }
-        
+
         // Function to detect barcode symbology based on input
         function detectBarcodeSymbology(barcode) {
             // Remove any whitespace
             barcode = barcode.replace(/\s/g, '');
-            
+
             // Check for EAN-13 (13 digits)
             if (/^\d{13}$/.test(barcode)) {
                 return 'EAN13';
             }
-            
+
             // Check for EAN-8 (8 digits)
             if (/^\d{8}$/.test(barcode)) {
                 return 'EAN8';
             }
-            
+
             // Check for UPC-A (12 digits)
             if (/^\d{12}$/.test(barcode)) {
                 return 'UPC';
             }
-            
+
             // Check for CODE39 (uppercase letters, digits, and some special chars starting and ending with *)
             if (/^[A-Z0-9\-\.\$\/\+\%\s]+$/.test(barcode) && barcode.indexOf('*') !== -1) {
                 return 'CODE39';
             }
-            
+
             // Default to CODE128 (most versatile)
             return 'CODE128';
         }
@@ -1036,16 +1068,18 @@
                     $.ajax({
                         url: 'API/calculateComboQuantity.php',
                         type: 'POST',
-                        data: JSON.stringify({ comboComponents: productData.comboProducts }),
+                        data: JSON.stringify({
+                            comboComponents: productData.comboProducts
+                        }),
                         contentType: 'application/json',
                         dataType: 'json',
                         success: function(response) {
                             if (response.success) {
                                 console.log('Calculated combo quantity:', response.quantity);
-                                
+
                                 // Add the calculated quantity to the productData
                                 productData.comboQuantity = response.quantity;
-                                
+
                                 // Now proceed with the form submission
                                 submitFormWithData(productData, productId);
                             } else {
@@ -1091,7 +1125,7 @@
                     if (response.success) {
                         // Call updateProducts.php to recalculate quantities for all combo products
                         updateComboProductsQuantities();
-                        
+
                         showSuccessMessage(response.message);
                         setTimeout(() => {
                             window.location.href = 'index.php';
@@ -1139,17 +1173,19 @@
                 }
             });
         }
-        
+
         // Auto detect barcode symbology when the barcode field changes
         function setupBarcodeSymbologyDetection() {
             $('#productCode').on('change', function() {
                 const barcode = $(this).val();
                 if (!barcode) return;
-                
+
                 $.ajax({
                     url: 'API/detect_barcode_symbology.php',
                     method: 'GET',
-                    data: { barcode: barcode },
+                    data: {
+                        barcode: barcode
+                    },
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
@@ -1163,7 +1199,7 @@
                 });
             });
         }
-        
+
         // Initialize everything when document is ready
         $(document).ready(function() {
             // loadProductData();

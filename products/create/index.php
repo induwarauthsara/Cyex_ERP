@@ -1488,22 +1488,46 @@
 
             function loadProductsForCombo() {
                 $.ajax({
-                    url: '../API/getProducts.php', // Replace with your server-side script URL
+                    url: '../API/getAllProducts.php', // Use the new API that includes inactive products
                     type: 'GET',
                     dataType: 'json',
                     success: function(data) {
                         $('#comboProductSelect').empty();
                         $('#comboProductSelect').append('<option value="">Select Product</option>');
                         $.each(data, function(index, product) {
-                            $('#comboProductSelect').append(`<option value="${product.id}">${product.name}</option>`);
+                            const isInactive = product.active_status != 1;
+                            const displayName = isInactive ? `${product.name} [Inactive]` : product.name;
+                            $('#comboProductSelect').append(`<option value="${product.id}" data-inactive="${isInactive}">${displayName}</option>`);
                         });
                         
-                        // Reinitialize select2 for this element
+                        // Reinitialize select2 for this element with enhanced templates
                         $('#comboProductSelect').select2({
-                            placeholder: 'Search and select product',
+                            placeholder: 'Search and select product...',
                             allowClear: true,
                             width: '100%',
                             dropdownParent: $('#addComboProductModal'),
+                            templateResult: function(option) {
+                                if (!option.id) {
+                                    return option.text;
+                                }
+                                // Check if product is inactive based on text content
+                                const isInactive = option.text.includes('[Inactive]');
+                                if (isInactive) {
+                                    return $('<span style="color: #6c757d; font-style: italic;">' + option.text + '</span>');
+                                }
+                                return option.text;
+                            },
+                            templateSelection: function(option) {
+                                if (!option.id) {
+                                    return option.text;
+                                }
+                                // Check if product is inactive based on text content
+                                const isInactive = option.text.includes('[Inactive]');
+                                if (isInactive) {
+                                    return $('<span style="color: #6c757d; font-style: italic;">' + option.text + '</span>');
+                                }
+                                return option.text;
+                            },
                             matcher: function(params, data) {
                                 // If there is no search term, return all data
                                 if ($.trim(params.term) === '') {
