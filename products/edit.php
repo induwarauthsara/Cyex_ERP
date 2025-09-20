@@ -187,16 +187,26 @@
 
                                 <div class="mb-3">
                                     <label for="brand" class="form-label">Brand</label>
-                                    <select id="brand" class="form-select select2" name="brand">
-                                        <option value="">Select Brand</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select id="brand" class="form-select select2" name="brand">
+                                            <option value="">Select Brand</option>
+                                        </select>
+                                        <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#addBrandModal">
+                                            Add New Brand
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="category" class="form-label">Category</label>
-                                    <select id="category" class="form-select select2" name="category">
-                                        <option value="">Select Category</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select id="category" class="form-select select2" name="category">
+                                            <option value="">Select Category</option>
+                                        </select>
+                                        <button type="button" class="btn btn-action" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                            Add New Category
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -335,6 +345,43 @@
     <div id="loader" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:9999; display:flex; justify-content:center; align-items:center;">
         <div class="spinner-border text-light" role="status">
             <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Modals for Adding New Items -->
+    <div class="modal fade" id="addBrandModal" tabindex="-1" aria-labelledby="addBrandModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBrandModalLabel">Add New Brand</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="newBrandName" placeholder="Brand Name" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveNewBrand">Save Brand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="newCategoryName" placeholder="Category Name" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveNewCategory">Save Category</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1277,6 +1324,48 @@
             });
         }
 
+        // Function to handle modal save operations (Brand/Category)
+        function handleModalSave(modalId, inputId, selectId, fetchUrl) {
+            const newName = $(`#${inputId}`).val().trim();
+            if (newName) {
+                $.ajax({
+                    url: fetchUrl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        name: newName
+                    },
+                    success: function(response) {
+                        if (response && response.id) {
+                            $(`#${selectId}`).append(`<option value="${response.id}" selected>${newName}</option>`);
+                            $(`#${selectId}`).val(response.id).trigger('change');
+                            showSuccessMessage(`${newName} added successfully!`);
+                        } else {
+                            showErrorMessage("Something went wrong, try again");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error adding item:', error);
+                        let errorMessage = "Something went wrong. Please try again.";
+                        if (xhr.status === 404) {
+                            errorMessage = "Resource not found, please check URL";
+                        } else if (xhr.status === 500) {
+                            errorMessage = "Internal server error, contact admin";
+                        } else if (xhr.status === 0) {
+                            errorMessage = "Network error. Please check your connection.";
+                        }
+                        showErrorMessage(errorMessage);
+                    },
+                    complete: function() {
+                        $(`#${modalId}`).modal('hide');
+                        $(`#${inputId}`).val('');
+                    }
+                });
+            } else {
+                showErrorMessage('Please enter a name.');
+            }
+        }
+
         // Auto detect barcode symbology when the barcode field changes
         function setupBarcodeSymbologyDetection() {
             $('#productCode').on('change', function() {
@@ -1309,6 +1398,15 @@
             setupFormValidation();
             setupBarcodeSymbologyDetection();
             setupListeners();
+
+            // Event handlers for new brand and category creation
+            $('#saveNewBrand').click(function() {
+                handleModalSave('addBrandModal', 'newBrandName', 'brand', '../AdminPanel/includes/addBrand.php');
+            });
+
+            $('#saveNewCategory').click(function() {
+                handleModalSave('addCategoryModal', 'newCategoryName', 'category', '../AdminPanel/includes/addCategory.php');
+            });
         });
     </script>
 </body>
