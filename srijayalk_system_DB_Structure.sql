@@ -2,10 +2,10 @@
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- දායකයා: localhost:3306
--- උත්පාදන වේලාව: සැප්තැම්බර් 19, 2025 දින 10:12 AM ට
--- සේවාදායකයේ අනුවාදය: 10.6.23-MariaDB-cll-lve
--- PHP අනුවාදය: 8.4.11
+-- Host: localhost:3306
+-- Generation Time: Sep 21, 2025 at 04:29 AM
+-- Server version: 10.6.23-MariaDB-cll-lve
+-- PHP Version: 8.4.11
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- දත්තගබඩාව: `srijayapos_new`
+-- Database: `srijayapos_new`
 --
 
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `accounts`
+-- Table structure for table `accounts`
 --
 
 CREATE TABLE `accounts` (
@@ -37,7 +37,7 @@ CREATE TABLE `accounts` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `account_transactions`
+-- Table structure for table `account_transactions`
 --
 
 CREATE TABLE `account_transactions` (
@@ -53,7 +53,7 @@ CREATE TABLE `account_transactions` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `action_log`
+-- Table structure for table `action_log`
 --
 
 CREATE TABLE `action_log` (
@@ -68,7 +68,7 @@ CREATE TABLE `action_log` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `attendance`
+-- Table structure for table `attendance`
 --
 
 CREATE TABLE `attendance` (
@@ -82,7 +82,7 @@ CREATE TABLE `attendance` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `bank_deposits`
+-- Table structure for table `bank_deposits`
 --
 
 CREATE TABLE `bank_deposits` (
@@ -97,7 +97,7 @@ CREATE TABLE `bank_deposits` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `barcode_print_items`
+-- Table structure for table `barcode_print_items`
 --
 
 CREATE TABLE `barcode_print_items` (
@@ -111,7 +111,7 @@ CREATE TABLE `barcode_print_items` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `barcode_print_jobs`
+-- Table structure for table `barcode_print_jobs`
 --
 
 CREATE TABLE `barcode_print_jobs` (
@@ -126,7 +126,7 @@ CREATE TABLE `barcode_print_jobs` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `barcode_templates`
+-- Table structure for table `barcode_templates`
 --
 
 CREATE TABLE `barcode_templates` (
@@ -151,7 +151,7 @@ CREATE TABLE `barcode_templates` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `brands`
+-- Table structure for table `brands`
 --
 
 CREATE TABLE `brands` (
@@ -165,7 +165,7 @@ CREATE TABLE `brands` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `cash_register`
+-- Table structure for table `cash_register`
 --
 
 CREATE TABLE `cash_register` (
@@ -183,7 +183,7 @@ CREATE TABLE `cash_register` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `categories`
+-- Table structure for table `categories`
 --
 
 CREATE TABLE `categories` (
@@ -197,7 +197,7 @@ CREATE TABLE `categories` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `combo_products`
+-- Table structure for table `combo_products`
 --
 
 CREATE TABLE `combo_products` (
@@ -212,7 +212,7 @@ CREATE TABLE `combo_products` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `customers`
+-- Table structure for table `customers`
 --
 
 CREATE TABLE `customers` (
@@ -226,7 +226,7 @@ CREATE TABLE `customers` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `employees`
+-- Table structure for table `employees`
 --
 
 CREATE TABLE `employees` (
@@ -249,7 +249,7 @@ CREATE TABLE `employees` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `error_log`
+-- Table structure for table `error_log`
 --
 
 CREATE TABLE `error_log` (
@@ -268,7 +268,7 @@ CREATE TABLE `error_log` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `fund_transactions`
+-- Table structure for table `fund_transactions`
 --
 
 CREATE TABLE `fund_transactions` (
@@ -284,18 +284,26 @@ CREATE TABLE `fund_transactions` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `goods_receipt_notes`
+-- Table structure for table `goods_receipt_notes`
 --
 
 CREATE TABLE `goods_receipt_notes` (
   `grn_id` int(11) NOT NULL,
   `grn_number` varchar(20) NOT NULL,
-  `po_id` int(11) NOT NULL,
+  `po_id` int(11) DEFAULT NULL,
+  `supplier_id` int(11) DEFAULT NULL,
   `receipt_date` date NOT NULL DEFAULT current_timestamp(),
   `invoice_number` varchar(50) DEFAULT NULL,
   `invoice_date` date DEFAULT NULL,
   `notes` text DEFAULT NULL,
   `status` enum('draft','completed','cancelled') DEFAULT 'draft',
+  `total_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `paid_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `outstanding_amount` decimal(12,2) GENERATED ALWAYS AS (`total_amount` - `paid_amount`) STORED,
+  `payment_status` enum('paid','partial','unpaid') NOT NULL DEFAULT 'unpaid',
+  `payment_method` enum('cash','bank_transfer','cheque','credit_card','mixed') DEFAULT NULL,
+  `payment_reference` varchar(100) DEFAULT NULL,
+  `payment_notes` text DEFAULT NULL,
   `created_by` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -304,13 +312,13 @@ CREATE TABLE `goods_receipt_notes` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `grn_items`
+-- Table structure for table `grn_items`
 --
 
 CREATE TABLE `grn_items` (
   `grn_item_id` int(11) NOT NULL,
   `grn_id` int(11) NOT NULL,
-  `po_item_id` int(11) NOT NULL,
+  `po_item_id` int(11) DEFAULT NULL,
   `batch_id` int(11) NOT NULL,
   `received_qty` decimal(6,3) NOT NULL,
   `cost` decimal(10,2) NOT NULL,
@@ -322,7 +330,7 @@ CREATE TABLE `grn_items` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `held_invoices`
+-- Table structure for table `held_invoices`
 --
 
 CREATE TABLE `held_invoices` (
@@ -343,7 +351,7 @@ CREATE TABLE `held_invoices` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `invoice`
+-- Table structure for table `invoice`
 --
 
 CREATE TABLE `invoice` (
@@ -373,7 +381,7 @@ CREATE TABLE `invoice` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `InvoiceBalPayRecords`
+-- Table structure for table `InvoiceBalPayRecords`
 --
 
 CREATE TABLE `InvoiceBalPayRecords` (
@@ -389,7 +397,7 @@ CREATE TABLE `InvoiceBalPayRecords` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `items`
+-- Table structure for table `items`
 --
 
 CREATE TABLE `items` (
@@ -404,7 +412,7 @@ CREATE TABLE `items` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `oneTimeProducts_sales`
+-- Table structure for table `oneTimeProducts_sales`
 --
 
 CREATE TABLE `oneTimeProducts_sales` (
@@ -427,7 +435,7 @@ CREATE TABLE `oneTimeProducts_sales` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `payment_details`
+-- Table structure for table `payment_details`
 --
 
 CREATE TABLE `payment_details` (
@@ -443,7 +451,7 @@ CREATE TABLE `payment_details` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `pettycash`
+-- Table structure for table `pettycash`
 --
 
 CREATE TABLE `pettycash` (
@@ -459,7 +467,7 @@ CREATE TABLE `pettycash` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `printer_counter_bank_deposit`
+-- Table structure for table `printer_counter_bank_deposit`
 --
 
 CREATE TABLE `printer_counter_bank_deposit` (
@@ -471,7 +479,7 @@ CREATE TABLE `printer_counter_bank_deposit` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `printer_counter_count`
+-- Table structure for table `printer_counter_count`
 --
 
 CREATE TABLE `printer_counter_count` (
@@ -487,7 +495,7 @@ CREATE TABLE `printer_counter_count` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `printer_counter_printers`
+-- Table structure for table `printer_counter_printers`
 --
 
 CREATE TABLE `printer_counter_printers` (
@@ -502,7 +510,7 @@ CREATE TABLE `printer_counter_printers` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `printer_counter_statistics`
+-- Table structure for table `printer_counter_statistics`
 --
 
 CREATE TABLE `printer_counter_statistics` (
@@ -514,7 +522,7 @@ CREATE TABLE `printer_counter_statistics` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `printer_counter_types`
+-- Table structure for table `printer_counter_types`
 --
 
 CREATE TABLE `printer_counter_types` (
@@ -528,7 +536,7 @@ CREATE TABLE `printer_counter_types` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `products`
+-- Table structure for table `products`
 --
 
 CREATE TABLE `products` (
@@ -556,7 +564,7 @@ CREATE TABLE `products` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `product_batch`
+-- Table structure for table `product_batch`
 --
 
 CREATE TABLE `product_batch` (
@@ -582,7 +590,7 @@ CREATE TABLE `product_batch` (
 -- --------------------------------------------------------
 
 --
--- දසුන සැදීම සඳහා තාවකාලික සැකිල්ල `product_view`
+-- Stand-in structure for view `product_view`
 -- (See below for the actual view)
 --
 CREATE TABLE `product_view` (
@@ -610,7 +618,7 @@ CREATE TABLE `product_view` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `purchase_orders`
+-- Table structure for table `purchase_orders`
 --
 
 CREATE TABLE `purchase_orders` (
@@ -638,7 +646,7 @@ CREATE TABLE `purchase_orders` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `purchase_order_items`
+-- Table structure for table `purchase_order_items`
 --
 
 CREATE TABLE `purchase_order_items` (
@@ -655,7 +663,7 @@ CREATE TABLE `purchase_order_items` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `salary`
+-- Table structure for table `salary`
 --
 
 CREATE TABLE `salary` (
@@ -670,7 +678,7 @@ CREATE TABLE `salary` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `sales`
+-- Table structure for table `sales`
 --
 
 CREATE TABLE `sales` (
@@ -693,7 +701,7 @@ CREATE TABLE `sales` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `sales_returns`
+-- Table structure for table `sales_returns`
 --
 
 CREATE TABLE `sales_returns` (
@@ -711,7 +719,7 @@ CREATE TABLE `sales_returns` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `sales_return_items`
+-- Table structure for table `sales_return_items`
 --
 
 CREATE TABLE `sales_return_items` (
@@ -727,7 +735,7 @@ CREATE TABLE `sales_return_items` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `sequences`
+-- Table structure for table `sequences`
 --
 
 CREATE TABLE `sequences` (
@@ -741,7 +749,7 @@ CREATE TABLE `sequences` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `settings`
+-- Table structure for table `settings`
 --
 
 CREATE TABLE `settings` (
@@ -755,7 +763,7 @@ CREATE TABLE `settings` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `suppliers`
+-- Table structure for table `suppliers`
 --
 
 CREATE TABLE `suppliers` (
@@ -772,7 +780,7 @@ CREATE TABLE `suppliers` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `supplier_payments`
+-- Table structure for table `supplier_payments`
 --
 
 CREATE TABLE `supplier_payments` (
@@ -785,13 +793,14 @@ CREATE TABLE `supplier_payments` (
   `note` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `created_by` int(11) DEFAULT NULL,
+  `grn_id` int(11) DEFAULT NULL,
   `po_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `todo`
+-- Table structure for table `todo`
 --
 
 CREATE TABLE `todo` (
@@ -805,7 +814,7 @@ CREATE TABLE `todo` (
 -- --------------------------------------------------------
 
 --
--- වගුවක් සඳහා වගු සැකිල්ල `transaction_log`
+-- Table structure for table `transaction_log`
 --
 
 CREATE TABLE `transaction_log` (
@@ -943,7 +952,10 @@ ALTER TABLE `goods_receipt_notes`
   ADD KEY `po_id` (`po_id`),
   ADD KEY `created_by` (`created_by`),
   ADD KEY `idx_grn_status` (`status`),
-  ADD KEY `idx_grn_date` (`receipt_date`);
+  ADD KEY `idx_grn_date` (`receipt_date`),
+  ADD KEY `grn_supplier_fk` (`supplier_id`),
+  ADD KEY `idx_payment_status` (`payment_status`),
+  ADD KEY `idx_grn_supplier_payment` (`supplier_id`,`payment_status`);
 
 --
 -- Indexes for table `grn_items`
@@ -1129,7 +1141,8 @@ ALTER TABLE `supplier_payments`
   ADD PRIMARY KEY (`payment_id`),
   ADD KEY `supplier_id` (`supplier_id`),
   ADD KEY `created_by` (`created_by`),
-  ADD KEY `po_id` (`po_id`);
+  ADD KEY `po_id` (`po_id`),
+  ADD KEY `grn_id` (`grn_id`);
 
 --
 -- Indexes for table `todo`
@@ -1409,30 +1422,30 @@ ALTER TABLE `transaction_log`
 -- --------------------------------------------------------
 
 --
--- දසුන සඳහා සැකිල්ල `product_view`
+-- Structure for view `product_view`
 --
 DROP TABLE IF EXISTS `product_view`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `product_view`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `p`.`description` AS `description`, `pb`.`selling_price` AS `rate`, `pb`.`cost` AS `cost`, `pb`.`profit` AS `profit`, `p`.`has_stock` AS `has_stock`, `p`.`stock_alert_limit` AS `stock_alert_limit`, `p`.`image` AS `image`, `p`.`show_in_landing_page` AS `show_in_landing_page`, `p`.`category_id` AS `category_id`, `p`.`brand_id` AS `brand_id`, `p`.`barcode` AS `barcode`, `p`.`barcode_symbology` AS `barcode_symbology`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sku` AS `sku`, `p`.`active_status` AS `active_status`, coalesce(sum(`pb`.`quantity`),0) AS `stock_qty` FROM (`products` `p` left join `product_batch` `pb` on(`p`.`product_id` = `pb`.`product_id`)) GROUP BY `p`.`product_id` ;
 
 --
--- නික්ෂේපනය කරන ලද වගු සඳහා සීමා බාධක
+-- Constraints for dumped tables
 --
 
 --
--- වගුව සඳහා සීමා බාධක `attendance`
+-- Constraints for table `attendance`
 --
 ALTER TABLE `attendance`
   ADD CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employ_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `bank_deposits`
+-- Constraints for table `bank_deposits`
 --
 ALTER TABLE `bank_deposits`
   ADD CONSTRAINT `bank_deposits_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employ_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `barcode_print_items`
+-- Constraints for table `barcode_print_items`
 --
 ALTER TABLE `barcode_print_items`
   ADD CONSTRAINT `barcode_print_items_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `barcode_print_jobs` (`job_id`),
@@ -1440,28 +1453,29 @@ ALTER TABLE `barcode_print_items`
   ADD CONSTRAINT `barcode_print_items_ibfk_3` FOREIGN KEY (`batch_id`) REFERENCES `product_batch` (`batch_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `barcode_print_jobs`
+-- Constraints for table `barcode_print_jobs`
 --
 ALTER TABLE `barcode_print_jobs`
   ADD CONSTRAINT `barcode_print_jobs_ibfk_1` FOREIGN KEY (`template_id`) REFERENCES `barcode_templates` (`template_id`),
   ADD CONSTRAINT `barcode_print_jobs_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `employees` (`employ_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `combo_products`
+-- Constraints for table `combo_products`
 --
 ALTER TABLE `combo_products`
   ADD CONSTRAINT `combo_products_ibfk_1` FOREIGN KEY (`combo_product_id`) REFERENCES `products` (`product_id`),
   ADD CONSTRAINT `combo_products_ibfk_2` FOREIGN KEY (`component_product_id`) REFERENCES `products` (`product_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `goods_receipt_notes`
+-- Constraints for table `goods_receipt_notes`
 --
 ALTER TABLE `goods_receipt_notes`
   ADD CONSTRAINT `grn_employee_fk` FOREIGN KEY (`created_by`) REFERENCES `employees` (`employ_id`),
-  ADD CONSTRAINT `grn_po_fk` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`po_id`);
+  ADD CONSTRAINT `grn_po_fk` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`po_id`),
+  ADD CONSTRAINT `grn_supplier_fk` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`supplier_id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- වගුව සඳහා සීමා බාධක `grn_items`
+-- Constraints for table `grn_items`
 --
 ALTER TABLE `grn_items`
   ADD CONSTRAINT `grni_batch_fk` FOREIGN KEY (`batch_id`) REFERENCES `product_batch` (`batch_id`),
@@ -1469,86 +1483,87 @@ ALTER TABLE `grn_items`
   ADD CONSTRAINT `grni_poi_fk` FOREIGN KEY (`po_item_id`) REFERENCES `purchase_order_items` (`po_item_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `pettycash`
+-- Constraints for table `pettycash`
 --
 ALTER TABLE `pettycash`
   ADD CONSTRAINT `fk_pettycash_register` FOREIGN KEY (`register_id`) REFERENCES `cash_register` (`id`) ON DELETE SET NULL;
 
 --
--- වගුව සඳහා සීමා බාධක `printer_counter_count`
+-- Constraints for table `printer_counter_count`
 --
 ALTER TABLE `printer_counter_count`
   ADD CONSTRAINT `count_ibfk_1` FOREIGN KEY (`typeID`) REFERENCES `printer_counter_types` (`typeID`);
 
 --
--- වගුව සඳහා සීමා බාධක `printer_counter_types`
+-- Constraints for table `printer_counter_types`
 --
 ALTER TABLE `printer_counter_types`
   ADD CONSTRAINT `types_ibfk_1` FOREIGN KEY (`printerID`) REFERENCES `printer_counter_printers` (`printerID`);
 
 --
--- වගුව සඳහා සීමා බාධක `products`
+-- Constraints for table `products`
 --
 ALTER TABLE `products`
   ADD CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`),
   ADD CONSTRAINT `products_ibfk_2` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`brand_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `product_batch`
+-- Constraints for table `product_batch`
 --
 ALTER TABLE `product_batch`
   ADD CONSTRAINT `product_batch_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `product_batch_ibfk_2` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`supplier_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `purchase_orders`
+-- Constraints for table `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
   ADD CONSTRAINT `po_employee_fk` FOREIGN KEY (`created_by`) REFERENCES `employees` (`employ_id`),
   ADD CONSTRAINT `po_supplier_fk` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`supplier_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `purchase_order_items`
+-- Constraints for table `purchase_order_items`
 --
 ALTER TABLE `purchase_order_items`
   ADD CONSTRAINT `poi_po_fk` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`po_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `poi_product_fk` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `salary`
+-- Constraints for table `salary`
 --
 ALTER TABLE `salary`
   ADD CONSTRAINT `salary_ibfk_1` FOREIGN KEY (`emp_id`) REFERENCES `employees` (`employ_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `sales`
+-- Constraints for table `sales`
 --
 ALTER TABLE `sales`
   ADD CONSTRAINT `sales_ibfk_1` FOREIGN KEY (`invoice_number`) REFERENCES `invoice` (`invoice_number`),
   ADD CONSTRAINT `sales_ibfk_2` FOREIGN KEY (`invoice_number`) REFERENCES `invoice` (`invoice_number`);
 
 --
--- වගුව සඳහා සීමා බාධක `sales_returns`
+-- Constraints for table `sales_returns`
 --
 ALTER TABLE `sales_returns`
   ADD CONSTRAINT `sales_returns_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
 
 --
--- වගුව සඳහා සීමා බාධක `sales_return_items`
+-- Constraints for table `sales_return_items`
 --
 ALTER TABLE `sales_return_items`
   ADD CONSTRAINT `sales_return_items_ibfk_1` FOREIGN KEY (`return_id`) REFERENCES `sales_returns` (`return_id`);
 
 --
--- වගුව සඳහා සීමා බාධක `supplier_payments`
+-- Constraints for table `supplier_payments`
 --
 ALTER TABLE `supplier_payments`
   ADD CONSTRAINT `supplier_payments_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`supplier_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `supplier_payments_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `employees` (`employ_id`),
-  ADD CONSTRAINT `supplier_payments_ibfk_3` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`po_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `supplier_payments_ibfk_3` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`po_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `supplier_payments_ibfk_4` FOREIGN KEY (`grn_id`) REFERENCES `goods_receipt_notes` (`grn_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- වගුව සඳහා සීමා බාධක `transaction_log`
+-- Constraints for table `transaction_log`
 --
 ALTER TABLE `transaction_log`
   ADD CONSTRAINT `transaction_log_ibfk_1` FOREIGN KEY (`employ_id`) REFERENCES `employees` (`employ_id`);
