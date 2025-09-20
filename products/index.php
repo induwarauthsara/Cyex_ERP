@@ -329,6 +329,46 @@
                     <a href="../view_one_time_products.php" class="btn btn-info"><i class="fas fa-list"></i> View One-Time Products</a>
                 </div>
             </div>
+            <!-- Filter Section -->
+            <div class="card-body border-bottom" style="background-color: #f8f9fa;">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-2">
+                        <label for="filterCategory" class="form-label mb-1"><strong>Category</strong></label>
+                        <select id="filterCategory" class="form-select form-select-sm">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label for="filterBrand" class="form-label mb-1"><strong>Brand</strong></label>
+                        <select id="filterBrand" class="form-select form-select-sm">
+                            <option value="">All Brands</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label for="filterType" class="form-label mb-1"><strong>Type</strong></label>
+                        <select id="filterType" class="form-select form-select-sm">
+                            <option value="">All Types</option>
+                            <option value="standard">Standard</option>
+                            <option value="digital">Digital</option>
+                            <option value="service">Service</option>
+                            <option value="combo">Combo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <label for="filterStatus" class="form-label mb-1"><strong>Status</strong></label>
+                        <select id="filterStatus" class="form-select form-select-sm">
+                            <option value="">All Status</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-2">
+                        <button id="resetFilters" class="btn btn-outline-secondary btn-sm w-100">
+                            <i class="fas fa-sync"></i> Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
             <div class="card-body">
                 <table id="productTable" class="table table-striped display responsive nowrap" style="width:100%">
                     <thead>
@@ -392,14 +432,26 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
     <script>
+        let productTable;
+
         $(document).ready(function() {
+            // Load filter options
+            loadFilterOptions();
+
             // Initialize DataTable with server-side processing
-            $('#productTable').DataTable({
+            productTable = $('#productTable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
                     url: 'API/getProductsDataTable.php',
-                    type: 'POST'
+                    type: 'POST',
+                    data: function(d) {
+                        // Add filter parameters to the request
+                        d.filterCategory = $('#filterCategory').val();
+                        d.filterBrand = $('#filterBrand').val();
+                        d.filterType = $('#filterType').val();
+                        d.filterStatus = $('#filterStatus').val();
+                    }
                 },
                 columns: [
                     { data: 'product_id' },
@@ -478,7 +530,53 @@
                     }
                 }
             });
+
+            // Filter change handlers
+            $('#filterCategory, #filterBrand, #filterType, #filterStatus').change(function() {
+                productTable.ajax.reload();
+            });
+
+            // Reset filters
+            $('#resetFilters').click(function() {
+                $('#filterCategory, #filterBrand, #filterType, #filterStatus').val('');
+                productTable.ajax.reload();
+            });
         });
+
+        // Load filter options from the server
+        function loadFilterOptions() {
+            // Load categories
+            $.ajax({
+                url: 'API/getCategories.php',
+                type: 'GET',
+                success: function(response) {
+                    if (response && response.length > 0) {
+                        response.forEach(category => {
+                            $('#filterCategory').append(`<option value="${category.id}">${category.name}</option>`);
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to load categories:', error);
+                }
+            });
+
+            // Load brands
+            $.ajax({
+                url: 'API/getBrands.php',
+                type: 'GET',
+                success: function(response) {
+                    if (response && response.length > 0) {
+                        response.forEach(brand => {
+                            $('#filterBrand').append(`<option value="${brand.id}">${brand.name}</option>`);
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to load brands:', error);
+                }
+            });
+        }
 
         // View Product
         function viewProduct(productId) {

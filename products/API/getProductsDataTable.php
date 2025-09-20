@@ -16,6 +16,12 @@ $search = isset($_POST['search']['value']) ? $_POST['search']['value'] : '';
 $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 0;
 $orderDir = isset($_POST['order'][0]['dir']) ? $_POST['order'][0]['dir'] : 'asc';
 
+// Get filter parameters
+$filterCategory = isset($_POST['filterCategory']) ? $_POST['filterCategory'] : '';
+$filterBrand = isset($_POST['filterBrand']) ? $_POST['filterBrand'] : '';
+$filterType = isset($_POST['filterType']) ? $_POST['filterType'] : '';
+$filterStatus = isset($_POST['filterStatus']) ? $_POST['filterStatus'] : '';
+
 // Columns definition
 $columns = [
     0 => 'p.product_id',
@@ -61,13 +67,28 @@ if (!empty($search)) {
     )";
 }
 
+// Filter clauses
+$filterClause = '';
+if (!empty($filterCategory)) {
+    $filterClause .= " AND p.category_id = '" . mysqli_real_escape_string($con, $filterCategory) . "'";
+}
+if (!empty($filterBrand)) {
+    $filterClause .= " AND p.brand_id = '" . mysqli_real_escape_string($con, $filterBrand) . "'";
+}
+if (!empty($filterType)) {
+    $filterClause .= " AND p.product_type = '" . mysqli_real_escape_string($con, $filterType) . "'";
+}
+if ($filterStatus !== '') {
+    $filterClause .= " AND p.active_status = '" . mysqli_real_escape_string($con, $filterStatus) . "'";
+}
+
 // SQL query count filtered records
 $sqlFilterTotal = "
     SELECT COUNT(*) as total 
     FROM {$table} p
     LEFT JOIN brands b ON p.brand_id = b.brand_id
     LEFT JOIN categories c ON p.category_id = c.category_id
-    WHERE 1=1 {$searchClause}
+    WHERE 1=1 {$searchClause} {$filterClause}
 ";
 $filterTotalResult = $con->query($sqlFilterTotal);
 $filterTotal = $filterTotalResult->fetch_assoc()['total'];
@@ -100,7 +121,7 @@ $sql = "
         GROUP BY product_id
     ) pb ON p.product_id = pb.product_id
     LEFT JOIN product_batch pb2 ON pb.product_id = pb2.product_id AND pb.latest_date = pb2.created_at
-    WHERE 1=1 {$searchClause}
+    WHERE 1=1 {$searchClause} {$filterClause}
     ORDER BY {$columns[$orderColumn]} {$orderDir}
     LIMIT {$start}, {$length}
 ";
