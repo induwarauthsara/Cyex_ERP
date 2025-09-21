@@ -328,9 +328,11 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">GRN Number</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">PO Number</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Supplier</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Payment Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Items</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Total Value</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Paid Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Outstanding</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -686,14 +688,14 @@
                         }
                     },
                     {
-                        data: 'status',
+                        data: 'payment_status',
                         render: function(data) {
                             const statusConfig = {
-                                'draft': { class: 'bg-gray-600', text: 'Draft' },
-                                'completed': { class: 'bg-green-600', text: 'Completed' },
-                                'cancelled': { class: 'bg-red-600', text: 'Cancelled' }
+                                'paid': { class: 'bg-green-600', text: 'Paid' },
+                                'partial': { class: 'bg-yellow-600', text: 'Partial' },
+                                'unpaid': { class: 'bg-red-600', text: 'Unpaid' }
                             };
-                            const config = statusConfig[data] || statusConfig['draft'];
+                            const config = statusConfig[data] || statusConfig['unpaid'];
                             return `<span class="px-2 py-1 text-xs font-medium rounded-full ${config.class}">${config.text}</span>`;
                         }
                     },
@@ -710,20 +712,30 @@
                         }
                     },
                     {
+                        data: 'paid_amount',
+                        render: function(data) {
+                            return formatCurrency(data || 0);
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            const paidAmount = parseFloat(row.paid_amount || 0);
+                            const totalAmount = parseFloat(row.grn_total || 0);
+                            const balance = totalAmount - paidAmount;
+                            return `<span class="${balance > 0 ? 'text-red-400' : 'text-green-400'}">${formatCurrency(balance)}</span>`;
+                        }
+                    },
+                    {
                         data: null,
                         orderable: false,
                         render: function(data) {
                             return `
                                 <div class="flex justify-end space-x-2">
                                     <button onclick="viewGRN(${data.grn_id})" 
-                                            class="text-blue-400 hover:text-blue-300 p-1" 
-                                            title="View GRN">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button onclick="printGRN(${data.grn_id})" 
-                                            class="text-green-400 hover:text-green-300 p-1" 
-                                            title="Print GRN">
-                                        <i class="fas fa-print"></i>
+                                            class="text-blue-400 hover:text-blue-300 p-1 bg-blue-900 bg-opacity-20 hover:bg-opacity-40 rounded-md px-2 py-1" 
+                                            title="View GRN Details">
+                                        <i class="fas fa-eye mr-1"></i>View
                                     </button>
                                     ${data.status === 'draft' ? `
                                         <button onclick="editGRN(${data.grn_id})" 
@@ -1130,15 +1142,11 @@
 
         // GRN Action Functions
         function viewGRN(grnId) {
-            window.location.href = `view_grn.php?id=${grnId}`;
+            showGRNDetailsModal(grnId);
         }
 
         function editGRN(grnId) {
             window.location.href = `edit_grn.php?id=${grnId}`;
-        }
-
-        function printGRN(grnId) {
-            window.open(`print_grn.php?id=${grnId}`, '_blank');
         }
 
         function deleteGRN(grnId) {
@@ -1237,6 +1245,188 @@
                 title: 'Payment History',
                 text: 'Payment history functionality will be implemented here',
                 icon: 'info'
+            });
+        }
+
+        // Show GRN Details Modal - Using alternative method to avoid HTTP2 issues
+        function showGRNDetailsModal(grnId) {
+            // Show loading state
+            Swal.fire({
+                title: 'Loading GRN Details...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Use our working get_grn_details.php API
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `get_grn_details.php?grn_id=${grnId}`, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Cache-Control', 'no-cache');
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.success) {
+                                displayGRNDetailsModal(data.data);
+                            } else {
+                                showError(data.error || 'Failed to load GRN details');
+                            }
+                        } catch (e) {
+                            console.error('JSON Parse Error:', e);
+                            showError('Invalid response format');
+                        }
+                    } else {
+                        console.error('HTTP Error:', xhr.status, xhr.statusText);
+                        showError(`HTTP Error: ${xhr.status} - ${xhr.statusText}`);
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error('Network Error');
+                showError('Network connection failed');
+            };
+            
+            xhr.send();
+        }
+
+        // Display GRN Details in Modal
+        function displayGRNDetailsModal(grn) {
+            const paymentStatusClass = {
+                'paid': 'bg-green-600',
+                'partial': 'bg-yellow-600', 
+                'unpaid': 'bg-red-600'
+            };
+
+            const statusClass = {
+                'draft': 'bg-gray-600',
+                'completed': 'bg-green-600',
+                'cancelled': 'bg-red-600'
+            };
+
+            const modalContent = `
+                <div class="text-left">
+                    <!-- Header Section -->
+                    <div class="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-700 rounded-lg">
+                        <div>
+                            <h3 class="text-lg font-bold text-blue-400 mb-2">GRN Information</h3>
+                            <p><strong>GRN Number:</strong> <span class="text-blue-300">${grn.grn_number}</span></p>
+                            <p><strong>Date:</strong> ${moment(grn.receipt_date).format('DD/MM/YYYY')}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass[grn.status] || 'bg-gray-600'}">${grn.status.charAt(0).toUpperCase() + grn.status.slice(1)}</span>
+                            </p>
+                            ${grn.po_number ? `<p><strong>PO Number:</strong> <span class="text-green-300">${grn.po_number}</span></p>` : '<p><strong>Type:</strong> <span class="text-yellow-300">Direct GRN</span></p>'}
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-green-400 mb-2">Supplier Information</h3>
+                            <p><strong>Name:</strong> ${grn.supplier_name || 'N/A'}</p>
+                            <p><strong>Contact:</strong> ${grn.supplier_tel || 'N/A'}</p>
+                            <p><strong>Address:</strong> ${grn.supplier_address || 'N/A'}</p>
+                            ${grn.invoice_number ? `<p><strong>Invoice No:</strong> ${grn.invoice_number}</p>` : ''}
+                            ${grn.invoice_date && grn.invoice_date !== '0000-00-00' ? `<p><strong>Invoice Date:</strong> ${moment(grn.invoice_date).format('DD/MM/YYYY')}</p>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div class="mb-6 p-4 bg-gray-700 rounded-lg">
+                        <h3 class="text-lg font-bold text-purple-400 mb-3">Payment Information</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p><strong>Total Amount:</strong> <span class="text-green-400">${formatCurrency(grn.total_amount)}</span></p>
+                                <p><strong>Paid Amount:</strong> <span class="text-blue-400">${formatCurrency(grn.paid_amount || 0)}</span></p>
+                                <p><strong>Outstanding:</strong> <span class="text-red-400">${formatCurrency((grn.total_amount || 0) - (grn.paid_amount || 0))}</span></p>
+                            </div>
+                            <div>
+                                <p><strong>Payment Status:</strong> 
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full ${paymentStatusClass[grn.payment_status] || 'bg-gray-600'}">${grn.payment_status ? grn.payment_status.charAt(0).toUpperCase() + grn.payment_status.slice(1) : 'Unpaid'}</span>
+                                </p>
+                                ${grn.payment_method ? `<p><strong>Payment Method:</strong> ${grn.payment_method}</p>` : ''}
+                                ${grn.payment_reference ? `<p><strong>Reference:</strong> ${grn.payment_reference}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Section -->
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-orange-400 mb-3">Received Items</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-600">
+                                    <tr>
+                                        <th class="text-left p-2">Product</th>
+                                        <th class="text-center p-2">Qty</th>
+                                        <th class="text-center p-2">Batch</th>
+                                        <th class="text-right p-2">Cost</th>
+                                        <th class="text-right p-2">Selling Price</th>
+                                        <th class="text-right p-2">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-600">
+                                    ${grn.items.map(item => `
+                                        <tr class="hover:bg-gray-600">
+                                            <td class="p-2">
+                                                <div class="font-medium">${item.product_name || 'N/A'}</div>
+                                                ${item.barcode ? `<div class="text-xs text-gray-400">Barcode: ${item.barcode}</div>` : ''}
+                                                ${item.sku ? `<div class="text-xs text-gray-400">SKU: ${item.sku}</div>` : ''}
+                                            </td>
+                                            <td class="text-center p-2">${item.received_qty}</td>
+                                            <td class="text-center p-2">
+                                                <span class="text-xs bg-gray-500 px-2 py-1 rounded">${item.batch_number || 'N/A'}</span>
+                                            </td>
+                                            <td class="text-right p-2">${formatCurrency(item.cost)}</td>
+                                            <td class="text-right p-2">${formatCurrency(item.selling_price)}</td>
+                                            <td class="text-right p-2 font-medium">${formatCurrency(item.total_cost || (item.cost * item.received_qty))}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                                <tfoot class="bg-gray-600 font-bold">
+                                    <tr>
+                                        <td colspan="5" class="text-right p-2">Total Amount:</td>
+                                        <td class="text-right p-2">${formatCurrency(grn.total_amount)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    ${grn.notes ? `
+                        <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                            <h3 class="text-lg font-bold text-gray-300 mb-2">Notes</h3>
+                            <p class="text-gray-300">${grn.notes}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- Footer Information -->
+                    <div class="mt-4 pt-4 border-t border-gray-600 text-xs text-gray-400">
+                        <p><strong>Created By:</strong> ${grn.created_by_name || 'System'}</p>
+                        <p><strong>Created At:</strong> ${grn.created_at ? moment(grn.created_at).format('DD/MM/YYYY HH:mm:ss') : 'N/A'}</p>
+                    </div>
+                </div>
+            `;
+
+            Swal.fire({
+                title: `GRN Details - ${grn.grn_number}`,
+                html: modalContent,
+                width: '90%',
+                maxWidth: '1200px',
+                showCloseButton: true,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'bg-gray-800 text-white',
+                    title: 'text-white text-xl font-bold',
+                    closeButton: 'text-gray-400 hover:text-white'
+                },
+                background: '#1f2937',
+                didOpen: () => {
+                    // Apply dark theme styles to the modal
+                    const popup = Swal.getPopup();
+                    popup.style.backgroundColor = '#1f2937';
+                    popup.style.color = '#ffffff';
+                }
             });
         }
 
