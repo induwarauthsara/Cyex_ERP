@@ -21,7 +21,8 @@ include  __DIR__ . '/../inc/DataTable_cdn.php';
     $sql = "SELECT * 
             FROM invoice i
             INNER JOIN employees e ON i.biller = e.employ_id
-            ORDER BY invoice_number DESC;";
+            ORDER BY invoice_number DESC
+            LIMIT 5000;"; // Add 5000 limit to avoid overload of data
     include 'DataTable of DB Invoice Table.php'; ?>
 
 </body>
