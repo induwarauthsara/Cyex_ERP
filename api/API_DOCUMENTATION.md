@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Base URL:** `https://yourdomain.com/api/v1`  
-**Last Updated:** October 17, 2025
+**Last Updated:** October 22, 2025
 
 ---
 
@@ -17,6 +17,7 @@
    - [Products](#product-endpoints)
    - [Customers](#customer-endpoints)
    - [Invoices](#invoice-endpoints)
+   - [Employees](#employee-endpoints)
    - [Attendance](#attendance-endpoints)
    - [One-Time Products](#one-time-product-endpoints)
    - [Held Invoices](#held-invoice-endpoints)
@@ -1244,6 +1245,467 @@ GET /api/v1/invoices/list.php?page=1&per_page=20&status=paid&date_from=2025-10-0
 - `discount_price`: Discount applied to this item
 - `individual_discount_mode`: Whether individual discount was applied (true/false)
 
+---
+
+## Employee Endpoints
+
+### 1. List Employees
+
+Get paginated list of employees with filtering.
+
+**Endpoint:** `GET /api/v1/employees/list.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `per_page` (optional): Items per page (default: 20, max: 100)
+- `status` (optional): Filter by status: all, active, inactive (default: all)
+- `search` (optional): Search by name, mobile, or NIC
+- `role` (optional): Filter by role: Employee, Admin
+
+**Example Request:**
+```http
+GET /api/v1/employees/list.php?page=1&per_page=20&status=active&role=Employee
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Employees retrieved successfully",
+  "data": [
+    {
+      "id": 5,
+      "name": "John Employee",
+      "mobile": 771234567,
+      "address": "123 Main St, Colombo",
+      "bank_account": "BOC - 123456789",
+      "role": "Employee",
+      "nic": "199012345678",
+      "salary": 30000.00,
+      "day_salary": 1500.00,
+      "status": "active",
+      "is_clocked_in": false,
+      "onboard_date": "2024-01-15"
+    },
+    {
+      "id": 1,
+      "name": "Admin User",
+      "mobile": 771234560,
+      "address": "456 Park Ave, Kandy",
+      "bank_account": "Commercial - 987654321",
+      "role": "Admin",
+      "nic": "198512345678",
+      "salary": 50000.00,
+      "day_salary": 2500.00,
+      "status": "active",
+      "is_clocked_in": true,
+      "onboard_date": "2023-06-01"
+    }
+  ],
+  "meta": {
+    "timestamp": "2025-10-22 14:30:00",
+    "version": "v1",
+    "pagination": {
+      "total": 15,
+      "per_page": 20,
+      "current_page": 1,
+      "total_pages": 1,
+      "has_more": false
+    }
+  }
+}
+```
+
+---
+
+### 2. Employee Details
+
+Get detailed information about a specific employee including statistics.
+
+**Endpoint:** `GET /api/v1/employees/details.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+- `id` (required): Employee ID
+
+**Example Request:**
+```http
+GET /api/v1/employees/details.php?id=5
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Employee details retrieved successfully",
+  "data": {
+    "id": 5,
+    "name": "John Employee",
+    "mobile": 771234567,
+    "address": "123 Main St, Colombo",
+    "bank_account": "BOC - 123456789",
+    "role": "Employee",
+    "nic": "199012345678",
+    "salary": 30000.00,
+    "day_salary": 1500.00,
+    "status": "active",
+    "is_clocked_in": false,
+    "onboard_date": "2024-01-15",
+    "statistics": {
+      "attendance": {
+        "total_records": 250,
+        "total_clock_ins": 125,
+        "total_clock_outs": 125
+      },
+      "salary": {
+        "total_payments": 10,
+        "total_paid": 300000.00
+      }
+    },
+    "recent_attendance": [
+      {
+        "id": 4567,
+        "action": "Clock Out",
+        "date": "2025-10-22",
+        "time": "18:00:00"
+      },
+      {
+        "id": 4566,
+        "action": "Clock In",
+        "date": "2025-10-22",
+        "time": "09:00:00"
+      },
+      {
+        "id": 4565,
+        "action": "Clock Out",
+        "date": "2025-10-21",
+        "time": "18:00:00"
+      }
+    ]
+  },
+  "meta": {
+    "timestamp": "2025-10-22 14:35:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "Employee not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 14:35:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 3. Add Employee
+
+Create a new employee (Admin only).
+
+**Endpoint:** `POST /api/v1/employees/add.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "Jane Smith",
+  "mobile": "0771234568",
+  "address": "789 Lake Rd, Galle",
+  "bank_account": "BOC - 987654321",
+  "role": "Employee",
+  "nic": "199512345678",
+  "salary": 28000.00,
+  "day_salary": 1400.00,
+  "password": "securepass123",
+  "status": "active"
+}
+```
+
+**Request Parameters:**
+- `name` (required): Employee name
+- `mobile` (required): Mobile number (9-10 digits)
+- `nic` (required): National ID number
+- `password` (required): Login password (minimum 4 characters)
+- `role` (required): "Employee" or "Admin"
+- `salary` (required): Monthly salary amount
+- `day_salary` (required): Daily salary rate
+- `address` (optional): Employee address
+- `bank_account` (optional): Bank account details
+- `status` (optional): "active" or "inactive" (default: active)
+
+**Success Response (201):**
+```json
+{
+  "success": true,
+  "message": "Employee created successfully",
+  "data": {
+    "id": 15,
+    "name": "Jane Smith",
+    "mobile": 771234568,
+    "address": "789 Lake Rd, Galle",
+    "bank_account": "BOC - 987654321",
+    "role": "Employee",
+    "nic": "199512345678",
+    "salary": 28000.00,
+    "day_salary": 1400.00,
+    "status": "active"
+  },
+  "meta": {
+    "timestamp": "2025-10-22 15:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Validation Error (422):**
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": {
+    "name": "Employee name is required",
+    "mobile": "Mobile number must be 9 or 10 digits",
+    "password": "Password must be at least 4 characters"
+  },
+  "meta": {
+    "timestamp": "2025-10-22 15:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (409):**
+```json
+{
+  "success": false,
+  "message": "Mobile number is already registered",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 15:00:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 4. Edit Employee
+
+Update employee information (Admin only).
+
+**Endpoint:** `PUT /api/v1/employees/edit.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "id": 15,
+  "name": "Jane Smith Updated",
+  "mobile": "0771234568",
+  "address": "New Address, Colombo",
+  "bank_account": "Commercial - 111222333",
+  "role": "Admin",
+  "nic": "199512345678",
+  "salary": 35000.00,
+  "day_salary": 1750.00,
+  "password": "newpassword123",
+  "status": "active"
+}
+```
+
+**Request Parameters:**
+- `id` (required): Employee ID
+- `name` (required): Employee name
+- `mobile` (required): Mobile number (9-10 digits)
+- `nic` (required): National ID number
+- `role` (required): "Employee" or "Admin"
+- `salary` (required): Monthly salary amount
+- `day_salary` (required): Daily salary rate
+- `address` (optional): Employee address
+- `bank_account` (optional): Bank account details
+- `password` (optional): New password (minimum 4 characters) - only if changing
+- `status` (optional): "active" or "inactive"
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Employee updated successfully",
+  "data": {
+    "id": 15,
+    "name": "Jane Smith Updated",
+    "mobile": 771234568,
+    "address": "New Address, Colombo",
+    "bank_account": "Commercial - 111222333",
+    "role": "Admin",
+    "nic": "199512345678",
+    "salary": 35000.00,
+    "day_salary": 1750.00,
+    "status": "active"
+  },
+  "meta": {
+    "timestamp": "2025-10-22 15:10:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "Employee not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 15:10:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (409):**
+```json
+{
+  "success": false,
+  "message": "Mobile number is already used by another employee",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 15:10:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 5. Delete Employee
+
+Delete or deactivate an employee (Admin only).
+
+**Endpoint:** `DELETE /api/v1/employees/delete.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "id": 15,
+  "hard_delete": false
+}
+```
+
+**Request Parameters:**
+- `id` (required): Employee ID
+- `hard_delete` (optional): Boolean - if true, permanently deletes; if false, deactivates (default: false)
+
+**Important Notes:**
+- **Soft Delete (Deactivate)**: Sets employee status to inactive. Employee data is preserved.
+- **Hard Delete**: Permanently removes employee from database. Will fail if employee has related records (attendance, invoices, etc.).
+- Cannot delete your own account
+- Hard delete recommended only for test/duplicate entries
+
+**Success Response (200) - Soft Delete:**
+```json
+{
+  "success": true,
+  "message": "Employee deactivated successfully",
+  "data": {
+    "id": 15,
+    "name": "Jane Smith",
+    "action": "deactivated"
+  },
+  "meta": {
+    "timestamp": "2025-10-22 15:20:00",
+    "version": "v1"
+  }
+}
+```
+
+**Success Response (200) - Hard Delete:**
+```json
+{
+  "success": true,
+  "message": "Employee permanently deleted successfully",
+  "data": {
+    "id": 15,
+    "name": "Jane Smith",
+    "action": "deleted"
+  },
+  "meta": {
+    "timestamp": "2025-10-22 15:20:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "Employee not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 15:20:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (409) - Hard Delete with Relations:**
+```json
+{
+  "success": false,
+  "message": "Cannot delete employee with existing records. Consider deactivating instead.",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 15:20:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (400) - Self Delete:**
+```json
+{
+  "success": false,
+  "message": "Cannot delete your own account",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 15:20:00",
+    "version": "v1"
+  }
+}
+```
 
 ---
 
@@ -2401,4 +2863,4 @@ For API support or questions:
 
 **Document End**
 
-*Last Updated: October 17, 2025*
+*Last Updated: October 22, 2025*
