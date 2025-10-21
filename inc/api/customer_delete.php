@@ -39,24 +39,7 @@ if (mysqli_num_rows($checkResult) === 0) {
 $customerData = mysqli_fetch_assoc($checkResult);
 mysqli_stmt_close($checkStmt);
 
-// Check if customer has invoices
-$invoiceCheckQuery = "SELECT COUNT(*) as invoice_count FROM invoice WHERE customer_id = ?";
-$invoiceCheckStmt = mysqli_prepare($con, $invoiceCheckQuery);
-mysqli_stmt_bind_param($invoiceCheckStmt, 'i', $customerId);
-mysqli_stmt_execute($invoiceCheckStmt);
-$invoiceCheckResult = mysqli_stmt_get_result($invoiceCheckStmt);
-$invoiceCount = mysqli_fetch_assoc($invoiceCheckResult)['invoice_count'];
-mysqli_stmt_close($invoiceCheckStmt);
-
-if ($invoiceCount > 0) {
-    echo json_encode([
-        'success' => false, 
-        'message' => "Cannot delete customer. This customer has {$invoiceCount} invoice(s) associated with their account."
-    ]);
-    exit;
-}
-
-// Delete customer
+// Delete customer (invoices are not affected as they have hardcoded customer data)
 $deleteQuery = "DELETE FROM customers WHERE id = ?";
 $deleteStmt = mysqli_prepare($con, $deleteQuery);
 mysqli_stmt_bind_param($deleteStmt, 'i', $customerId);
@@ -69,7 +52,7 @@ if (!$success) {
 }
 
 // Log action
-$employeeId = $_SESSION['employ_id'];
+$employeeId = $_SESSION['employee_id'];
 $description = "Deleted customer ID {$customerId}: {$customerData['customer_name']} (Mobile: {$customerData['customer_mobile']})";
 $logQuery = "INSERT INTO action_log (employee_id, action, description, date, time) VALUES (?, 'Delete Customer', ?, CURRENT_DATE, CURRENT_TIME)";
 $logStmt = mysqli_prepare($con, $logQuery);

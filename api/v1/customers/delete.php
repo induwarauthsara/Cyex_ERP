@@ -45,23 +45,8 @@ if (mysqli_num_rows($checkResult) === 0) {
 $customerData = mysqli_fetch_assoc($checkResult);
 mysqli_stmt_close($checkStmt);
 
-// Check if customer has invoices
-$invoiceCheckQuery = "SELECT COUNT(*) as invoice_count FROM invoice WHERE customer_id = ?";
-$invoiceCheckStmt = mysqli_prepare($con, $invoiceCheckQuery);
-mysqli_stmt_bind_param($invoiceCheckStmt, 'i', $customerId);
-mysqli_stmt_execute($invoiceCheckStmt);
-$invoiceCheckResult = mysqli_stmt_get_result($invoiceCheckStmt);
-$invoiceCount = mysqli_fetch_assoc($invoiceCheckResult)['invoice_count'];
-mysqli_stmt_close($invoiceCheckStmt);
-
-if ($invoiceCount > 0) {
-    ApiResponse::error(
-        "Cannot delete customer. This customer has {$invoiceCount} invoice(s) associated with their account. Please remove or reassign these invoices first.",
-        409
-    );
-}
-
 // Delete customer
+// Note: Invoices are not affected as they store customer data directly (denormalized)
 $deleteQuery = "DELETE FROM customers WHERE id = ?";
 $deleteStmt = mysqli_prepare($con, $deleteQuery);
 mysqli_stmt_bind_param($deleteStmt, 'i', $customerId);

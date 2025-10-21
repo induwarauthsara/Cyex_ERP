@@ -4,6 +4,11 @@ include 'nav.php';
 <title>Customers - Admin Panel</title>
 
 <style>
+    body {
+        /* background-color: #1a1a1a; */
+        color: white;
+    }
+
     .customers-container {
         padding: 20px;
         max-width: 1600px;
@@ -19,7 +24,11 @@ include 'nav.php';
 
     .page-header h1 {
         margin: 0;
-        color: #333;
+        color: white;
+    }
+
+    .page-header h1 i {
+        color: white;
     }
 
     .btn {
@@ -66,56 +75,38 @@ include 'nav.php';
         margin: 2px;
     }
 
-    .filters-section {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .filter-group {
-        display: inline-block;
-        margin-right: 15px;
-        margin-bottom: 10px;
-    }
-
-    .filter-group label {
-        display: inline-block;
-        margin-right: 8px;
-        font-weight: 500;
-        color: #555;
-    }
-
-    .filter-group select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        font-size: 14px;
-        min-width: 150px;
-    }
-
     .customers-table-container {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 20px;
+        background: transparent;
+        padding: 0;
     }
 
     table.customers-table {
         width: 100% !important;
+        background: transparent !important;
+        color: white !important;
     }
 
     table.customers-table thead th {
-        background: #f8f9fa !important;
+        background: transparent !important;
         font-weight: 600;
-        color: #333;
+        color: white !important;
         padding: 12px !important;
+        border-bottom: 2px solid #444 !important;
     }
 
     table.customers-table tbody td {
         padding: 10px !important;
         vertical-align: middle;
+        color: white !important;
+        border-bottom: 1px solid #333 !important;
+    }
+
+    table.customers-table tbody tr {
+        background: transparent !important;
+    }
+
+    table.customers-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
     }
 
     .customer-type-badge {
@@ -144,11 +135,19 @@ include 'nav.php';
 
     .actions-cell {
         white-space: nowrap;
+        display: flex;
+        gap: 3px;
+        align-items: center;
     }
 
     .stat-value {
         font-weight: 600;
-        color: #333;
+        color: white;
+    }
+
+    .stat-value-white {
+        font-weight: 600;
+        color: white !important;
     }
 
     .positive {
@@ -165,23 +164,43 @@ include 'nav.php';
         color: #666;
     }
 
-    /* DataTable custom styles */
+    /* DataTable custom styles - Dark Theme */
+    .dataTables_wrapper {
+        color: white !important;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        color: white !important;
+    }
+
+    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_filter label {
+        color: white !important;
+    }
+
     .dataTables_wrapper .dataTables_length select {
         padding: 5px;
         border-radius: 4px;
-        border: 1px solid #ddd;
+        border: 1px solid #444;
+        background: #2a2a2a;
+        color: white;
     }
 
     .dataTables_wrapper .dataTables_filter input {
         padding: 5px 10px;
         border-radius: 4px;
-        border: 1px solid #ddd;
+        border: 1px solid #444;
         margin-left: 8px;
+        background: #2a2a2a;
+        color: white;
     }
 
     .dataTables_wrapper .dataTables_info {
         padding-top: 15px;
-        color: #666;
+        color: white !important;
     }
 
     .dataTables_wrapper .dataTables_paginate {
@@ -192,19 +211,25 @@ include 'nav.php';
         padding: 5px 10px;
         margin: 0 2px;
         border-radius: 4px;
-        border: 1px solid #ddd;
-        background: white;
+        border: 1px solid #444 !important;
+        background: #2a2a2a !important;
+        color: white !important;
     }
 
     .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-        background: #f8f9fa;
-        border-color: #007bff;
+        background: #3a3a3a !important;
+        border-color: #007bff !important;
+        color: white !important;
     }
 
     .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        background: #007bff;
+        background: #007bff !important;
         color: white !important;
-        border-color: #007bff;
+        border-color: #007bff !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+        color: #666 !important;
     }
 
     div.dt-buttons {
@@ -223,6 +248,66 @@ include 'nav.php';
     .dt-button:hover {
         background: #0056b3 !important;
     }
+
+    /* DataTable sorting icons */
+    table.dataTable thead .sorting:before,
+    table.dataTable thead .sorting_asc:before,
+    table.dataTable thead .sorting_desc:before,
+    table.dataTable thead .sorting:after,
+    table.dataTable thead .sorting_asc:after,
+    table.dataTable thead .sorting_desc:after {
+        color: white !important;
+    }
+
+    /* Remove border around entire table wrapper */
+    .dataTables_wrapper {
+        border: none !important;
+    }
+
+    table.dataTable {
+        border-collapse: collapse !important;
+        border: none !important;
+    }
+
+    /* Sweet Alert Dark Theme */
+    .swal2-popup {
+        background: #2a2a2a !important;
+        color: white !important;
+    }
+
+    .swal2-title {
+        color: white !important;
+    }
+
+    .swal2-html-container {
+        color: white !important;
+    }
+
+    .swal2-input {
+        background: #1a1a1a !important;
+        color: white !important;
+        border: 1px solid #444 !important;
+    }
+
+    .swal2-input:focus {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #007bff !important;
+        outline: none !important;
+    }
+
+    .swal2-select {
+        background: #1a1a1a !important;
+        color: white !important;
+        border: 1px solid #444 !important;
+    }
+
+    .swal2-select:focus {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #007bff !important;
+        outline: none !important;
+    }
 </style>
 
 <div class="customers-container">
@@ -231,23 +316,6 @@ include 'nav.php';
         <button class="btn btn-primary" onclick="openAddCustomerModal()">
             <i class="fas fa-plus"></i> Add New Customer
         </button>
-    </div>
-
-    <div class="filters-section">
-        <div class="filter-group">
-            <label for="typeFilter">Filter by Type:</label>
-            <select id="typeFilter" onchange="filterByType()">
-                <option value="">All Types</option>
-                <option value="regular">Regular</option>
-                <option value="vip">VIP</option>
-                <option value="wholesale">Wholesale</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <button class="btn btn-info" onclick="reloadTable()">
-                <i class="fas fa-sync"></i> Refresh
-            </button>
-        </div>
     </div>
 
     <div class="customers-table-container">
@@ -314,8 +382,8 @@ function initializeDataTable(customers) {
             `<strong>${customer.name}</strong>`,
             customer.mobile,
             `<span class="customer-type-badge ${typeClass}">${customer.type.toUpperCase()}</span>`,
-            `<span class="stat-value">Rs. ${parseFloat(customer.extra_fund).toFixed(2)}</span>`,
-            `<span class="stat-value">${customer.statistics.invoice_count}</span>`,
+            `<span class="stat-value-white">Rs. ${parseFloat(customer.extra_fund).toFixed(2)}</span>`,
+            `<span class="stat-value-white">${customer.statistics.invoice_count}</span>`,
             `<span class="stat-value positive">Rs. ${parseFloat(customer.statistics.total_purchases).toFixed(2)}</span>`,
             `<span class="stat-value ${outstandingClass}">Rs. ${parseFloat(customer.statistics.outstanding_balance).toFixed(2)}</span>`,
             `<div class="actions-cell">
@@ -328,8 +396,7 @@ function initializeDataTable(customers) {
                 <button class="btn btn-danger btn-sm" onclick="deleteCustomer(${customer.id}, '${customer.name.replace(/'/g, "\\'")}', ${customer.statistics.invoice_count})" title="Delete">
                     <i class="fas fa-trash"></i>
                 </button>
-            </div>`,
-            customer.type // Hidden column for filtering
+            </div>`
         ];
     });
 
@@ -345,8 +412,7 @@ function initializeDataTable(customers) {
             { title: "Invoices" },
             { title: "Total Sales" },
             { title: "Outstanding" },
-            { title: "Actions", orderable: false },
-            { title: "Type Raw", visible: false } // Hidden column for filtering
+            { title: "Actions", orderable: false }
         ],
         order: [[0, 'desc']],
         pageLength: 25,
@@ -391,30 +457,6 @@ function initializeDataTable(customers) {
             zeroRecords: "No matching customers found",
             emptyTable: "No customers available in table"
         }
-    });
-}
-
-// Filter by customer type
-function filterByType() {
-    const selectedType = $('#typeFilter').val();
-    
-    if (selectedType === '') {
-        customersTable.column(9).search('').draw();
-    } else {
-        customersTable.column(9).search('^' + selectedType + '$', true, false).draw();
-    }
-}
-
-// Reload table
-function reloadTable() {
-    $('#typeFilter').val('');
-    loadCustomersData();
-    Swal.fire({
-        icon: 'success',
-        title: 'Refreshed',
-        text: 'Customer data has been reloaded',
-        timer: 1500,
-        showConfirmButton: false
     });
 }
 
@@ -588,17 +630,6 @@ function editCustomer(customerId) {
 
 // Delete customer
 function deleteCustomer(customerId, customerName, invoiceCount) {
-    if (invoiceCount > 0) {
-        Swal.fire({
-            title: 'Cannot Delete Customer',
-            html: `<p>This customer has <strong>${invoiceCount} invoice(s)</strong> associated with their account.</p>
-                   <p>Please remove or reassign these invoices before deleting the customer.</p>`,
-            icon: 'warning',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
     Swal.fire({
         title: 'Delete Customer?',
         html: `Are you sure you want to delete <strong>${customerName}</strong>?<br><br>

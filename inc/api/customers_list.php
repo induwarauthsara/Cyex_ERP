@@ -77,15 +77,17 @@ $query = "
 $stmt = mysqli_prepare($con, $query);
 
 if (!$stmt) {
-    echo json_encode(['success' => false, 'message' => 'Database error']);
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($con)]);
     exit;
 }
 
-$params[] = $perPage;
-$params[] = $offset;
-$types .= 'ii';
+// Create new parameter array for the main query
+$queryParams = $params; // Copy the existing params
+$queryParams[] = $perPage;
+$queryParams[] = $offset;
+$queryTypes = $types . 'ii';
 
-mysqli_stmt_bind_param($stmt, $types, ...$params);
+mysqli_stmt_bind_param($stmt, $queryTypes, ...$queryParams);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 

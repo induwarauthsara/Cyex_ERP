@@ -914,7 +914,7 @@ When `update_past_invoices` is set to `true`, the system will update the custome
 
 ### 6. Delete Customer
 
-Delete a customer (only if they have no invoices).
+Delete a customer from the system.
 
 **Endpoint:** `DELETE /api/v1/customers/delete.php`
 
@@ -957,21 +957,12 @@ Content-Type: application/json
 }
 ```
 
-**Error Response (409) - Customer has invoices:**
-```json
-{
-  "success": false,
-  "message": "Cannot delete customer. This customer has 10 invoice(s) associated with their account. Please remove or reassign these invoices first.",
-  "errors": [],
-  "meta": {
-    "timestamp": "2025-10-22 11:30:00",
-    "version": "v1"
-  }
-}
-```
-
-**Important Note:**
-Customers with existing invoices cannot be deleted to maintain data integrity. You must first delete or reassign all invoices associated with the customer before deleting the customer record.
+**Important Notes:**
+- Customers can be deleted even if they have associated invoices
+- The invoice table stores customer data directly (denormalized - `customer_name` and `customer_mobile` are stored in each invoice record)
+- Deleting a customer will NOT affect existing invoices - they will retain all customer information
+- The `customer_id` field in invoices is just a reference number and does not have a foreign key constraint
+- Past invoices will remain accessible with the customer information that was stored at the time of sale
 
 ---
 

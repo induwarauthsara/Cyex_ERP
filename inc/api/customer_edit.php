@@ -98,7 +98,7 @@ try {
     }
 
     // Log action
-    $employeeId = $_SESSION['employ_id'];
+    $employeeId = $_SESSION['employee_id'];
     $description = "Updated customer ID {$customerId}: {$customerName} (Mobile: {$mobile})";
     if ($updatePastInvoices && $invoicesUpdated > 0) {
         $description .= " - Updated {$invoicesUpdated} past invoice(s)";

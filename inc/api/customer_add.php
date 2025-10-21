@@ -67,7 +67,7 @@ $customerId = mysqli_insert_id($con);
 mysqli_stmt_close($insertStmt);
 
 // Log action
-$employeeId = $_SESSION['employ_id'];
+$employeeId = $_SESSION['employee_id'];
 $logQuery = "INSERT INTO action_log (employee_id, action, description, date, time) VALUES (?, 'Create Customer', 'Added new customer: $customerName (Mobile: $mobile)', CURRENT_DATE, CURRENT_TIME)";
 $logStmt = mysqli_prepare($con, $logQuery);
 mysqli_stmt_bind_param($logStmt, 'i', $employeeId);
