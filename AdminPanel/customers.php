@@ -6,7 +6,7 @@ include 'nav.php';
 <style>
     .customers-container {
         padding: 20px;
-        max-width: 1400px;
+        max-width: 1600px;
         margin: 0 auto;
     }
 
@@ -63,6 +63,7 @@ include 'nav.php';
     .btn-sm {
         padding: 5px 10px;
         font-size: 12px;
+        margin: 2px;
     }
 
     .filters-section {
@@ -73,73 +74,57 @@ include 'nav.php';
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .filters-row {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
     .filter-group {
-        flex: 1;
-        min-width: 200px;
+        display: inline-block;
+        margin-right: 15px;
+        margin-bottom: 10px;
     }
 
     .filter-group label {
-        display: block;
-        margin-bottom: 5px;
+        display: inline-block;
+        margin-right: 8px;
         font-weight: 500;
         color: #555;
     }
 
-    .filter-group input,
     .filter-group select {
-        width: 100%;
         padding: 8px 12px;
         border: 1px solid #ddd;
         border-radius: 5px;
         font-size: 14px;
+        min-width: 150px;
     }
 
     .customers-table-container {
         background: white;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        overflow: hidden;
+        padding: 20px;
     }
 
     table.customers-table {
-        width: 100%;
-        border-collapse: collapse;
+        width: 100% !important;
     }
 
-    table.customers-table thead {
-        background: #f8f9fa;
-    }
-
-    table.customers-table th {
-        padding: 12px;
-        text-align: left;
+    table.customers-table thead th {
+        background: #f8f9fa !important;
         font-weight: 600;
         color: #333;
-        border-bottom: 2px solid #dee2e6;
+        padding: 12px !important;
     }
 
-    table.customers-table td {
-        padding: 12px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    table.customers-table tbody tr:hover {
-        background: #f8f9fa;
+    table.customers-table tbody td {
+        padding: 10px !important;
+        vertical-align: middle;
     }
 
     .customer-type-badge {
         display: inline-block;
         padding: 4px 10px;
         border-radius: 12px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
+        white-space: nowrap;
     }
 
     .type-regular {
@@ -158,8 +143,7 @@ include 'nav.php';
     }
 
     .actions-cell {
-        display: flex;
-        gap: 5px;
+        white-space: nowrap;
     }
 
     .stat-value {
@@ -181,48 +165,63 @@ include 'nav.php';
         color: #666;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
+    /* DataTable custom styles */
+    .dataTables_wrapper .dataTables_length select {
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        padding: 5px 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        margin-left: 8px;
+    }
+
+    .dataTables_wrapper .dataTables_info {
+        padding-top: 15px;
         color: #666;
     }
 
-    .empty-state i {
-        font-size: 48px;
-        margin-bottom: 20px;
-        color: #ddd;
+    .dataTables_wrapper .dataTables_paginate {
+        padding-top: 15px;
     }
 
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        padding: 20px;
-        background: white;
-        border-top: 1px solid #f0f0f0;
-    }
-
-    .pagination button {
-        padding: 8px 15px;
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 5px 10px;
+        margin: 0 2px;
+        border-radius: 4px;
         border: 1px solid #ddd;
         background: white;
-        cursor: pointer;
-        border-radius: 5px;
     }
 
-    .pagination button:hover:not(:disabled) {
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
         background: #f8f9fa;
+        border-color: #007bff;
     }
 
-    .pagination button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #007bff;
+        color: white !important;
+        border-color: #007bff;
     }
 
-    .pagination .page-info {
-        color: #666;
-        font-size: 14px;
+    div.dt-buttons {
+        margin-bottom: 15px;
+    }
+
+    .dt-button {
+        padding: 8px 15px !important;
+        border-radius: 4px !important;
+        margin-right: 5px !important;
+        background: #007bff !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    .dt-button:hover {
+        background: #0056b3 !important;
     }
 </style>
 
@@ -235,102 +234,24 @@ include 'nav.php';
     </div>
 
     <div class="filters-section">
-        <div class="filters-row">
-            <div class="filter-group">
-                <label for="searchInput">Search</label>
-                <input type="text" id="searchInput" placeholder="Search by name or mobile..." onkeyup="searchCustomers()">
-            </div>
-            <div class="filter-group">
-                <label for="typeFilter">Customer Type</label>
-                <select id="typeFilter" onchange="loadCustomers()">
-                    <option value="all">All Types</option>
-                    <option value="regular">Regular</option>
-                    <option value="vip">VIP</option>
-                    <option value="wholesale">Wholesale</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>&nbsp;</label>
-                <button class="btn btn-info" onclick="resetFilters()">
-                    <i class="fas fa-sync"></i> Reset Filters
-                </button>
-            </div>
+        <div class="filter-group">
+            <label for="typeFilter">Filter by Type:</label>
+            <select id="typeFilter" onchange="filterByType()">
+                <option value="">All Types</option>
+                <option value="regular">Regular</option>
+                <option value="vip">VIP</option>
+                <option value="wholesale">Wholesale</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <button class="btn btn-info" onclick="reloadTable()">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
         </div>
     </div>
 
     <div class="customers-table-container">
-        <div id="customersTableContent">
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i> Loading customers...
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-let currentPage = 1;
-let searchTimeout = null;
-
-// Load customers on page load
-document.addEventListener('DOMContentLoaded', function() {
-    loadCustomers();
-});
-
-// Search with debounce
-function searchCustomers() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        currentPage = 1;
-        loadCustomers();
-    }, 500);
-}
-
-// Reset filters
-function resetFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('typeFilter').value = 'all';
-    currentPage = 1;
-    loadCustomers();
-}
-
-// Load customers
-function loadCustomers(page = currentPage) {
-    currentPage = page;
-    const search = document.getElementById('searchInput').value;
-    const type = document.getElementById('typeFilter').value;
-
-    const url = `/inc/api/customers_list.php?page=${page}&search=${encodeURIComponent(search)}&type=${type}`;
-
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                renderCustomersTable(data.customers, data.pagination);
-            } else {
-                showError('Failed to load customers');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError('Error loading customers');
-        });
-}
-
-// Render customers table
-function renderCustomersTable(customers, pagination) {
-    if (customers.length === 0) {
-        document.getElementById('customersTableContent').innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-users"></i>
-                <h3>No customers found</h3>
-                <p>Try adjusting your search criteria or add a new customer</p>
-            </div>
-        `;
-        return;
-    }
-
-    let html = `
-        <table class="customers-table">
+        <table id="DataTable" class="customers-table display responsive nowrap" style="width:100%">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -345,60 +266,156 @@ function renderCustomersTable(customers, pagination) {
                 </tr>
             </thead>
             <tbody>
-    `;
+                <!-- Data will be loaded via AJAX -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    customers.forEach(customer => {
+<script>
+let customersTable;
+
+// Load customers on page load
+$(document).ready(function() {
+    loadCustomersData();
+});
+
+// Load customers data
+function loadCustomersData() {
+    fetch('/inc/api/customers_list.php?page=1&per_page=10000')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                initializeDataTable(data.customers);
+            } else {
+                Swal.fire('Error', 'Failed to load customers', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error', 'Error loading customers', 'error');
+        });
+}
+
+// Initialize DataTable
+function initializeDataTable(customers) {
+    // Destroy existing table if any
+    if ($.fn.DataTable.isDataTable('#DataTable')) {
+        $('#DataTable').DataTable().destroy();
+    }
+
+    // Prepare data for DataTable
+    const tableData = customers.map(customer => {
         const typeClass = `type-${customer.type}`;
         const outstandingClass = customer.statistics.outstanding_balance > 0 ? 'negative' : 'positive';
 
-        html += `
-            <tr>
-                <td>${customer.id}</td>
-                <td><strong>${customer.name}</strong></td>
-                <td>${customer.mobile}</td>
-                <td><span class="customer-type-badge ${typeClass}">${customer.type.toUpperCase()}</span></td>
-                <td class="stat-value">Rs. ${parseFloat(customer.extra_fund).toFixed(2)}</td>
-                <td class="stat-value">${customer.statistics.invoice_count}</td>
-                <td class="stat-value positive">Rs. ${parseFloat(customer.statistics.total_purchases).toFixed(2)}</td>
-                <td class="stat-value ${outstandingClass}">Rs. ${parseFloat(customer.statistics.outstanding_balance).toFixed(2)}</td>
-                <td>
-                    <div class="actions-cell">
-                        <button class="btn btn-info btn-sm" onclick="viewCustomer(${customer.id})" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-warning btn-sm" onclick="editCustomer(${customer.id})" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteCustomer(${customer.id}, '${customer.name}', ${customer.statistics.invoice_count})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
+        return [
+            customer.id,
+            `<strong>${customer.name}</strong>`,
+            customer.mobile,
+            `<span class="customer-type-badge ${typeClass}">${customer.type.toUpperCase()}</span>`,
+            `<span class="stat-value">Rs. ${parseFloat(customer.extra_fund).toFixed(2)}</span>`,
+            `<span class="stat-value">${customer.statistics.invoice_count}</span>`,
+            `<span class="stat-value positive">Rs. ${parseFloat(customer.statistics.total_purchases).toFixed(2)}</span>`,
+            `<span class="stat-value ${outstandingClass}">Rs. ${parseFloat(customer.statistics.outstanding_balance).toFixed(2)}</span>`,
+            `<div class="actions-cell">
+                <button class="btn btn-info btn-sm" onclick="viewCustomer(${customer.id})" title="View Details">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-warning btn-sm" onclick="editCustomer(${customer.id})" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCustomer(${customer.id}, '${customer.name.replace(/'/g, "\\'")}', ${customer.statistics.invoice_count})" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>`,
+            customer.type // Hidden column for filtering
+        ];
     });
 
-    html += `
-            </tbody>
-        </table>
-        <div class="pagination">
-            <button ${pagination.current_page === 1 ? 'disabled' : ''} onclick="loadCustomers(1)">
-                <i class="fas fa-angle-double-left"></i>
-            </button>
-            <button ${pagination.current_page === 1 ? 'disabled' : ''} onclick="loadCustomers(${pagination.current_page - 1})">
-                <i class="fas fa-angle-left"></i> Previous
-            </button>
-            <span class="page-info">Page ${pagination.current_page} of ${pagination.total_pages} (${pagination.total} customers)</span>
-            <button ${!pagination.has_more ? 'disabled' : ''} onclick="loadCustomers(${pagination.current_page + 1})">
-                Next <i class="fas fa-angle-right"></i>
-            </button>
-            <button ${!pagination.has_more ? 'disabled' : ''} onclick="loadCustomers(${pagination.total_pages})">
-                <i class="fas fa-angle-double-right"></i>
-            </button>
-        </div>
-    `;
+    // Initialize DataTable
+    customersTable = $('#DataTable').DataTable({
+        data: tableData,
+        columns: [
+            { title: "ID" },
+            { title: "Name" },
+            { title: "Mobile" },
+            { title: "Type" },
+            { title: "Extra Fund" },
+            { title: "Invoices" },
+            { title: "Total Sales" },
+            { title: "Outstanding" },
+            { title: "Actions", orderable: false },
+            { title: "Type Raw", visible: false } // Hidden column for filtering
+        ],
+        order: [[0, 'desc']],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        dom: 'lBfrtip',
+        buttons: [
+            {
+                extend: 'copy',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                }
+            },
+            {
+                extend: 'excel',
+                title: 'Customers List',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                }
+            },
+            {
+                extend: 'pdf',
+                title: 'Customers List',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                }
+            },
+            {
+                extend: 'print',
+                title: 'Customers List',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                }
+            }
+        ],
+        responsive: true,
+        language: {
+            search: "Search Customers:",
+            lengthMenu: "Show _MENU_ customers per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ customers",
+            infoEmpty: "No customers available",
+            infoFiltered: "(filtered from _MAX_ total customers)",
+            zeroRecords: "No matching customers found",
+            emptyTable: "No customers available in table"
+        }
+    });
+}
 
-    document.getElementById('customersTableContent').innerHTML = html;
+// Filter by customer type
+function filterByType() {
+    const selectedType = $('#typeFilter').val();
+    
+    if (selectedType === '') {
+        customersTable.column(9).search('').draw();
+    } else {
+        customersTable.column(9).search('^' + selectedType + '$', true, false).draw();
+    }
+}
+
+// Reload table
+function reloadTable() {
+    $('#typeFilter').val('');
+    loadCustomersData();
+    Swal.fire({
+        icon: 'success',
+        title: 'Refreshed',
+        text: 'Customer data has been reloaded',
+        timer: 1500,
+        showConfirmButton: false
+    });
 }
 
 // Add customer modal
@@ -459,7 +476,7 @@ function openAddCustomerModal() {
     }).then((result) => {
         if (result.isConfirmed) {
             Swal.fire('Success!', 'Customer added successfully', 'success');
-            loadCustomers();
+            loadCustomersData();
         }
     });
 }
@@ -560,7 +577,7 @@ function editCustomer(customerId) {
                         : 'Customer updated successfully';
                     
                     Swal.fire('Success!', message, 'success');
-                    loadCustomers();
+                    loadCustomersData();
                 }
             });
         })
@@ -602,7 +619,7 @@ function deleteCustomer(customerId, customerName, invoiceCount) {
             .then(data => {
                 if (data.success) {
                     Swal.fire('Deleted!', 'Customer has been deleted.', 'success');
-                    loadCustomers();
+                    loadCustomersData();
                 } else {
                     Swal.fire('Error', data.message, 'error');
                 }
@@ -612,15 +629,5 @@ function deleteCustomer(customerId, customerName, invoiceCount) {
             });
         }
     });
-}
-
-function showError(message) {
-    document.getElementById('customersTableContent').innerHTML = `
-        <div class="empty-state">
-            <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
-            <h3>Error</h3>
-            <p>${message}</p>
-        </div>
-    `;
 }
 </script>

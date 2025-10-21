@@ -36,7 +36,7 @@ $customerId = (int)$_GET['id'];
         background: white;
         padding: 30px;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
 
@@ -83,7 +83,7 @@ $customerId = (int)$_GET['id'];
         background: white;
         padding: 25px;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .stat-label {
@@ -109,7 +109,7 @@ $customerId = (int)$_GET['id'];
     .invoices-section {
         background: white;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         overflow: hidden;
     }
 
@@ -190,35 +190,35 @@ $customerId = (int)$_GET['id'];
 </div>
 
 <script>
-const customerId = <?php echo $customerId; ?>;
+    const customerId = <?php echo $customerId; ?>;
 
-// Load customer details on page load
-document.addEventListener('DOMContentLoaded', function() {
-    loadCustomerDetails();
-});
+    // Load customer details on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCustomerDetails();
+    });
 
-function loadCustomerDetails() {
-    fetch(`/inc/api/customer_invoices.php?id=${customerId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                renderCustomerDetails(data);
-            } else {
-                showError(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError('Failed to load customer details');
-        });
-}
+    function loadCustomerDetails() {
+        fetch(`/inc/api/customer_invoices.php?id=${customerId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderCustomerDetails(data);
+                } else {
+                    showError(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Failed to load customer details');
+            });
+    }
 
-function renderCustomerDetails(data) {
-    const customer = data.customer;
-    const totals = data.totals;
-    const invoices = data.invoices;
+    function renderCustomerDetails(data) {
+        const customer = data.customer;
+        const totals = data.totals;
+        const invoices = data.invoices;
 
-    let html = `
+        let html = `
         <div class="customer-header">
             <h1><i class="fas fa-user"></i> ${customer.name}</h1>
             <div class="customer-info-grid">
@@ -268,8 +268,8 @@ function renderCustomerDetails(data) {
             </div>
     `;
 
-    if (invoices.length > 0) {
-        html += `
+        if (invoices.length > 0) {
+            html += `
             <table class="invoices-table">
                 <thead>
                     <tr>
@@ -287,10 +287,10 @@ function renderCustomerDetails(data) {
                 <tbody>
         `;
 
-        invoices.forEach(invoice => {
-            const statusClass = invoice.full_paid ? 'status-paid' : (invoice.advance > 0 ? 'status-partial' : 'status-unpaid');
-            
-            html += `
+            invoices.forEach(invoice => {
+                const statusClass = invoice.full_paid ? 'status-paid' : (invoice.advance > 0 ? 'status-partial' : 'status-unpaid');
+
+                html += `
                 <tr>
                     <td><strong>#${invoice.invoice_number}</strong></td>
                     <td>${invoice.date} ${invoice.time}</td>
@@ -301,34 +301,34 @@ function renderCustomerDetails(data) {
                     <td>${invoice.payment_method}</td>
                     <td><span class="status-badge ${statusClass}">${invoice.status}</span></td>
                     <td>
-                        <a href="/invoice/view.php?invoice_number=${invoice.invoice_number}" target="_blank" class="btn btn-info btn-sm">
+                        <a href="/invoice/print.php?printType=standard&id=${invoice.invoice_number}" target="_blank" class="btn btn-info btn-sm">
                             <i class="fas fa-eye"></i> View
                         </a>
                     </td>
                 </tr>
             `;
-        });
+            });
 
-        html += `
+            html += `
                 </tbody>
             </table>
         `;
-    } else {
-        html += `
+        } else {
+            html += `
             <div style="padding: 40px; text-align: center; color: #666;">
                 <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 20px; color: #ddd;"></i>
                 <p>No invoices found for this customer</p>
             </div>
         `;
+        }
+
+        html += `</div>`;
+
+        document.getElementById('customerContent').innerHTML = html;
     }
 
-    html += `</div>`;
-
-    document.getElementById('customerContent').innerHTML = html;
-}
-
-function showError(message) {
-    document.getElementById('customerContent').innerHTML = `
+    function showError(message) {
+        document.getElementById('customerContent').innerHTML = `
         <div style="background: white; padding: 40px; border-radius: 8px; text-align: center;">
             <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545; margin-bottom: 20px;"></i>
             <h3>Error</h3>
@@ -338,5 +338,5 @@ function showError(message) {
             </a>
         </div>
     `;
-}
+    }
 </script>
