@@ -156,6 +156,48 @@ while ($row = mysqli_fetch_assoc($result)) {
         $statusText = 'Overdue';
     }
     
+    // Fetch invoice items from sales table
+    $invoiceNumber = intval($row['invoice_number']);
+    $itemsQuery = "SELECT 
+        sales_id,
+        product,
+        batch,
+        description,
+        qty,
+        rate,
+        amount,
+        cost,
+        profit,
+        worker,
+        discount_price,
+        individual_discount_mode
+    FROM sales 
+    WHERE invoice_number = ?";
+    
+    $itemsStmt = mysqli_prepare($con, $itemsQuery);
+    mysqli_stmt_bind_param($itemsStmt, 'i', $invoiceNumber);
+    mysqli_stmt_execute($itemsStmt);
+    $itemsResult = mysqli_stmt_get_result($itemsStmt);
+    
+    $items = [];
+    while ($itemRow = mysqli_fetch_assoc($itemsResult)) {
+        $items[] = [
+            'sales_id' => intval($itemRow['sales_id']),
+            'product' => $itemRow['product'],
+            'batch' => $itemRow['batch'],
+            'description' => $itemRow['description'],
+            'quantity' => floatval($itemRow['qty']),
+            'rate' => floatval($itemRow['rate']),
+            'amount' => floatval($itemRow['amount']),
+            'cost' => floatval($itemRow['cost']),
+            'profit' => floatval($itemRow['profit']),
+            'worker' => $itemRow['worker'],
+            'discount_price' => floatval($itemRow['discount_price']),
+            'individual_discount_mode' => (bool)$itemRow['individual_discount_mode']
+        ];
+    }
+    mysqli_stmt_close($itemsStmt);
+    
     $invoices[] = [
         'invoice_number' => intval($row['invoice_number']),
         'customer' => [
@@ -174,7 +216,8 @@ while ($row = mysqli_fetch_assoc($result)) {
         'status' => $statusText,
         'is_paid' => (bool)$row['full_paid'],
         'is_overdue' => $isOverdue,
-        'days_old' => intval($row['days_old'])
+        'days_old' => intval($row['days_old']),
+        'items' => $items
     ];
 }
 

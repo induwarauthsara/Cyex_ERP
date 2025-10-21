@@ -1164,8 +1164,7 @@ GET /api/v1/invoices/list.php?page=1&per_page=20&status=paid&date_from=2025-10-0
   "message": "Invoices retrieved successfully",
   "data": [
     {
-      "invoice_id": 1235,
-      "invoice_number": "INV-2025-001235",
+      "invoice_number": 1235,
       "customer": {
         "id": 45,
         "name": "John Doe",
@@ -1182,7 +1181,37 @@ GET /api/v1/invoices/list.php?page=1&per_page=20&status=paid&date_from=2025-10-0
       "status": "Paid",
       "is_paid": true,
       "is_overdue": false,
-      "days_old": 0
+      "days_old": 0,
+      "items": [
+        {
+          "sales_id": 5001,
+          "product": "A4 Color Printing",
+          "batch": "BATCH-2025-001",
+          "description": "High quality printing",
+          "quantity": 100.0,
+          "rate": 15.00,
+          "amount": 1500.00,
+          "cost": 850.00,
+          "profit": 650.00,
+          "worker": "5",
+          "discount_price": 0.00,
+          "individual_discount_mode": false
+        },
+        {
+          "sales_id": 5002,
+          "product": "Photo Frame 8x10",
+          "batch": "BATCH-2025-015",
+          "description": null,
+          "quantity": 2.0,
+          "rate": 450.00,
+          "amount": 900.00,
+          "cost": 600.00,
+          "profit": 300.00,
+          "worker": "5",
+          "discount_price": 50.00,
+          "individual_discount_mode": true
+        }
+      ]
     }
     // ... more invoices
   ],
@@ -1199,6 +1228,22 @@ GET /api/v1/invoices/list.php?page=1&per_page=20&status=paid&date_from=2025-10-0
   }
 }
 ```
+
+**Invoice Item Fields:**
+
+- `sales_id`: Unique identifier for the sale item
+- `product`: Product name
+- `batch`: Batch number (if applicable)
+- `description`: Additional description (optional)
+- `quantity`: Quantity sold
+- `rate`: Unit price
+- `amount`: Total amount (quantity × rate)
+- `cost`: Cost price
+- `profit`: Profit earned
+- `worker`: Worker/employee ID who handled the item
+- `discount_price`: Discount applied to this item
+- `individual_discount_mode`: Whether individual discount was applied (true/false)
+
 
 ---
 
