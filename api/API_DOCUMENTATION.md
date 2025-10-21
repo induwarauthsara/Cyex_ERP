@@ -757,6 +757,310 @@ Content-Type: application/json
 
 ---
 
+### 4. List Customers
+
+Get paginated list of all customers with statistics.
+
+**Endpoint:** `GET /api/v1/customers/list.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `per_page` (optional): Items per page (default: 20, max: 100)
+- `search` (optional): Search by name or mobile
+- `type` (optional): Filter by customer type: all, regular, vip, wholesale (default: all)
+
+**Example Request:**
+```http
+GET /api/v1/customers/list.php?page=1&per_page=20&search=john&type=regular
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Customers retrieved successfully",
+  "data": [
+    {
+      "id": 45,
+      "name": "John Doe",
+      "mobile": "0771234567",
+      "type": "regular",
+      "extra_fund": 150.00,
+      "statistics": {
+        "invoice_count": 10,
+        "total_purchases": 5500.00,
+        "outstanding_balance": 500.00
+      }
+    },
+    {
+      "id": 46,
+      "name": "Jane Smith",
+      "mobile": "0759876543",
+      "type": "vip",
+      "extra_fund": 0.00,
+      "statistics": {
+        "invoice_count": 25,
+        "total_purchases": 15000.00,
+        "outstanding_balance": 0.00
+      }
+    }
+  ],
+  "meta": {
+    "timestamp": "2025-10-22 10:30:00",
+    "version": "v1",
+    "pagination": {
+      "total": 150,
+      "per_page": 20,
+      "current_page": 1,
+      "total_pages": 8,
+      "has_more": true
+    }
+  }
+}
+```
+
+---
+
+### 5. Edit Customer
+
+Update customer information with optional past invoice updates.
+
+**Endpoint:** `PUT /api/v1/customers/edit.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "id": 45,
+  "name": "John Doe Updated",
+  "mobile": "0771234567",
+  "type": "vip",
+  "update_past_invoices": true
+}
+```
+
+**Request Parameters:**
+- `id` (required): Customer ID
+- `name` (required): Customer name
+- `mobile` (required): 10 digit mobile number
+- `type` (optional): Customer type (regular, vip, wholesale)
+- `update_past_invoices` (optional): Boolean - if true, updates customer name/mobile in all past invoices (default: false)
+
+**Important Note:** 
+When `update_past_invoices` is set to `true`, the system will update the customer's name and/or mobile number in all past invoices in the `invoice` table. This is necessary because invoice records store customer information directly rather than using a relational reference. If set to `false`, changes only affect future invoices.
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Customer updated successfully",
+  "data": {
+    "id": 45,
+    "name": "John Doe Updated",
+    "mobile": "0771234567",
+    "type": "vip",
+    "extra_fund": 150.00,
+    "invoices_updated": 10,
+    "invoice_count": 10
+  },
+  "meta": {
+    "timestamp": "2025-10-22 11:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Response Fields:**
+- `invoices_updated`: Number of past invoices that were updated (0 if `update_past_invoices` was false)
+- `invoice_count`: Total number of invoices associated with this customer
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "Customer not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 11:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (409):**
+```json
+{
+  "success": false,
+  "message": "Mobile number is already used by another customer",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 11:00:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 6. Delete Customer
+
+Delete a customer (only if they have no invoices).
+
+**Endpoint:** `DELETE /api/v1/customers/delete.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "id": 45
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Customer deleted successfully",
+  "data": null,
+  "meta": {
+    "timestamp": "2025-10-22 11:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "Customer not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 11:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (409) - Customer has invoices:**
+```json
+{
+  "success": false,
+  "message": "Cannot delete customer. This customer has 10 invoice(s) associated with their account. Please remove or reassign these invoices first.",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-22 11:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**Important Note:**
+Customers with existing invoices cannot be deleted to maintain data integrity. You must first delete or reassign all invoices associated with the customer before deleting the customer record.
+
+---
+
+### 7. Customer Invoices
+
+Get all invoices for a specific customer with filtering and pagination.
+
+**Endpoint:** `GET /api/v1/customers/invoices.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+- `id` (required): Customer ID
+- `page` (optional): Page number (default: 1)
+- `per_page` (optional): Items per page (default: 20, max: 100)
+- `status` (optional): Filter by status: all, paid, unpaid, partial (default: all)
+
+**Example Request:**
+```http
+GET /api/v1/customers/invoices.php?id=45&page=1&per_page=20&status=unpaid
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Customer invoices retrieved successfully",
+  "data": {
+    "customer": {
+      "id": 45,
+      "name": "John Doe",
+      "mobile": "0771234567",
+      "type": "regular",
+      "extra_fund": 150.00
+    },
+    "totals": {
+      "total_sales": 5500.00,
+      "total_paid": 5000.00,
+      "total_outstanding": 500.00,
+      "total_profit": 1200.00
+    },
+    "invoices": [
+      {
+        "invoice_number": 1235,
+        "description": null,
+        "customer_name": "John Doe",
+        "customer_mobile": "0771234567",
+        "date": "2025-10-17",
+        "time": "11:15:30",
+        "biller": "cashier01",
+        "total": 2300.00,
+        "discount": 100.00,
+        "advance": 2000.00,
+        "balance": 300.00,
+        "cost": 1500.00,
+        "profit": 700.00,
+        "full_paid": false,
+        "payment_method": "Cash",
+        "credit_payment": false,
+        "amount_received": 2000.00,
+        "cash_change": 0.00,
+        "status": "Partially Paid"
+      }
+    ]
+  },
+  "meta": {
+    "timestamp": "2025-10-22 12:00:00",
+    "version": "v1",
+    "pagination": {
+      "total": 10,
+      "per_page": 20,
+      "current_page": 1,
+      "total_pages": 1,
+      "has_more": false
+    }
+  }
+}
+```
+
+**Status Values:**
+- `Paid`: Full payment received (full_paid = true)
+- `Partially Paid`: Partial payment received (advance > 0 but full_paid = false)
+- `Unpaid`: No payment received (advance = 0)
+
+---
+
 ## Invoice Endpoints
 
 ### 1. Submit Invoice
