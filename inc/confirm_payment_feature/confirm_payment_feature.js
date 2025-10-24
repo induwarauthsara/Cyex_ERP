@@ -235,17 +235,18 @@ function openConfirmPaymentModal(paymentMethod = 'Cash') {
                 printReceipt,
                 quickCashCounts,
                 productList: productList.map(product => {
-                    // Check if this is a one-time product by name matching
-                    const isOneTimeProduct = window.oneTimeProducts && 
-                        window.oneTimeProducts.find(otp => otp.name === product.name);
+                    // Check if this is a one-time product by checking if it exists in window.oneTimeProducts
+                    const isOneTimeProduct = product.isOneTimeProduct || 
+                        (window.oneTimeProducts && window.oneTimeProducts.find(otp => otp.name === product.name));
                         
                     if (isOneTimeProduct) {
                         return {
                             ...product,
                             isOneTimeProduct: true,
                             quantity: parseFloat(product.quantity),
-                            regular_price: parseFloat(isOneTimeProduct.regularPrice),
-                            discount_price: parseFloat(isOneTimeProduct.discountPrice)
+                            // Use the updated prices from the product object itself
+                            regular_price: parseFloat(product.regular_price),
+                            discount_price: parseFloat(product.discount_price)
                         };
                     }
                     

@@ -1114,6 +1114,16 @@
             productList[index].subtotal = productList[index].quantity *
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
 
+            // If this is a one-time product, also update the window.oneTimeProducts array
+            if (productList[index].isOneTimeProduct && window.oneTimeProducts) {
+                const oneTimeProductIndex = window.oneTimeProducts.findIndex(otp => otp.name === productList[index].name);
+                if (oneTimeProductIndex !== -1) {
+                    window.oneTimeProducts[oneTimeProductIndex].regularPrice = regularPrice;
+                    // Also update discount price if it was adjusted
+                    window.oneTimeProducts[oneTimeProductIndex].discountPrice = productList[index].discount_price;
+                }
+            }
+
             localStorage.setItem('productList', JSON.stringify(productList));
             
             // Update only the subtotal display for this row instead of re-rendering entire table
@@ -1153,6 +1163,14 @@
             // Update subtotal based on current mode
             productList[index].subtotal = productList[index].quantity *
                 (individualDiscountMode ? productList[index].discount_price : productList[index].regular_price);
+
+            // If this is a one-time product, also update the window.oneTimeProducts array
+            if (productList[index].isOneTimeProduct && window.oneTimeProducts) {
+                const oneTimeProductIndex = window.oneTimeProducts.findIndex(otp => otp.name === productList[index].name);
+                if (oneTimeProductIndex !== -1) {
+                    window.oneTimeProducts[oneTimeProductIndex].discountPrice = discountPrice;
+                }
+            }
 
             localStorage.setItem('productList', JSON.stringify(productList));
             
