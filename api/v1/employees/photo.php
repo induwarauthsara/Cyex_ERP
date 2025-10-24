@@ -55,14 +55,19 @@ if (empty($row['dp'])) {
 $imageData = $row['dp'];
 $empName = $row['emp_name'];
 
-// Detect image type
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$mimeType = $finfo->buffer($imageData);
-
-// Validate mime type
-$allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-if (!in_array($mimeType, $allowedTypes)) {
-    $mimeType = 'image/jpeg'; // Default to JPEG
+// Detect image type using image signature (magic bytes)
+$mimeType = 'image/jpeg'; // Default
+if (strlen($imageData) >= 4) {
+    $signature = bin2hex(substr($imageData, 0, 4));
+    
+    // PNG signature: 89 50 4E 47
+    if (substr($signature, 0, 8) === '89504e47') {
+        $mimeType = 'image/png';
+    }
+    // JPEG signature: FF D8 FF
+    elseif (substr($signature, 0, 6) === 'ffd8ff') {
+        $mimeType = 'image/jpeg';
+    }
 }
 
 // Encode to base64

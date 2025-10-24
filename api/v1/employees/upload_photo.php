@@ -78,11 +78,26 @@ $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
 $fileType = $_FILES['photo']['type'];
 $fileTmpPath = $_FILES['photo']['tmp_name'];
 
-// Additional validation using finfo
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$actualMimeType = $finfo->file($fileTmpPath);
+// Detect actual MIME type using file signature (magic bytes)
+$actualMimeType = null;
+if (file_exists($fileTmpPath)) {
+    $handle = fopen($fileTmpPath, 'rb');
+    $bytes = fread($handle, 8);
+    fclose($handle);
+    
+    $signature = bin2hex($bytes);
+    
+    // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+    if (substr($signature, 0, 16) === '89504e470d0a1a0a') {
+        $actualMimeType = 'image/png';
+    }
+    // JPEG signature: FF D8 FF
+    elseif (substr($signature, 0, 6) === 'ffd8ff') {
+        $actualMimeType = 'image/jpeg';
+    }
+}
 
-if (!in_array($actualMimeType, $allowedTypes)) {
+if (!$actualMimeType || !in_array($actualMimeType, $allowedTypes)) {
     ApiResponse::error('Invalid file type. Only JPG and PNG are allowed', 400);
 }
 
