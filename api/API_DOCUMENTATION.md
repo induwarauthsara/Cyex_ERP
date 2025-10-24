@@ -2555,9 +2555,11 @@ Authorization: Bearer YOUR_ADMIN_TOKEN
 
 ### 1. Pay Salary
 
-Process employee salary payment.
+Process employee salary payment. Deducts from employee salary balance and account balance.
 
 **Endpoint:** `POST /api/v1/salary/pay.php`
+
+**Access:** Admin only
 
 **Headers:**
 ```http
@@ -2570,10 +2572,25 @@ Content-Type: application/json
 {
   "employee_id": 5,
   "amount": 15000.00,
-  "account": "Cash in Hand",
+  "account": "cash_in_hand",
   "description": "Monthly Salary - October 2025"
 }
 ```
+
+**Field Descriptions:**
+- `employee_id` (required, integer): Employee ID to pay salary to
+- `amount` (required, number): Amount to pay (must be positive and not exceed employee's salary balance)
+- `account` (required, string): Account name to deduct from (must exist with sufficient funds)
+  - Available accounts: `cash_in_hand`, `DFCC` 
+  - **Important:** Account name is case-sensitive and must match exactly
+- `description` (optional, string): Payment description (defaults to "Salary Paid")
+
+**Validations:**
+- Amount must be greater than zero
+- Employee must exist in the system
+- Employee must have sufficient salary balance
+- Account must exist with sufficient funds
+- Only Admin users can process payments
 
 **Success Response (201):**
 ```json
@@ -2586,16 +2603,111 @@ Content-Type: application/json
       "name": "John Employee"
     },
     "amount": 15000.00,
-    "account": "Cash in Hand",
+    "account": "cash_in_hand",
     "description": "Monthly Salary - October 2025",
     "paid_by": {
       "id": 1,
       "name": "admin"
     },
-    "paid_at": "2025-10-17 16:30:00"
+    "paid_at": "2025-10-24 16:30:00"
+  },
+  "meta": {
+    "timestamp": "2025-10-24 16:30:00",
+    "version": "v1"
   }
 }
 ```
+
+**Error Responses:**
+
+**403 Forbidden - Non-admin access:**
+```json
+{
+  "success": false,
+  "message": "Admin access required",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-24 16:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**404 Not Found - Employee not found:**
+```json
+{
+  "success": false,
+  "message": "Employee not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-24 16:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**404 Not Found - Account not found:**
+```json
+{
+  "success": false,
+  "message": "Account not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-24 16:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**422 Unprocessable Entity - Insufficient salary balance:**
+```json
+{
+  "success": false,
+  "message": "Insufficient salary balance. Available: Rs. 10000.00",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-24 16:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**422 Unprocessable Entity - Insufficient account funds:**
+```json
+{
+  "success": false,
+  "message": "Insufficient funds in account. Available: Rs. 5000.00",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-24 16:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**422 Unprocessable Entity - Validation errors:**
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": {
+    "employee_id": "Employee id is required",
+    "amount": "Amount is required",
+    "account": "Account is required"
+  },
+  "meta": {
+    "timestamp": "2025-10-24 16:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**What happens when salary is paid:**
+1. Record is added to `salary` table with negative amount
+2. Employee's salary balance is decreased
+3. Account balance is decreased
+4. Transaction is logged in `transaction_log` table
+5. All changes are atomic (transaction-based)
 
 ---
 

@@ -52,6 +52,42 @@ try {
         ApiResponse::error('Amount must be greater than zero', 422);
     }
     
+    // Validate employee exists and get current salary balance
+    $emp_check = "SELECT employ_id, emp_name, salary FROM employees WHERE employ_id = ?";
+    $stmt = mysqli_prepare($con, $emp_check);
+    mysqli_stmt_bind_param($stmt, 'i', $employee_id);
+    mysqli_stmt_execute($stmt);
+    $emp_result = mysqli_stmt_get_result($stmt);
+    
+    if (mysqli_num_rows($emp_result) === 0) {
+        ApiResponse::error('Employee not found', 404);
+    }
+    
+    $employee = mysqli_fetch_assoc($emp_result);
+    
+    // Check if employee has sufficient salary balance
+    if ($employee['salary'] < $amount) {
+        ApiResponse::error("Insufficient salary balance. Available: Rs. {$employee['salary']}", 422);
+    }
+    
+    // Validate account exists
+    $acc_check = "SELECT account_name, amount FROM accounts WHERE account_name = ?";
+    $stmt = mysqli_prepare($con, $acc_check);
+    mysqli_stmt_bind_param($stmt, 's', $account);
+    mysqli_stmt_execute($stmt);
+    $acc_result = mysqli_stmt_get_result($stmt);
+    
+    if (mysqli_num_rows($acc_result) === 0) {
+        ApiResponse::error('Account not found', 404);
+    }
+    
+    $account_data = mysqli_fetch_assoc($acc_result);
+    
+    // Check if account has sufficient funds
+    if ($account_data['amount'] < $amount) {
+        ApiResponse::error("Insufficient funds in account. Available: Rs. {$account_data['amount']}", 422);
+    }
+    
     // Start transaction
     mysqli_begin_transaction($con);
     
@@ -87,10 +123,10 @@ try {
         // 4. Add Transaction Log
         $action = "Salary Payment";
         $msg = "Salary paid to Employee ID: $employee_id, Rs. $amount from $account account";
-        $sql = "INSERT INTO transaction_log (transaction_type, description, amount, transaction_date, employee_id) 
+        $sql = "INSERT INTO transaction_log (transaction_type, description, amount, transaction_date, employ_id) 
                 VALUES (?, ?, ?, CURDATE(), ?)";
         $stmt = mysqli_prepare($con, $sql);
-        mysqli_stmt_bind_param($stmt, 'ssdi', $action, $msg, $negative_amount, $user['id']);
+        mysqli_stmt_bind_param($stmt, 'ssdi', $action, $msg, $negative_amount, $user['employee_id']);
         
         if (!mysqli_stmt_execute($stmt)) {
             throw new Exception("Failed to log transaction");
@@ -99,26 +135,18 @@ try {
         // Commit transaction
         mysqli_commit($con);
         
-        // Get employee name
-        $emp_query = "SELECT name FROM employees WHERE employ_id = ?";
-        $stmt = mysqli_prepare($con, $emp_query);
-        mysqli_stmt_bind_param($stmt, 'i', $employee_id);
-        mysqli_stmt_execute($stmt);
-        $emp_result = mysqli_stmt_get_result($stmt);
-        $emp_data = mysqli_fetch_assoc($emp_result);
-        
         // Return success
         ApiResponse::success('Salary paid successfully', [
             'employee' => [
                 'id' => $employee_id,
-                'name' => $emp_data['name'] ?? 'Unknown'
+                'name' => $employee['emp_name']
             ],
             'amount' => $amount,
             'account' => $account,
             'description' => $description,
             'paid_by' => [
-                'id' => $user['id'],
-                'name' => $user['name']
+                'id' => $user['employee_id'],
+                'name' => $user['employee_name']
             ],
             'paid_at' => date('Y-m-d H:i:s')
         ], 201);
