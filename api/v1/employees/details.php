@@ -107,8 +107,8 @@ mysqli_stmt_close($attendanceStmt);
 $salaryQuery = "SELECT 
     COUNT(*) as total_payments,
     SUM(ABS(amount)) as total_paid
-FROM trans
-WHERE employee_id = ? AND description LIKE '%Salary%'";
+FROM salary
+WHERE emp_id = ?";
 
 $salaryStmt = mysqli_prepare($con, $salaryQuery);
 mysqli_stmt_bind_param($salaryStmt, 'i', $employeeId);
