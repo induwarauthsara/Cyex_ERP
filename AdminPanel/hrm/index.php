@@ -25,6 +25,7 @@ $total_salary_have_pay = number_format(mysqli_fetch_assoc(mysqli_query($con, "SE
 
 
     <button onclick="addNewEmployee()" id="refreshPage">Add New Employee</button>
+    <button onclick="clockOutAllEmployees()" style="background-color: #ff6b6b; margin-left: 10px;">Clock Out All Employees</button>
 
     <table id="DataTable" class="display" style="width:100%">
         <thead>
@@ -441,6 +442,82 @@ $total_salary_have_pay = number_format(mysqli_fetch_assoc(mysqli_query($con, "SE
             }
         });
 
+    }
+
+    // Clock Out All Employees
+    function clockOutAllEmployees() {
+        Swal.fire({
+            title: 'Clock Out All Employees',
+            text: 'Are you sure you want to clock out all currently working employees? This will calculate and pay their salaries.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Clock Out All',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ff6b6b',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                return $.ajax({
+                    type: "POST",
+                    url: '/api/v1/attendance/clockout_all.php',
+                    headers: {
+                        'Authorization': 'Bearer <?php echo $_SESSION['api_token'] ?? ''; ?>',
+                        'Content-Type': 'application/json'
+                    },
+                    dataType: 'json'
+                }).then(response => {
+                    if (!response.success) {
+                        throw new Error(response.error?.message || 'Failed to clock out employees');
+                    }
+                    return response;
+                }).catch(error => {
+                    Swal.showValidationMessage(
+                        `Request failed: ${error.message || error.responseJSON?.error?.message || 'Unknown error'}`
+                    );
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const data = result.value.data;
+                const employeesCount = data.employees_clocked_out || 0;
+                
+                let detailsHtml = `<p>Successfully clocked out <b>${employeesCount}</b> employee(s)</p>`;
+                
+                if (data.processed_employees && data.processed_employees.length > 0) {
+                    detailsHtml += '<div style="max-height: 300px; overflow-y: auto; text-align: left; margin-top: 15px;">';
+                    detailsHtml += '<table style="width: 100%; border-collapse: collapse;">';
+                    detailsHtml += '<thead><tr style="background: #f0f0f0;"><th style="padding: 8px; border: 1px solid #ddd;">Employee</th><th style="padding: 8px; border: 1px solid #ddd;">Hours</th><th style="padding: 8px; border: 1px solid #ddd;">Salary Paid</th></tr></thead>';
+                    detailsHtml += '<tbody>';
+                    
+                    data.processed_employees.forEach(emp => {
+                        detailsHtml += `<tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${emp.employee_name}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${emp.worked_hours}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">Rs. ${emp.salary_paid}</td>
+                        </tr>`;
+                    });
+                    
+                    detailsHtml += '</tbody></table></div>';
+                }
+                
+                if (data.errors && data.errors.length > 0) {
+                    detailsHtml += '<div style="margin-top: 15px; color: #ff6b6b;"><p><b>Errors occurred for some employees:</b></p><ul style="text-align: left;">';
+                    data.errors.forEach(err => {
+                        detailsHtml += `<li>${err.employee_name}: ${err.error}</li>`;
+                    });
+                    detailsHtml += '</ul></div>';
+                }
+
+                Swal.fire({
+                    title: 'Success!',
+                    html: detailsHtml,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    location.reload();
+                });
+            }
+        });
     }
 </script>
 

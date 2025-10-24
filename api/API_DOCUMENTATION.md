@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Base URL:** `https://yourdomain.com/api/v1`  
-**Last Updated:** October 22, 2025
+**Last Updated:** October 24, 2025
 
 ---
 
@@ -1801,7 +1801,160 @@ OR
 
 ---
 
-### 2. Get Attendance Status
+### 2. Clock Out All Employees (Admin Only)
+
+Clock out all currently clocked-in employees at once. This endpoint processes salary calculations for each employee based on their worked hours, exactly like the auto clock-out cron job.
+
+**Endpoint:** `POST /api/v1/attendance/clockout_all.php`
+
+**Access:** Admin only
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:** None required (empty JSON object `{}` or no body)
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Successfully clocked out 3 out of 3 employees",
+  "data": {
+    "employees_clocked_out": 3,
+    "total_found": 3,
+    "processed_employees": [
+      {
+        "employee_id": 5,
+        "employee_name": "John Smith",
+        "worked_hours": 8.5,
+        "salary_paid": 1500.00,
+        "status": "success"
+      },
+      {
+        "employee_id": 7,
+        "employee_name": "Jane Doe",
+        "worked_hours": 7.2,
+        "salary_paid": 1350.00,
+        "status": "success"
+      },
+      {
+        "employee_id": 12,
+        "employee_name": "Bob Wilson",
+        "worked_hours": 9.0,
+        "salary_paid": 1600.00,
+        "status": "success"
+      }
+    ]
+  },
+  "meta": {
+    "timestamp": "2025-10-24 18:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Success Response (200) - No Active Employees:**
+```json
+{
+  "success": true,
+  "message": "No active employees found to clock out",
+  "data": {
+    "employees_clocked_out": 0
+  },
+  "meta": {
+    "timestamp": "2025-10-24 18:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Success Response with Partial Errors (200):**
+```json
+{
+  "success": true,
+  "message": "Successfully clocked out 2 out of 3 employees",
+  "data": {
+    "employees_clocked_out": 2,
+    "total_found": 3,
+    "processed_employees": [
+      {
+        "employee_id": 5,
+        "employee_name": "John Smith",
+        "worked_hours": 8.5,
+        "salary_paid": 1500.00,
+        "status": "success"
+      },
+      {
+        "employee_id": 7,
+        "employee_name": "Jane Doe",
+        "worked_hours": 7.2,
+        "salary_paid": 1350.00,
+        "status": "success"
+      }
+    ],
+    "errors": [
+      {
+        "employee_id": 12,
+        "employee_name": "Bob Wilson",
+        "error": "No Clock In Record Found for employee Bob Wilson"
+      }
+    ]
+  },
+  "meta": {
+    "timestamp": "2025-10-24 18:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (403) - Non-Admin Access:**
+```json
+{
+  "success": false,
+  "message": "Admin access required",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-24 18:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**How it Works:**
+1. Queries all employees with `is_clocked_in = 1`
+2. For each employee:
+   - Inserts a "Clock Out" record in the `attendance` table
+   - Updates `is_clocked_in = 0` in the `employees` table
+   - Calculates worked hours from today's clock in/out times
+   - Calculates and pays salary based on hours worked:
+     - **Full Day**: 8-17 hours → Full day salary
+     - **Partial Day**: < 8 hours → Hourly rate × hours worked
+     - **Overtime**: > 17 hours → Full day salary (logged as overtime)
+   - Adds salary record to the `salary` table
+   - Updates employee's salary balance in `employees` table
+   - Deducts salary from "Company Profit" account
+3. Returns detailed results for each employee processed
+
+**Important Notes:**
+- This endpoint uses the exact same logic as the auto clock-out cron job
+- Only processes employees who are currently clocked in (`is_clocked_in = 1`)
+- Salary calculations are based on the employee's `day_salary` setting
+- If an employee has no salary configured, they are still clocked out but no payment is processed
+- All database operations are logged in the transaction log
+- Partial failures are handled gracefully - successful clock-outs are still processed
+
+**Use Cases:**
+- End of day when admin wants to clock out all remaining staff
+- Emergency situations requiring immediate clock out of all employees
+- Manual intervention when cron job fails or needs to run early
+- Testing salary calculations for all employees
+
+---
+
+### 3. Get Attendance Status
 
 Get current clock in/out status of authenticated employee.
 
