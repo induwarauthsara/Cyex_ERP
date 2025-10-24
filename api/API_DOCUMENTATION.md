@@ -1,8 +1,8 @@
 # Srijaya ERP Mobile POS API Documentation
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Base URL:** `https://yourdomain.com/api/v1`  
-**Last Updated:** October 24, 2025
+**Last Updated:** October 25, 2025
 
 ---
 
@@ -1702,6 +1702,322 @@ Content-Type: application/json
   "errors": [],
   "meta": {
     "timestamp": "2025-10-22 15:20:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 6. Get Employee Photo
+
+Get employee profile photo (200x200px).
+
+**Endpoint:** `GET /api/v1/employees/photo.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+- `id` (required): Employee ID
+
+**Example Request:**
+```http
+GET /api/v1/employees/photo.php?id=5
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Employee photo retrieved successfully",
+  "data": {
+    "employee_id": 5,
+    "employee_name": "John Employee",
+    "image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA...",
+    "mime_type": "image/jpeg",
+    "size_bytes": 8542
+  },
+  "meta": {
+    "timestamp": "2025-10-25 10:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**Response Fields:**
+- `image`: Base64-encoded data URI that can be used directly in HTML `<img>` tags or mobile apps
+- `mime_type`: Image MIME type (image/jpeg or image/png)
+- `size_bytes`: Size of the image data in bytes
+
+**Error Response (404) - No Photo:**
+```json
+{
+  "success": false,
+  "message": "No photo found for this employee",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404) - Employee Not Found:**
+```json
+{
+  "success": false,
+  "message": "Employee not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:30:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 7. Upload Employee Photo
+
+Upload or update employee profile photo. Images are automatically resized to 200x200px.
+
+**Endpoint:** `POST /api/v1/employees/upload_photo.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `photo` (required): Image file (JPG or PNG, max 5MB)
+- `employee_id` (optional): Employee ID (if not provided, uses authenticated user's ID)
+
+**Authorization Rules:**
+- **Admins** can upload photos for any employee
+- **Employees** can only upload their own photo
+
+**Image Processing:**
+- Accepts JPG and PNG formats
+- Maximum file size: 5MB before processing
+- Automatically crops to square (centered)
+- Resizes to exactly 200x200 pixels
+- Maintains aspect ratio with center crop
+- Preserves PNG transparency
+- JPEG quality: 85%
+- PNG compression: Maximum
+
+**Example Request (cURL):**
+```bash
+curl -X POST https://yourdomain.com/api/v1/employees/upload_photo.php \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "photo=@/path/to/image.jpg" \
+  -F "employee_id=5"
+```
+
+**Example Request (JavaScript/Fetch):**
+```javascript
+const formData = new FormData();
+formData.append('photo', fileInput.files[0]);
+formData.append('employee_id', 5);
+
+fetch('https://yourdomain.com/api/v1/employees/upload_photo.php', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN'
+  },
+  body: formData
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Employee photo updated successfully",
+  "data": {
+    "employee_id": 5,
+    "employee_name": "John Employee",
+    "photo_size_bytes": 8542,
+    "dimensions": {
+      "width": 200,
+      "height": 200
+    },
+    "mime_type": "image/jpeg",
+    "message": "Photo uploaded and resized successfully"
+  },
+  "meta": {
+    "timestamp": "2025-10-25 10:35:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (400) - No File:**
+```json
+{
+  "success": false,
+  "message": "No photo file uploaded",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:35:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (400) - Invalid Type:**
+```json
+{
+  "success": false,
+  "message": "Invalid file type. Only JPG and PNG are allowed",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:35:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (400) - File Too Large:**
+```json
+{
+  "success": false,
+  "message": "File size exceeds 5MB limit",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:35:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (403) - Unauthorized:**
+```json
+{
+  "success": false,
+  "message": "You are not authorized to update this employee photo",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:35:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "Employee not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:35:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 8. Delete Employee Photo
+
+Delete employee profile photo.
+
+**Endpoint:** `DELETE /api/v1/employees/delete_photo.php` or `POST /api/v1/employees/delete_photo.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters (for DELETE):**
+- `id` (optional): Employee ID (if not provided, uses authenticated user's ID)
+
+**Request Body (for POST):**
+```json
+{
+  "employee_id": 5
+}
+```
+
+**Authorization Rules:**
+- **Admins** can delete photos for any employee
+- **Employees** can only delete their own photo
+
+**Example Request (DELETE):**
+```http
+DELETE /api/v1/employees/delete_photo.php?id=5
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Example Request (POST):**
+```http
+POST /api/v1/employees/delete_photo.php
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+
+{
+  "employee_id": 5
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Employee photo deleted successfully",
+  "data": {
+    "employee_id": 5,
+    "employee_name": "John Employee",
+    "message": "Photo deleted successfully"
+  },
+  "meta": {
+    "timestamp": "2025-10-25 10:40:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404) - No Photo:**
+```json
+{
+  "success": false,
+  "message": "Employee has no photo to delete",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:40:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (403) - Unauthorized:**
+```json
+{
+  "success": false,
+  "message": "You are not authorized to delete this employee photo",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:40:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "Employee not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-10-25 10:40:00",
     "version": "v1"
   }
 }
