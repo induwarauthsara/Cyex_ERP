@@ -24,12 +24,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Get the posted data
 $sell_Insufficient_stock_item = isset($_POST['sell_Insufficient_stock_item']) ? intval($_POST['sell_Insufficient_stock_item']) : 0;
 $sell_Inactive_batch_products = isset($_POST['sell_Inactive_batch_products']) ? intval($_POST['sell_Inactive_batch_products']) : 0;
+$invoice_print_type = isset($_POST['invoice_print_type']) ? $_POST['invoice_print_type'] : 'both';
 
-// Validate values (must be 0 or 1)
+// Validate values
 if (!in_array($sell_Insufficient_stock_item, [0, 1]) || !in_array($sell_Inactive_batch_products, [0, 1])) {
     echo json_encode([
         'success' => false,
         'message' => 'Invalid setting values. Must be 0 or 1.'
+    ]);
+    exit;
+}
+
+if (!in_array($invoice_print_type, ['receipt', 'standard', 'both'])) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Invalid invoice print type. Must be receipt, standard, or both.'
     ]);
     exit;
 }
@@ -47,6 +56,10 @@ try {
         'sell_Inactive_batch_products' => [
             'value' => $sell_Inactive_batch_products,
             'description' => 'Allow selling from inactive batches (1=allow, 0=restrict)'
+        ],
+        'invoice_print_type' => [
+            'value' => $invoice_print_type,
+            'description' => 'Default invoice print type (receipt, standard, or both)'
         ]
     ];
 

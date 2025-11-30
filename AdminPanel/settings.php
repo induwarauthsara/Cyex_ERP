@@ -4,7 +4,7 @@ include 'nav.php';
 // Fetch current settings from database
 $current_settings = [];
 try {
-    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products')";
+    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products', 'invoice_print_type')";
     $settings_result = mysqli_query($con, $settings_query);
 
     if ($settings_result) {
@@ -26,6 +26,9 @@ if (!isset($current_settings['sell_Insufficient_stock_item'])) {
 }
 if (!isset($current_settings['sell_Inactive_batch_products'])) {
     $current_settings['sell_Inactive_batch_products'] = ['value' => '1', 'description' => 'Allow selling from inactive batches'];
+}
+if (!isset($current_settings['invoice_print_type'])) {
+    $current_settings['invoice_print_type'] = ['value' => 'standard', 'description' => 'Default invoice print type'];
 }
 ?>
 
@@ -534,6 +537,52 @@ if (!isset($current_settings['sell_Inactive_batch_products'])) {
                         </div>
                     </div>
                 </div>
+
+    <!-- Invoice Configuration Section -->
+    <div class="settings-section">
+        <h2 class="section-title">
+            <i class="fas fa-print"></i>
+            Invoice Configuration
+        </h2>
+        <p class="section-description">
+            Manage invoice printing and display preferences
+        </p>
+
+        <div class="row">
+            <!-- Print Type Setting -->
+            <div class="col-12">
+                <div class="setting-item active" id="setting_invoice_print_type">
+                    <div class="setting-header">
+                        <h3 class="setting-title">
+                            <i class="fas fa-receipt text-primary"></i>
+                            Default Print Type
+                        </h3>
+                    </div>
+                    <p class="setting-description">
+                        Choose how invoices should be printed by default.
+                    </p>
+                    
+                    <div class="print-type-options mt-3">
+                        <div class="custom-control custom-radio custom-control-inline">
+                            <input type="radio" id="print_type_receipt" name="invoice_print_type" class="custom-control-input" value="receipt" 
+                                <?php echo ($current_settings['invoice_print_type']['value'] == 'receipt') ? 'checked' : ''; ?>>
+                            <label class="custom-control-label" for="print_type_receipt">Receipt Print Only</label>
+                        </div>
+                        <div class="custom-control custom-radio custom-control-inline">
+                            <input type="radio" id="print_type_standard" name="invoice_print_type" class="custom-control-input" value="standard" 
+                                <?php echo ($current_settings['invoice_print_type']['value'] == 'standard') ? 'checked' : ''; ?>>
+                            <label class="custom-control-label" for="print_type_standard">Standard Invoice Only</label>
+                        </div>
+                        <div class="custom-control custom-radio custom-control-inline">
+                            <input type="radio" id="print_type_both" name="invoice_print_type" class="custom-control-input" value="both" 
+                                <?php echo ($current_settings['invoice_print_type']['value'] == 'both') ? 'checked' : ''; ?>>
+                            <label class="custom-control-label" for="print_type_both">Ask Every Time (Both)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
             </div>
         </form>
     </div>
@@ -596,6 +645,7 @@ if (!isset($current_settings['sell_Inactive_batch_products'])) {
                     // Reset to default values (both enabled)
                     $('#sell_Insufficient_stock_item').prop('checked', true).trigger('change');
                     $('#sell_Inactive_batch_products').prop('checked', true).trigger('change');
+                    $('#print_type_standard').prop('checked', true);
                     
                     Swal.fire({
                         icon: 'success',
@@ -616,7 +666,8 @@ if (!isset($current_settings['sell_Inactive_batch_products'])) {
 
             const formData = {
                 sell_Insufficient_stock_item: $('#sell_Insufficient_stock_item').is(':checked') ? '1' : '0',
-                sell_Inactive_batch_products: $('#sell_Inactive_batch_products').is(':checked') ? '1' : '0'
+                sell_Inactive_batch_products: $('#sell_Inactive_batch_products').is(':checked') ? '1' : '0',
+                invoice_print_type: $('input[name="invoice_print_type"]:checked').val()
             };
 
             // Show loading state

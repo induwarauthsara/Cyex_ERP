@@ -1572,3 +1572,11 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`setting_name`, `setting_description`, `setting_value`, `created_at`, `updated_at`) VALUES
+('invoice_print_type', 'Default invoice print type', 'standard', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
