@@ -13,6 +13,41 @@ if (!isset($_SESSION['employee_role']) || $_SESSION['employee_role'] !== "Admin"
 
 require_once(__DIR__ . '/../../inc/config.php');
 
+// Handle GET request for fetching settings
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $action = $_GET['action'] ?? '';
+    
+    if ($action === 'get_quotation_settings') {
+        $settings_query = "SELECT setting_name, setting_value FROM settings 
+                          WHERE setting_name IN ('quotation_validity_days', 'quotation_prefix', 'quotation_auto_generate')";
+        $result = mysqli_query($con, $settings_query);
+        
+        $settings = [
+            'quotation_validity_days' => '30',
+            'quotation_prefix' => 'QT',
+            'quotation_auto_generate' => '1'
+        ];
+        
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $settings[$row['setting_name']] = $row['setting_value'];
+            }
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'settings' => $settings
+        ]);
+        exit;
+    }
+    
+    echo json_encode([
+        'success' => false,
+        'message' => 'Invalid GET action.'
+    ]);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
         'success' => false,
@@ -25,6 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $sell_Insufficient_stock_item = isset($_POST['sell_Insufficient_stock_item']) ? intval($_POST['sell_Insufficient_stock_item']) : 0;
 $sell_Inactive_batch_products = isset($_POST['sell_Inactive_batch_products']) ? intval($_POST['sell_Inactive_batch_products']) : 0;
 $invoice_print_type = isset($_POST['invoice_print_type']) ? $_POST['invoice_print_type'] : 'both';
+
+// Get quotation settings
+$quotation_validity_days = isset($_POST['quotation_validity_days']) ? intval($_POST['quotation_validity_days']) : 30;
+$quotation_prefix = isset($_POST['quotation_prefix']) ? trim($_POST['quotation_prefix']) : 'QT';
+$quotation_auto_generate = isset($_POST['quotation_auto_generate']) ? intval($_POST['quotation_auto_generate']) : 1;
 
 // Validate values
 if (!in_array($sell_Insufficient_stock_item, [0, 1]) || !in_array($sell_Inactive_batch_products, [0, 1])) {
@@ -39,6 +79,22 @@ if (!in_array($invoice_print_type, ['receipt', 'standard', 'both'])) {
     echo json_encode([
         'success' => false,
         'message' => 'Invalid invoice print type. Must be receipt, standard, or both.'
+    ]);
+    exit;
+}
+
+if ($quotation_validity_days < 1 || $quotation_validity_days > 365) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Quotation validity days must be between 1 and 365.'
+    ]);
+    exit;
+}
+
+if (empty($quotation_prefix) || strlen($quotation_prefix) > 10) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Quotation prefix must be between 1 and 10 characters.'
     ]);
     exit;
 }
@@ -60,6 +116,18 @@ try {
         'invoice_print_type' => [
             'value' => $invoice_print_type,
             'description' => 'Default invoice print type (receipt, standard, or both)'
+        ],
+        'quotation_validity_days' => [
+            'value' => $quotation_validity_days,
+            'description' => 'Default validity period for quotations in days'
+        ],
+        'quotation_prefix' => [
+            'value' => $quotation_prefix,
+            'description' => 'Prefix for quotation numbers'
+        ],
+        'quotation_auto_generate' => [
+            'value' => $quotation_auto_generate,
+            'description' => 'Auto generate quotation numbers (1=yes, 0=no)'
         ]
     ];
 

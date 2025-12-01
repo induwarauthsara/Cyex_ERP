@@ -4,7 +4,7 @@ include 'nav.php';
 // Fetch current settings from database
 $current_settings = [];
 try {
-    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products', 'invoice_print_type')";
+    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products', 'invoice_print_type', 'quotation_validity_days', 'quotation_prefix', 'quotation_auto_generate')";
     $settings_result = mysqli_query($con, $settings_query);
 
     if ($settings_result) {
@@ -29,6 +29,15 @@ if (!isset($current_settings['sell_Inactive_batch_products'])) {
 }
 if (!isset($current_settings['invoice_print_type'])) {
     $current_settings['invoice_print_type'] = ['value' => 'standard', 'description' => 'Default invoice print type'];
+}
+if (!isset($current_settings['quotation_validity_days'])) {
+    $current_settings['quotation_validity_days'] = ['value' => '30', 'description' => 'Default validity period for quotations in days'];
+}
+if (!isset($current_settings['quotation_prefix'])) {
+    $current_settings['quotation_prefix'] = ['value' => 'QT', 'description' => 'Prefix for quotation numbers'];
+}
+if (!isset($current_settings['quotation_auto_generate'])) {
+    $current_settings['quotation_auto_generate'] = ['value' => '1', 'description' => 'Auto generate quotation numbers'];
 }
 ?>
 
@@ -583,6 +592,96 @@ if (!isset($current_settings['invoice_print_type'])) {
             </div>
         </div>
     </div>
+
+    <!-- Quotation Configuration Section -->
+    <div class="settings-section">
+        <h2 class="section-title">
+            <i class="fas fa-file-invoice"></i>
+            Quotation Configuration
+        </h2>
+        <p class="section-description">
+            Manage quotation numbering and printing preferences
+        </p>
+
+        <div class="row">
+            <!-- Quotation Validity Days -->
+            <div class="col-md-4 col-12">
+                <div class="setting-item active" id="setting_quotation_validity_days">
+                    <div class="setting-header">
+                        <h3 class="setting-title">
+                            <i class="fas fa-calendar-days text-success"></i>
+                            Validity Period
+                        </h3>
+                    </div>
+                    <p class="setting-description">
+                        Default number of days a quotation remains valid
+                    </p>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="quotation_validity_days" 
+                                   name="quotation_validity_days" 
+                                   value="<?php echo $current_settings['quotation_validity_days']['value']; ?>" 
+                                   min="1" max="365" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text">days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quotation Prefix -->
+            <div class="col-md-4 col-12">
+                <div class="setting-item active" id="setting_quotation_prefix">
+                    <div class="setting-header">
+                        <h3 class="setting-title">
+                            <i class="fas fa-hashtag text-info"></i>
+                            Number Prefix
+                        </h3>
+                    </div>
+                    <p class="setting-description">
+                        Prefix for quotation numbers (e.g., QT, QUOT)
+                    </p>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="quotation_prefix" 
+                               name="quotation_prefix" 
+                               value="<?php echo $current_settings['quotation_prefix']['value']; ?>" 
+                               maxlength="10" required 
+                               placeholder="QT">
+                        <small class="form-text text-muted">Format: <?php echo $current_settings['quotation_prefix']['value']; ?>000001</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto Generate Numbers -->
+            <div class="col-md-4 col-12">
+                <div class="setting-item active" id="setting_quotation_auto_generate">
+                    <div class="setting-header">
+                        <h3 class="setting-title">
+                            <i class="fas fa-robot text-warning"></i>
+                            Auto Generate
+                        </h3>
+                    </div>
+                    <p class="setting-description">
+                        Automatically generate quotation numbers
+                    </p>
+                    <div class="form-group">
+                        <div class="custom-control custom-switch" style="padding-top: 10px;">
+                            <input type="checkbox" class="custom-control-input" 
+                                   id="quotation_auto_generate" 
+                                   name="quotation_auto_generate"
+                                   <?php echo ($current_settings['quotation_auto_generate']['value'] == '1') ? 'checked' : ''; ?>>
+                            <label class="custom-control-label" for="quotation_auto_generate">
+                                <?php echo ($current_settings['quotation_auto_generate']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
             </div>
         </form>
     </div>
@@ -667,7 +766,10 @@ if (!isset($current_settings['invoice_print_type'])) {
             const formData = {
                 sell_Insufficient_stock_item: $('#sell_Insufficient_stock_item').is(':checked') ? '1' : '0',
                 sell_Inactive_batch_products: $('#sell_Inactive_batch_products').is(':checked') ? '1' : '0',
-                invoice_print_type: $('input[name="invoice_print_type"]:checked').val()
+                invoice_print_type: $('input[name="invoice_print_type"]:checked').val(),
+                quotation_validity_days: $('#quotation_validity_days').val(),
+                quotation_prefix: $('#quotation_prefix').val(),
+                quotation_auto_generate: $('#quotation_auto_generate').is(':checked') ? '1' : '0'
             };
 
             // Show loading state
