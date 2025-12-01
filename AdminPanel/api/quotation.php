@@ -279,6 +279,12 @@ function createQuotation($data) {
             $validUntil = $data['valid_until'];
         }
         
+        // Prepare variables for binding (must be variables, not expressions)
+        $note = $data['note'] ?? null;
+        $discount = $data['discount'] ?? 0;
+        $subtotal = $data['subtotal'];
+        $total = $data['total'];
+        
         // Insert quotation
         $query = "INSERT INTO quotations (quotation_number, customer_name, customer_mobile, 
                   customer_address, quotation_date, valid_until, note, subtotal, discount, total, 
@@ -292,10 +298,10 @@ function createQuotation($data) {
             $customerAddress,
             $data['quotation_date'],
             $validUntil,
-            $data['note'] ?? null,
-            $data['subtotal'],
-            $data['discount'] ?? 0,
-            $data['total'],
+            $note,
+            $subtotal,
+            $discount,
+            $total,
             $user_id
         );
         

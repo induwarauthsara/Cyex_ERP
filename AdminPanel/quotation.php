@@ -637,30 +637,36 @@ include 'nav.php';
     }
 
     function loadProducts() {
-        // This will be used for product dropdown in product rows
+        // Load products from v1 API (uses session-based authentication)
         window.productsData = [];
         
-        // Try AdminPanel products API first (no authentication required)
-        fetch('/AdminPanel/api/products.php')
+        fetch('/api/v1/products/list.php?per_page=1000&active_only=true', {
+            method: 'GET',
+            credentials: 'include', // Include cookies for session auth
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success' && data.data) {
-                    window.productsData = data.data;
+                if (data.success && data.data) {
+                    // Map v1 API response to expected format
+                    window.productsData = data.data.map(product => ({
+                        product_id: product.id,
+                        product_name: product.name,
+                        price: product.price,
+                        selling_price: product.price,
+                        cost_price: product.cost_price || 0,
+                        quantity: product.available_quantity || 0
+                    }));
                     console.log('Products loaded:', window.productsData.length);
                 } else {
-                    // Fallback to v1 API
-                    return fetch('/api/v1/products/list.php?per_page=1000')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && data.data && data.data.products) {
-                                window.productsData = data.data.products;
-                            } else if (data.status === 'success' && data.data) {
-                                window.productsData = data.data;
-                            }
-                        });
+                    console.error('Failed to load products:', data.message || 'Unknown error');
                 }
             })
-            .catch(error => console.error('Error loading products:', error));
+            .catch(error => {
+                console.error('Error loading products:', error);
+            });
     }
 
     // Customer name input change handler for autocomplete
@@ -763,8 +769,8 @@ function toggleProductType(rowIndex, type) {
         // Clear manual entry
         row.find('.product-name-manual').val('');
         
-        // Make rate readonly for existing products
-        row.find('.rate-input').attr('readonly', 'readonly').val('');
+        // Rate is editable for all products
+        row.find('.rate-input').val('');
         
         // Clear product data
         row.find('.product-id-input').val('');
@@ -777,8 +783,8 @@ function toggleProductType(rowIndex, type) {
         row.find('.product-search-input').val('');
         row.find('.product-select').hide().empty();
         
-        // Make rate editable for new products
-        row.find('.rate-input').removeAttr('readonly').val('');
+        // Rate is editable for all products
+        row.find('.rate-input').val('');
         
         // Clear product data
         row.find('.product-id-input').val('');
@@ -966,9 +972,6 @@ function addProductRow() {
         </div>
     `;
     $('#productsContainer').append(productRow);
-    
-    // Set initial state to existing product (rate readonly)
-    $(`.product-row[data-index="${productRowIndex}"] .rate-input`).attr('readonly', 'readonly');
 }    function removeProductRow(button) {
         $(button).closest('.product-row').remove();
         calculateTotal();
@@ -1092,7 +1095,7 @@ function saveQuotation(callback) {
         if (searchContainer.is(':visible')) {
             // Existing product mode
             const productName = row.find('.product-name-input').val();
-            const rate = row.find(`.product-search-container-${rowIndex} .rate-input`).val();
+            const rate = row.find('.rate-input').val();
             
             if (!productName || !rate || parseFloat(rate) <= 0) {
                 validationError = 'Please select a product from the search';
@@ -1102,7 +1105,7 @@ function saveQuotation(callback) {
         } else if (newContainer.is(':visible')) {
             // New product mode
             const productName = row.find('.product-name-manual').val();
-            const rate = row.find(`.product-new-container-${rowIndex} .rate-input`).val();
+            const rate = row.find('.rate-input').val();
             
             if (!productName || !rate || parseFloat(rate) <= 0) {
                 validationError = 'Please enter product name and rate';
@@ -1191,6 +1194,8 @@ function saveQuotation(callback) {
     quotationData.subtotal = parseFloat(subtotalText) || 0;
     quotationData.total = parseFloat(totalText) || 0;
 
+    console.log('Sending quotation data:', quotationData);
+
     fetch('/AdminPanel/api/quotation.php', {
         method: 'POST',
         headers: {
@@ -1198,7 +1203,14 @@ function saveQuotation(callback) {
         },
         body: JSON.stringify(quotationData)
     })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text || `HTTP error! status: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'success') {
                     Swal.fire({
@@ -1228,7 +1240,7 @@ function saveQuotation(callback) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: 'An error occurred while saving the quotation'
+                    text: error.message || 'An error occurred while saving the quotation'
                 });
             });
     }
