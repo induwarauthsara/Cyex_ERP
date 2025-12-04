@@ -83,29 +83,39 @@ if ($result = mysqli_query($con, $invoice_sql)) {
         $total_discount = 0;
         $has_individual_discounts = false;
         
+        // Array to store product details for console logging
+        $products_debug = array();
+        
         while ($row = mysqli_fetch_array($sales_result)) {
             $quantity = $row['qty'];
             $price = $row['rate'];
             $discount_value = $row['discount_price'];
+            $amount = $row['amount']; // This is the final amount from database
             
             $item_total = $price * $quantity;
             $sub_total += $item_total;
             
-            $item_discount = 0;
-            if ($discount_value > 0) {
+            // Calculate actual discount from the difference between item_total and amount
+            $item_discount = $item_total - $amount;
+            
+            if ($item_discount > 0) {
                 if ($individual_discount_mode == 1) {
-                    $item_discount = ($item_total * $discount_value) / 100;
-                    if ($item_discount > 0) {
-                        $has_individual_discounts = true;
-                    }
-                } else {
-                    $item_discount = $discount_value;
+                    $has_individual_discounts = true;
                 }
-                
-                if ($item_discount > 0) {
-                    $total_discount += $item_discount;
-                }
+                $total_discount += $item_discount;
             }
+            
+            // Store product details for debugging
+            $products_debug[] = array(
+                'product' => $row['product'],
+                'qty' => $quantity,
+                'rate' => $price,
+                'discount_value' => $discount_value,
+                'item_total' => $item_total,
+                'item_discount' => $item_discount,
+                'amount' => $row['amount'],
+                'discount_mode' => $individual_discount_mode == 1 ? 'percentage' : 'fixed'
+            );
         }
         
         // Reset the result pointer for later use in HTML
@@ -349,278 +359,11 @@ if ($result = mysqli_query($con, $invoice_sql)) {
 <div id="bill-container" class="bill <?php echo $printType; ?>" <?php echo $showPrintTypeSelector ? 'style="display: none;"' : ''; ?>>
     
     <?php if ($printType === 'standard' || $printType === null): ?>
-    <!-- Standard A5 Layout -->
-    <div class="standard-content a5-container bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200" <?php echo ($printType === 'receipt') ? 'style="display:none;"' : ''; ?>>
-        <div class="flex flex-col h-full">
-            <header>
-                <div class="flex justify-between items-start">
-                    <div class="flex items-center space-x-4">
-                            <!-- Logo Image -->
-                             <img src="../logo.png" alt="Logo" class="h-13 w-13 object-contain">
-                        <div>
-                            <h1 class="text-xl font-bold text-slate-900 dark:text-white"><?php echo $ERP_COMPANY_NAME; ?></h1>
-                            <p class="text-xs text-slate-500 dark:text-slate-400"><?php echo $ERP_COMPANY_ADDRESS; ?></p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400"><?php echo $ERP_COMPANY_PHONE; ?></p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">www.srijaya.lk</p>
-                        </div>
-                    </div>
-                    <div class="text-right pt-5 pr-5">
-                        <h2 class="text-3xl font-bold uppercase text-slate-900 dark:text-white">Invoice</h2>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">No. <?php echo $bill_no; ?></p>
-                    </div>
-                </div>
-                <div class="mt-4 border-t-4 border-primary"></div>
-            </header>
-            <section class="mt-6 grid grid-cols-3 gap-4">
-                <div>
-                    <h3 class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 green-underline">Billed To</h3>
-                    <p class="mt-1 text-xs font-medium text-slate-700 dark:text-slate-300"><?php echo $customer; ?></p>
-                    <p class="text-xs text-slate-600 dark:text-slate-400"><?php echo $tele; ?></p>
-                </div>
-                <div></div>
-                <div class="text-right">
-                    <h3 class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 green-underline">Invoice Details</h3>
-                    <div class="mt-1 space-y-1 text-xs">
-                        <div class="flex justify-end space-x-2">
-                            <span class="text-slate-600 dark:text-slate-400">Date:</span>
-                            <span class="font-medium text-slate-700 dark:text-slate-300"><?php echo $date; ?></span>
-                        </div>
-                        <div class="flex justify-end space-x-2">
-                            <span class="text-slate-600 dark:text-slate-400">Billed by:</span>
-                            <span class="font-medium text-slate-700 dark:text-slate-300"><?php echo $cashier_name; ?></span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section class="mt-8">
-                <div class="flow-root">
-                    <div class="-mx-2 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                        <div class="inline-block min-w-full px-2 py-2 align-middle sm:px-6 lg:px-8">
-                            <table class="min-w-full">
-                                <thead class="border-b-2 border-slate-200 dark:border-slate-700">
-                                    <tr>
-                                        <th class="py-1 pl-2 pr-1 text-left text-xs font-semibold text-slate-900 dark:text-white sm:pl-0" scope="col">Description</th>
-                                        <th class="px-1 py-1 text-right text-xs font-semibold text-slate-900 dark:text-white" scope="col">Price</th>
-                                        <th class="px-1 py-1 text-right text-xs font-semibold text-slate-900 dark:text-white" scope="col">Quantity</th>
-                                        <th class="py-1 pl-1 pr-2 text-right text-xs font-semibold text-slate-900 dark:text-white sm:pr-0" scope="col">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="text-slate-700 dark:text-slate-300">
-                                    <?php
-                                    while ($row = mysqli_fetch_array($sales_result)) {
-                                        $product_name = $row['product'];
-                                        $quantity = $row['qty'];
-                                        $price = $row['rate'];
-                                        $discount_value = $row['discount_price'];
-                                        $amount = $row['amount'];
-                                        
-                                        $item_total = $price * $quantity;
-                                        
-                                        $item_discount = 0;
-                                        if ($discount_value > 0) {
-                                            if ($individual_discount_mode == 1) {
-                                                $item_discount = ($item_total * $discount_value) / 100;
-                                            } else {
-                                                $item_discount = $discount_value;
-                                            }
-                                        }
-                                        
-                                        $has_discount = ($item_discount > 0);
-                                    ?>
-                                    <tr class="border-b border-slate-200 dark:border-slate-800">
-                                        <td class="py-2 pl-2 pr-1 text-sm font-medium sm:pl-0">
-                                            <?php echo $product_name; ?>
-                                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
-                                                <br><span class="text-xs text-green-600 italic">(Disc: <?php echo $individual_discount_mode == 1 ? $discount_value . '%' : number_format($discount_value, 2); ?>)</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="px-1 py-2 text-sm text-right">
-                                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
-                                                <span class="line-through text-xs text-gray-400"><?php echo number_format($price, 2); ?></span><br>
-                                                <span class="font-bold"><?php echo number_format($price - ($item_discount/$quantity), 2); ?></span>
-                                            <?php else: ?>
-                                                <?php echo number_format($price, 2); ?>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="px-1 py-2 text-sm text-right"><?php echo $quantity; ?></td>
-                                        <td class="py-2 pl-1 pr-2 text-sm font-medium text-primary sm:pr-0 text-right"><?php echo number_format($amount, 2); ?></td>
-                                    </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Two-column layout for savings message and summary -->
-                <div class="mt-4 ml-2 grid grid-cols-2 gap-8">
-                    <!-- Left column: You total saved message -->
-                    <div class="flex items-start">
-                        <?php if ($has_individual_discounts && $total_discount > 0 && $individual_discount_mode == 1): ?>
-                            <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border-l-4 border-green-500">
-                                <p class="text-sm font-bold text-green-700 dark:text-green-300">
-                                    🎉 You total saved: Rs.<?php echo number_format($total_discount, 2); ?>
-                                </p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <!-- Right column: Summary table -->
-                    <div>
-                        <table class="min-w-full">
-                            <tbody>
-                                <?php if (($total_discount > 0 || $advance > 0) && !($sub_total == $advance)): ?>
-                                    <tr class="bill-summary-row">
-                                        <th class="pt-2 pl-4 pr-3 text-right text-sm font-normal text-slate-500 dark:text-slate-400 sm:pl-0" colspan="1" scope="row">Sub Total</th>
-                                        <td class="pt-2 pl-3 pr-4 text-right text-sm font-normal text-slate-500 dark:text-slate-400 sm:pr-0"><?php echo number_format($sub_total, 2); ?></td>
-                                    </tr>
-                                    <?php if ($total_discount > 0 && !$has_individual_discounts): ?>
-                                    <tr class="bill-summary-row">
-                                        <th class="pt-1 pl-4 pr-3 text-right text-sm font-normal text-slate-500 dark:text-slate-400 sm:pl-0" colspan="1" scope="row">Discount</th>
-                                        <td class="pt-1 pl-3 pr-4 text-right text-sm font-normal text-green-600 sm:pr-0">-<?php echo number_format($total_discount, 2); ?></td>
-                                    </tr>
-                                    <?php endif; ?>
-                                    <?php if ($advance > 0): ?>
-                                    <tr class="bill-summary-row">
-                                        <th class="pt-1 pl-4 pr-3 text-right text-sm font-normal text-slate-500 dark:text-slate-400 sm:pl-0" colspan="1" scope="row">Advance</th>
-                                        <td class="pt-1 pl-3 pr-4 text-right text-sm font-normal text-slate-500 dark:text-slate-400 sm:pr-0"><?php echo number_format($advance, 2); ?></td>
-                                    </tr>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                                <tr class="bill-summary-row">
-                                    <th class="pt-2 pl-4 pr-3 text-right text-base font-semibold text-slate-900 dark:text-white sm:pl-0" colspan="1" scope="row">Total</th>
-                                    <td class="pt-2 pl-3 pr-4 text-right text-base font-semibold text-primary sm:pr-0"><?php echo number_format($total, 2); ?></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-            <footer class="mt-auto pt-6 text-center">
-                <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">Thank you! Come again.</p>
-                <div class="mt-2 border-t border-slate-200 dark:border-slate-700 pt-2">
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Software by <b>CyexTech Solutions</b></p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Visit: <b>www.CyexTech.com</b></p>
-                </div>
-            </footer>
-        </div>
-    </div>
+        <?php include 'print-standard-template.php'; ?>
     <?php endif; ?>
 
     <?php if ($printType === 'receipt' || $printType === null): ?>
-    <!-- Receipt Layout (Hidden for Standard) -->
-    <div class="receipt-content" <?php echo ($printType === 'standard') ? 'style="display:none;"' : ''; ?>>
-        <div class="header">
-            <div class="logo-img"> <img src="../logo.png" alt="LOGO"> </div>
-            <div class="topic">
-                <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
-                <h2><?php echo $ERP_COMPANY_ADDRESS; ?><br><?php echo $ERP_COMPANY_PHONE; ?></h2>
-            </div>
-        </div>
-        <hr />
-        <div class="details">
-            <div class="Innerdetails">
-                <div style="text-align: left; margin-left: 5px;">
-                    Bill No : <span class="bill-no"><?php echo $bill_no; ?></span> <br>
-                    Date : <?php echo $date; ?>
-                </div>
-                <div style="text-align: right; margin-right: 5px;">
-                    Cashier : <?php echo $cashier_name; ?> <br>
-                    Customer : <?php echo $customer; ?>
-                </div>
-            </div>
-        </div>
-        <div class="content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th class="price">Price</th>
-                        <th class="price">Qty</th>
-                        <th class="price">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // Reset pointer for receipt loop
-                    mysqli_data_seek($sales_result, 0);
-                    while ($row = mysqli_fetch_array($sales_result)) {
-                        $product_name = $row['product'];
-                        $quantity = $row['qty'];
-                        $price = $row['rate'];
-                        $discount_value = $row['discount_price'];
-                        $amount = $row['amount'];
-                        $item_total = $price * $quantity;
-                        
-                        $item_discount = 0;
-                        if ($discount_value > 0) {
-                            if ($individual_discount_mode == 1) {
-                                $item_discount = ($item_total * $discount_value) / 100;
-                            } else {
-                                $item_discount = $discount_value;
-                            }
-                        }
-                        $has_discount = ($item_discount > 0);
-                        $display_price = number_format($price, 2);
-                        $display_amount = number_format($amount, 2);
-                    ?>
-                    <tr class="product-row">
-                        <td>
-                            <?php echo $product_name; ?>
-                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
-                                <br><small><i>(Disc: <?php echo $individual_discount_mode == 1 ? $discount_value . '%' : number_format($discount_value, 2); ?>)</i></small>
-                            <?php endif; ?>
-                        </td>
-                        <td class="price">
-                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
-                                <span class="promotion"><?php echo number_format($price, 2); ?></span><br>
-                                <span class="discount-price"><?php echo number_format($price - ($item_discount/$quantity), 2); ?></span>
-                            <?php else: ?>
-                                <?php echo $display_price; ?>
-                            <?php endif; ?>
-                        </td>
-                        <td class="price"><?php echo $quantity; ?></td>
-                        <td class="price"><?php echo $display_amount; ?></td>
-                    </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-            <?php if ($has_individual_discounts && $total_discount > 0 && $individual_discount_mode == 1): ?>
-                <div style="text-align: center; margin: 10px 0; padding: 8px; background-color: #f0f9ff; border: 1px dashed #22c55e; border-radius: 5px;">
-                    <strong style="color: #22c55e; font-size: 14px;">🎉 You total saved: Rs.<?php echo number_format($total_discount, 2); ?></strong>
-                </div>
-            <?php endif; ?>
-            <table>
-                <tfoot class="total-summary">
-                    <?php if (!($sub_total == $advance)): ?>
-                    <tr>
-                        <td colspan="3" class="bill_sum">Sub Total :</td>
-                        <td class="bill_sum"><?php echo number_format($sub_total, 2); ?></td>
-                    </tr>
-                    <?php endif; ?>
-                    <?php if ($total_discount > 0 && !$has_individual_discounts): ?>
-                    <tr>
-                        <td colspan="3" class="bill_sum">Discount :</td>
-                        <td class="bill_sum">-<?php echo number_format($total_discount, 2); ?></td>
-                    </tr>
-                    <?php endif; ?>
-                    <tr class="final-total">
-                        <td colspan="3" class="bill_sum">Total :</td>
-                        <td class="bill_sum"><?php echo number_format($total, 2); ?></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-        <div class="payment-method">
-            Payment: <?php echo $payment_method; ?>
-        </div>
-        <div class="thank-you">
-            Thank you! Come again.
-        </div>
-        <div class="footer">
-            Software by <b>CyexTech Solutions</b> <br /> Visit : <b>www.CyexTech.com</b>
-        </div>
-    </div>
+        <?php include 'print-receipt-template.php'; ?>
     <?php endif; ?>
 
 </div>
@@ -675,6 +418,52 @@ if ($result = mysqli_query($con, $invoice_sql)) {
             window.print();
         }, 500);
     }
+    
+    // Console log all data for debugging
+    console.log('=== INVOICE DEBUG DATA ===');
+    console.log('Invoice Number:', '<?php echo $bill_no; ?>');
+    console.log('Customer:', '<?php echo addslashes($customer); ?>');
+    console.log('Telephone:', '<?php echo $tele; ?>');
+    console.log('Date:', '<?php echo $date; ?>');
+    console.log('Cashier ID:', '<?php echo $biller_id; ?>');
+    console.log('Cashier Name:', '<?php echo addslashes($cashier_name); ?>');
+    console.log('Payment Method:', '<?php echo $payment_method; ?>');
+    console.log('---');
+    console.log('Sub Total:', <?php echo $sub_total; ?>);
+    console.log('Discount:', <?php echo $discount; ?>);
+    console.log('Total:', <?php echo $total; ?>);
+    console.log('Advance:', <?php echo $advance; ?>);
+    console.log('Balance:', <?php echo $balance; ?>);
+    console.log('Amount Received:', <?php echo $amount_received; ?>);
+    console.log('Cash Change:', <?php echo $cash_change; ?>);
+    console.log('Full Paid:', <?php echo $full_paid; ?>);
+    console.log('---');
+    console.log('Individual Discount Mode:', <?php echo $individual_discount_mode; ?>);
+    console.log('Has Individual Discounts:', <?php echo $has_individual_discounts ? 'true' : 'false'; ?>);
+    console.log('Total Discount Calculated:', <?php echo $total_discount; ?>);
+    console.log('---');
+    console.log('Print Type:', '<?php echo $printType; ?>');
+    console.log('Show Selector:', <?php echo $showPrintTypeSelector ? 'true' : 'false'; ?>);
+    console.log('=========================');
+    
+    // Console log individual products
+    console.log('=== PRODUCTS DETAILS ===');
+    const products = <?php echo json_encode($products_debug); ?>;
+    console.table(products);
+    console.log('Total Products:', products.length);
+    products.forEach((product, index) => {
+        console.log(`\nProduct ${index + 1}:`);
+        console.log('  Name:', product.product);
+        console.log('  Quantity:', product.qty);
+        console.log('  Rate:', product.rate);
+        console.log('  Item Total:', product.item_total);
+        console.log('  Discount Value:', product.discount_value);
+        console.log('  Discount Mode:', product.discount_mode);
+        console.log('  Item Discount:', product.item_discount);
+        console.log('  Final Amount:', product.amount);
+    });
+    console.log('========================');
+
 </script>
 </body>
 </html>
