@@ -92,17 +92,20 @@ if ($result = mysqli_query($con, $invoice_sql)) {
             $sub_total += $item_total;
             
             $item_discount = 0;
-            if ($individual_discount_mode == 1) {
-                $item_discount = ($item_total * $discount_value) / 100;
-            } else {
-                $item_discount = $discount_value;
+            if ($discount_value > 0) {
+                if ($individual_discount_mode == 1) {
+                    $item_discount = ($item_total * $discount_value) / 100;
+                    if ($item_discount > 0) {
+                        $has_individual_discounts = true;
+                    }
+                } else {
+                    $item_discount = $discount_value;
+                }
+                
+                if ($item_discount > 0) {
+                    $total_discount += $item_discount;
+                }
             }
-            
-            if ($item_discount > 0) {
-                $has_individual_discounts = true;
-            }
-            
-            $total_discount += $item_discount;
         }
         
         // Reset the result pointer for later use in HTML
@@ -414,10 +417,12 @@ if ($result = mysqli_query($con, $invoice_sql)) {
                                         $item_total = $price * $quantity;
                                         
                                         $item_discount = 0;
-                                        if ($individual_discount_mode == 1) {
-                                            $item_discount = ($item_total * $discount_value) / 100;
-                                        } else {
-                                            $item_discount = $discount_value;
+                                        if ($discount_value > 0) {
+                                            if ($individual_discount_mode == 1) {
+                                                $item_discount = ($item_total * $discount_value) / 100;
+                                            } else {
+                                                $item_discount = $discount_value;
+                                            }
                                         }
                                         
                                         $has_discount = ($item_discount > 0);
@@ -425,12 +430,12 @@ if ($result = mysqli_query($con, $invoice_sql)) {
                                     <tr class="border-b border-slate-200 dark:border-slate-800">
                                         <td class="py-2 pl-2 pr-1 text-sm font-medium sm:pl-0">
                                             <?php echo $product_name; ?>
-                                            <?php if ($has_discount): ?>
+                                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
                                                 <br><span class="text-xs text-green-600 italic">(Disc: <?php echo $individual_discount_mode == 1 ? $discount_value . '%' : number_format($discount_value, 2); ?>)</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="px-1 py-2 text-sm text-right">
-                                            <?php if ($has_discount): ?>
+                                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
                                                 <span class="line-through text-xs text-gray-400"><?php echo number_format($price, 2); ?></span><br>
                                                 <span class="font-bold"><?php echo number_format($price - ($item_discount/$quantity), 2); ?></span>
                                             <?php else: ?>
@@ -451,7 +456,7 @@ if ($result = mysqli_query($con, $invoice_sql)) {
                 <div class="mt-4 ml-2 grid grid-cols-2 gap-8">
                     <!-- Left column: You total saved message -->
                     <div class="flex items-start">
-                        <?php if ($has_individual_discounts && $total_discount > 0): ?>
+                        <?php if ($has_individual_discounts && $total_discount > 0 && $individual_discount_mode == 1): ?>
                             <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border-l-4 border-green-500">
                                 <p class="text-sm font-bold text-green-700 dark:text-green-300">
                                     🎉 You total saved: Rs.<?php echo number_format($total_discount, 2); ?>
@@ -548,10 +553,12 @@ if ($result = mysqli_query($con, $invoice_sql)) {
                         $item_total = $price * $quantity;
                         
                         $item_discount = 0;
-                        if ($individual_discount_mode == 1) {
-                            $item_discount = ($item_total * $discount_value) / 100;
-                        } else {
-                            $item_discount = $discount_value;
+                        if ($discount_value > 0) {
+                            if ($individual_discount_mode == 1) {
+                                $item_discount = ($item_total * $discount_value) / 100;
+                            } else {
+                                $item_discount = $discount_value;
+                            }
                         }
                         $has_discount = ($item_discount > 0);
                         $display_price = number_format($price, 2);
@@ -560,12 +567,12 @@ if ($result = mysqli_query($con, $invoice_sql)) {
                     <tr class="product-row">
                         <td>
                             <?php echo $product_name; ?>
-                            <?php if ($has_discount): ?>
+                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
                                 <br><small><i>(Disc: <?php echo $individual_discount_mode == 1 ? $discount_value . '%' : number_format($discount_value, 2); ?>)</i></small>
                             <?php endif; ?>
                         </td>
                         <td class="price">
-                            <?php if ($has_discount): ?>
+                            <?php if ($has_discount && $individual_discount_mode == 1): ?>
                                 <span class="promotion"><?php echo number_format($price, 2); ?></span><br>
                                 <span class="discount-price"><?php echo number_format($price - ($item_discount/$quantity), 2); ?></span>
                             <?php else: ?>
@@ -578,7 +585,7 @@ if ($result = mysqli_query($con, $invoice_sql)) {
                     <?php } ?>
                 </tbody>
             </table>
-            <?php if ($has_individual_discounts && $total_discount > 0): ?>
+            <?php if ($has_individual_discounts && $total_discount > 0 && $individual_discount_mode == 1): ?>
                 <div style="text-align: center; margin: 10px 0; padding: 8px; background-color: #f0f9ff; border: 1px dashed #22c55e; border-radius: 5px;">
                     <strong style="color: #22c55e; font-size: 14px;">🎉 You total saved: Rs.<?php echo number_format($total_discount, 2); ?></strong>
                 </div>
