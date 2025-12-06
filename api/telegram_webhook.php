@@ -10,6 +10,9 @@ require_once(__DIR__ . '/../inc/TelegramService.php');
 
 // 1. Get incoming update
 $content = file_get_contents("php://input");
+// DEBUG LOGGING
+file_put_contents(__DIR__ . '/webhook_debug_log.txt', date('Y-m-d H:i:s') . " - " . $content . "\n", FILE_APPEND);
+
 $update = json_decode($content, true);
 
 if (!$update) {
