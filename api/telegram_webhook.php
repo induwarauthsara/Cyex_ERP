@@ -37,13 +37,55 @@ $is_private = (isset($message['chat']['type']) && $message['chat']['type'] === '
 if ($is_private) {
     $res = mysqli_query($con, "SELECT setting_value FROM telegram_config WHERE setting_key = 'allow_dm'");
     $setting = mysqli_fetch_assoc($res);
+<?php
+/**
+ * telegram_webhook.php
+ * Receives incoming updates from Telegram (Commands & Messages)
+ */
+
+// Include Config & Service
+require_once(__DIR__ . '/../inc/config.php');
+require_once(__DIR__ . '/../inc/TelegramService.php');
+
+// 1. Get incoming update
+$content = file_get_contents("php://input");
+// DEBUG LOGGING
+file_put_contents(__DIR__ . '/webhook_debug_log.txt', date('Y-m-d H:i:s') . " - " . $content . "\n", FILE_APPEND);
+
+$update = json_decode($content, true);
+
+if (!$update) {
+    echo "Srijaya ERP Telegram Webhook is Active.";
+    exit;
+}
+
+// 2. Initialize Service
+$tg = new TelegramService($con);
+
+// 3. Extract Message Details
+$message = $update['message'] ?? null;
+if (!$message) exit;
+
+$chat_id = $message['chat']['id'];
+$text = $message['text'] ?? '';
+$message_id = $message['message_id'];
+$thread_id = $message['message_thread_id'] ?? null;
+
+// Check DM Permission (Private Chat Block)
+$is_private = (isset($message['chat']['type']) && $message['chat']['type'] === 'private');
+if ($is_private) {
+    $res = mysqli_query($con, "SELECT setting_value FROM telegram_config WHERE setting_key = 'allow_dm'");
+    $setting = mysqli_fetch_assoc($res);
     // Exit if allow_dm is not '1'
     if (!$setting || $setting['setting_value'] !== '1') {
          exit; 
     }
 }
 
-// Only process commands starting with /
+// 4. Logic Router
+$response = "";
+
+// A. COMMANDS (Start with /)
 if (strpos($text, '/') === 0) {
     
     // Clean command (handle /command@BotName)
@@ -52,8 +94,6 @@ if (strpos($text, '/') === 0) {
     if (strpos($command, '@') !== false) {
         $command = substr($command, 0, strpos($command, '@'));
     }
-
-    $response = "";
 
     switch ($command) {
         case '/start':
@@ -66,11 +106,11 @@ if (strpos($text, '/') === 0) {
             $response .= "/cash - Current Cash in Hand\n";
             $response .= "/pending - Outstanding Customer Credit\n\n";
 
-            $response .= "<b>� Inventory & Stock</b>\n";
+            $response .= "<b>📦 Inventory & Stock</b>\n";
             $response .= "/stock - Inventory Statistics\n";
             $response .= "/lowstock - ⚠️ Low Stock Alert List\n\n";
 
-            $response .= "<b>� Team & Ops</b>\n";
+            $response .= "<b>👥 Team & Ops</b>\n";
             $response .= "/staff - Today's Staff Attendance\n\n";
 
             $response .= "<i>Tap any command above to get instant insights.</i>";
@@ -139,7 +179,7 @@ if (strpos($text, '/') === 0) {
             
             $response = "⏳ <b>Outstanding Credit</b>\n\n";
             $response .= "💵 Total Due: <b>Rs. " . number_format($row['total_due'] ?? 0, 2) . "</b>\n";
-            $response .= "busts_in_silhouette Invoices with Dues: <b>" . ($row['count'] ?? 0) . "</b>\n\n";
+            $response .= "👥 Invoices with Dues: <b>" . ($row['count'] ?? 0) . "</b>\n\n";
             $response .= "<i>Use Admin Panel > Reports for details.</i>";
             break;
 
@@ -207,9 +247,21 @@ if (strpos($text, '/') === 0) {
             break;
     }
 
-    // Send Reply
-    if ($response) {
-        $tg->sendToChat($chat_id, $response, $message_id, $thread_id);
+} else {
+    // B. NATURAL LANGUAGE (Hi/Hello)
+    $clean_text = strtolower(trim($text));
+    $greetings = ['hi', 'hello', 'hey', 'start', 'ping', 'test'];
+    
+    if (in_array($clean_text, $greetings)) {
+         $response = "👋 <b>Hello! I am Srijaya Bot.</b>\n\n";
+         $response .= "Apps are boring, Text me to manage your business! 🚀\n\n";
+         $response .= "<b>Try typing:</b>\n";
+         $response .= "/start - Open Main Menu";
     }
+}
+
+// 5. Send Reply
+if ($response) {
+    $tg->sendToChat($chat_id, $response, $message_id, $thread_id);
 }
 ?>
