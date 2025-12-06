@@ -93,6 +93,52 @@ class TelegramService {
     }
 
     /**
+     * Test Connectivity
+     * Returns ['status' => bool, 'bot_name' => str, 'message' => str]
+     */
+    public function testConnection($token, $chat_id) {
+        // 1. Check Bot validity
+        $url = "https://api.telegram.org/bot" . $token . "/getMe";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        
+        $json = json_decode($res, true);
+        if (!$json || !$json['ok']) {
+            return ['status' => false, 'message' => 'Invalid Bot Token'];
+        }
+        
+        $bot_name = $json['result']['first_name'] . " (@" . $json['result']['username'] . ")";
+        
+        // 2. Try to send a message
+        $msgUrl = "https://api.telegram.org/bot" . $token . "/sendMessage";
+        $msgData = [
+            'chat_id' => $chat_id,
+            'text' => "✅ <b>Integration Successful!</b>\n\nHello from Srijaya ERP. Example topic mapping: General.",
+            'parse_mode' => 'HTML'
+        ];
+        
+        // Use raw curl since we are using a custom token, not the stored one
+        $ch2 = curl_init();
+        curl_setopt($ch2, CURLOPT_URL, $msgUrl);
+        curl_setopt($ch2, CURLOPT_POST, 1);
+        curl_setopt($ch2, CURLOPT_POSTFIELDS, $msgData);
+        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+        $msgRes = curl_exec($ch2);
+        curl_close($ch2);
+        
+        $msgJson = json_decode($msgRes, true);
+        
+        if ($msgJson && $msgJson['ok']) {
+            return ['status' => true, 'bot_name' => $bot_name];
+        } else {
+            return ['status' => false, 'message' => 'Bot valid, but cannot message Chat ID. Ensure Bot is Admin in Group. Error: ' . ($msgJson['description'] ?? 'Unknown')];
+        }
+    }
+
+    /**
      * Helper to make POST requests
      */
     private function curlPost($url, $data) {
