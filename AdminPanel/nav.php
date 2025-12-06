@@ -56,6 +56,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             name: "Reports",
             icon: "fas fa-table-list"
         },
+        "/AdminPanel/expenses/": {
+            name: "Expenses",
+            icon: "fas fa-receipt"
+        },
         "/suppliers/": {
             name: "Suppliers",
             icon: "fas fa-truck"
@@ -63,10 +67,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         "/AdminPanel/due_payments.php": {
             name: "Due Payments",
             icon: "fas fa-credit-card"
-        },
-        "/AdminPanel/utility_payments.php": {
-            name: "Utility Payments",
-            icon: "fas fa-file-invoice"
         },
         "/AdminPanel/hrm/viewPayrolls.php": {
             name: "Salary Payrolls",

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../inc/config.php';
+require_once '../../api/v1/expenses/sync_salary_expense.php';
 
 echo "Starting auto clock-out cron job at " . date('Y-m-d H:i:s') . "\n";
 
@@ -93,6 +94,9 @@ if ($result) {
                     $sql = "UPDATE employees SET salary = salary + '$DaySalary' WHERE employ_id = '$employee_id'";
                     insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today", "Auto Update Employee Day Salary by Cronjob");
                     
+                    // Sync with expenses
+                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    
                 } elseif ($emp_worked_hours < $WorkingDayHours) {
                     $pay_amount = $emp_worked_hours * $HourSalary;
                     $emp_worked_hours_formatted = number_format($emp_worked_hours, 2);
@@ -105,6 +109,9 @@ if ($result) {
                     insert_query($sql, "Employee Name : $employee_name , Salary : $pay_amount , Day : $today, Worked Hours : $emp_worked_hours_formatted", "Auto Update Employee Day Salary by Cronjob");
                     $DaySalary = $pay_amount;
                     
+                    // Sync with expenses
+                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    
                 } else {
                     // Overtime - still pay full salary but log it
                     $emp_worked_hours_formatted = number_format($emp_worked_hours, 2);
@@ -115,6 +122,9 @@ if ($result) {
                     
                     $sql = "UPDATE employees SET salary = salary + '$DaySalary' WHERE employ_id = '$employee_id'";
                     insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today, Overtime Hours : $emp_worked_hours_formatted", "Auto Update Employee Day Salary (Overtime) by Cronjob");
+                    
+                    // Sync with expenses
+                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
                 }
 
                 // Deduct salary from Company Profit

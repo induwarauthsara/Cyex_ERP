@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../inc/config.php';
+require_once '../../api/v1/expenses/sync_salary_expense.php';
 
 if (isset($_SESSION['employee_id']) && isset($_GET['action']) && ($_GET['action'] == 'Clock In' || $_GET['action'] == 'Clock Out')) {
     $employee_id = $_SESSION['employee_id'];
@@ -132,6 +133,9 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) && ($_GET['action'
                         if ($DaySalary && $DaySalary > 0) {
                             $sql = "UPDATE accounts SET amount = amount - '{$DaySalary}' WHERE account_name = 'Company Profit'";
                             insert_query($sql, "Fall $employee_name's Day Salary from Company Profit : Rs. $DaySalary", "Fall Employee Day Salary from Company Profit Account");
+                            
+                            // Sync with expenses
+                            syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
                         }
                 } else {
                     error_log("Could not calculate salary - missing clock in or clock out time for employee: $employee_name");

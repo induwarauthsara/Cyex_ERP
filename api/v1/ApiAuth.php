@@ -196,4 +196,34 @@ class ApiAuth {
         $_SESSION['employee_name'] = $userData['employee_name'];
         $_SESSION['employee_role'] = $userData['employee_role'];
     }
+
+    /**
+     * Authenticate user and return result array (Non-blocking)
+     * Used by newer API endpoints that handle errors manually
+     * 
+     * @return array ['success' => bool, 'message' => string, 'user' => array]
+     */
+    public static function authenticate() {
+        $token = self::getTokenFromRequest();
+        
+        if (!$token) {
+            return ['success' => false, 'message' => 'Authentication token required'];
+        }
+        
+        $userData = self::validateToken($token);
+        
+        if (!$userData) {
+            return ['success' => false, 'message' => 'Invalid or expired token'];
+        }
+        
+        // Return structured data expected by expenses module
+        return [
+            'success' => true,
+            'user' => [
+                'id' => $userData['employee_id'],
+                'name' => $userData['employee_name'],
+                'role' => $userData['employee_role']
+            ]
+        ];
+    }
 }

@@ -11,6 +11,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../ApiResponse.php';
 require_once __DIR__ . '/../ApiAuth.php';
+require_once __DIR__ . '/../expenses/sync_salary_expense.php';
 
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -156,6 +157,9 @@ if ($action === 'Clock Out') {
                 
                 mysqli_query($con, "UPDATE employees SET salary = salary + $daySalary WHERE employ_id = $employeeId");
                 
+                // Sync with expenses
+                syncSalaryExpense($employeeId, $employeeName, date('Y-m'));
+                
             } elseif ($hoursWorked < $workingDayHours) {
                 // Partial salary based on hours
                 $hourSalary = $daySalary / $workingDayHours;
@@ -169,6 +173,9 @@ if ($action === 'Clock Out') {
                 );
                 
                 mysqli_query($con, "UPDATE employees SET salary = salary + $salaryPaid WHERE employ_id = $employeeId");
+                
+                // Sync with expenses
+                syncSalaryExpense($employeeId, $employeeName, date('Y-m'));
             }
             
             $salaryInfo = [

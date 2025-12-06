@@ -27,6 +27,7 @@
    - [Suppliers (Admin)](#supplier-endpoints)
    - [Stock Management (Admin)](#stock-management-endpoints)
    - [GRN - Goods Received Notes (Admin)](#grn-endpoints)
+   - [Expenses Management](#expenses-endpoints)
 6. [Rate Limiting](#rate-limiting)
 7. [Code Examples](#code-examples)
 
@@ -4162,6 +4163,509 @@ GET /api/v1/grn/get_suppliers.php?search=ABC&page=1&limit=20
 8. **Validation**: Validate all required fields before submission
 9. **Error Handling**: Show user-friendly error messages
 10. **Success Feedback**: Show success message and GRN number after creation
+
+---
+
+## Expenses Endpoints
+
+### 1. categories Management
+
+#### 1.1 Get All Categories
+
+**Endpoint:** `GET /api/v1/expenses/categories.php`
+
+Retrieves all active expense categories.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Categories retrieved successfully",
+  "data": [
+    {
+      "category_id": 1,
+      "category_name": "Rent",
+      "description": "Monthly office/shop rent payments",
+      "color_code": "#FF6B6B",
+      "icon": "home",
+      "status": 1,
+      "created_at": "2025-01-01 10:00:00"
+    },
+    {
+      "category_id": 2,
+      "category_name": "Utilities",
+      "description": "Electricity, water, internet bills",
+      "color_code": "#4ECDC4",
+      "icon": "bolt",
+      "status": 1,
+      "created_at": "2025-01-01 10:00:00"
+    }
+  ],
+  "meta": {
+    "total_count": 10
+  }
+}
+```
+
+#### 1.2 Add New Category
+
+**Endpoint:** `POST /api/v1/expenses/add_category.php`
+
+Creates a new expense category.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "category_name": "Insurance",
+  "description": "Insurance premiums and coverage",
+  "color_code": "#9B59B6",
+  "icon": "shield-alt"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Category created successfully",
+  "data": {
+    "category_id": 11,
+    "category_name": "Insurance",
+    "description": "Insurance premiums and coverage",
+    "color_code": "#9B59B6",
+    "icon": "shield-alt",
+    "status": 1,
+    "created_at": "2025-12-06 14:30:00"
+  }
+}
+```
+
+### 2. Expense Management
+
+#### 2.1 Add Expense
+
+**Endpoint:** `POST /api/v1/expenses/add.php`
+
+Creates a new expense (one-time or recurring).
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body (One-Time Expense):**
+```json
+{
+  "expense_type": "one_time",
+  "title": "Office Supplies - Printer Paper",
+  "amount": 5500.00,
+  "category_id": 5,
+  "expense_date": "2025-12-06 10:30:00",
+  "payment_method": "bank_transfer",
+  "status": "unpaid",
+  "reference_no": "INV-2025-001",
+  "notes": "Bulk purchase for quarter"
+}
+```
+
+**Request Body (Recurring Expense):**
+```json
+{
+  "expense_type": "recurring",
+  "title": "Monthly Office Rent",
+  "amount": 50000.00,
+  "category_id": 1,
+  "frequency": "monthly",
+  "start_date": "2025-12-01",
+  "payment_method": "bank_transfer",
+  "remind_days_before": 5,
+  "end_date": null
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Expense created successfully",
+  "data": {
+    "expense_id": 156,
+    "reference_no": "INV-2025-001",
+    "title": "Office Supplies - Printer Paper",
+    "amount": 5500.00,
+    "amount_paid": 0.00,
+    "remaining_amount": 5500.00,
+    "category_id": 5,
+    "expense_date": "2025-12-06 10:30:00",
+    "payment_method": "bank_transfer",
+    "status": "unpaid",
+    "created_at": "2025-12-06 14:35:00"
+  }
+}
+```
+
+#### 2.2 List Expenses
+
+**Endpoint:** `GET /api/v1/expenses/list.php`
+
+Retrieves expenses with advanced filtering and pagination.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+
+- `start_date`: Filter from date (Y-m-d)
+- `end_date`: Filter to date (Y-m-d)
+- `category_id`: Filter by category
+- `status`: 'paid', 'partial', 'unpaid', 'overdue'
+- `payment_method`: Filter by payment method
+- `search`: Search in title or reference_no
+- `limit`: Records per page (default: 50, max: 500)
+- `offset`: Pagination offset (default: 0)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Expenses retrieved successfully",
+  "data": [
+    {
+      "expense_id": 145,
+      "reference_no": "RENT-2025-12",
+      "title": "Monthly Office Rent - December",
+      "amount": 50000.00,
+      "amount_paid": 30000.00,
+      "remaining_amount": 20000.00,
+      "payment_percentage": 60.00,
+      "category": {
+        "category_id": 1,
+        "category_name": "Rent",
+        "color_code": "#FF6B6B",
+        "icon": "home"
+      },
+      "expense_date": "2025-12-01 00:00:00",
+      "payment_method": "bank_transfer",
+      "status": "partial",
+      "is_recurring": true,
+      "recurring_ref_id": 5,
+      "attachment_url": null,
+      "notes": "Monthly rent for main office",
+      "created_by": {
+        "id": 1,
+        "name": "Admin User"
+      },
+      "created_at": "2025-12-01 08:00:00"
+    }
+  ],
+  "meta": {
+    "total_count": 48,
+    "returned_count": 25,
+    "limit": 25,
+    "offset": 0,
+    "has_more": true
+  }
+}
+```
+
+#### 2.3 Update Expense
+
+**Endpoint:** `PUT /api/v1/expenses/update.php`
+
+Updates an existing expense.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "expense_id": 156,
+  "title": "Office Supplies - Printer Paper & Toner",
+  "amount": 6500.00,
+  "category_id": 5,
+  "payment_method": "cash",
+  "notes": "Added toner cartridges"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Expense updated successfully",
+  "data": {
+    "expense_id": 156,
+    "title": "Office Supplies - Printer Paper & Toner",
+    "amount": 6500.00,
+    "updated_at": "2025-12-06 15:00:00"
+  }
+}
+```
+
+#### 2.4 Delete Expense
+
+**Endpoint:** `DELETE /api/v1/expenses/delete.php`
+
+Deletes an expense and all associated payment records.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "expense_id": 156
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Expense deleted successfully"
+}
+```
+
+### 3. Recurring Expenses
+
+#### 3.1 List Recurring Expenses
+
+**Endpoint:** `GET /api/v1/expenses/recurring.php`
+
+Retrieves all active recurring expense templates.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Recurring expenses retrieved successfully",
+  "data": [
+    {
+      "recurring_id": 5,
+      "title": "Monthly Office Rent",
+      "amount": 50000.00,
+      "category": {
+        "category_id": 1,
+        "category_name": "Rent",
+        "color_code": "#FF6B6B",
+        "icon": "home"
+      },
+      "frequency": "monthly",
+      "start_date": "2025-01-01",
+      "next_due_date": "2026-01-01",
+      "end_date": null,
+      "payment_method": "bank_transfer",
+      "remind_days_before": 5,
+      "is_active": true,
+      "created_at": "2025-01-01 08:00:00"
+    }
+  ]
+}
+```
+
+#### 3.2 Pay Recurring Expense
+
+**Endpoint:** `POST /api/v1/expenses/pay_recurring.php`
+
+Creates an expense record from a recurring template and updates next due date.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "recurring_id": 5,
+  "payment_date": "2025-12-06",
+  "payment_method": "bank_transfer",
+  "reference_no": "RENT-DEC-2025",
+  "notes": "December rent payment"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Recurring payment recorded successfully",
+  "data": {
+    "expense_id": 157,
+    "title": "Monthly Office Rent",
+    "amount": 50000.00,
+    "recurring_ref_id": 5,
+    "next_due_date": "2026-01-01"
+  }
+}
+```
+
+### 4. Payment Tracking
+
+#### 4.1 Add Payment
+
+**Endpoint:** `POST /api/v1/expenses/add_payment.php`
+
+Records a partial or full payment against an expense.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "expense_id": 145,
+  "payment_amount": 15000.00,
+  "payment_date": "2025-12-06",
+  "payment_method": "bank_transfer",
+  "reference_no": "TXN-20251206-001",
+  "notes": "Second installment payment"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Payment recorded successfully",
+  "data": {
+    "payment_id": 78,
+    "expense_id": 145,
+    "payment_amount": 15000.00,
+    "total_amount": 50000.00,
+    "amount_paid": 45000.00,
+    "remaining_amount": 5000.00,
+    "payment_percentage": 90.00,
+    "status": "partial",
+    "payment_date": "2025-12-06 00:00:00"
+  }
+}
+```
+
+#### 4.2 Get Payment History
+
+**Endpoint:** `GET /api/v1/expenses/payment_history.php`
+
+Retrieves all payment transactions for a specific expense.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+- `expense_id`: ID of the expense (required)
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Payment history retrieved successfully",
+  "data": {
+    "expense": {
+      "expense_id": 145,
+      "title": "Monthly Office Rent - December",
+      "total_amount": 50000.00,
+      "amount_paid": 45000.00,
+      "remaining_amount": 5000.00,
+      "payment_percentage": 90.00,
+      "status": "partial"
+    },
+    "payments": [
+      {
+        "payment_id": 75,
+        "payment_amount": 20000.00,
+        "payment_date": "2025-12-01 00:00:00",
+        "payment_method": "bank_transfer",
+        "reference_no": "TXN-001",
+        "notes": "First installment",
+        "created_by": {
+          "id": 1,
+          "name": "Admin User"
+        },
+        "created_at": "2025-12-01 10:00:00"
+      }
+    ],
+    "summary": {
+      "total_payments": 1,
+      "total_paid": 20000.00,
+      "remaining": 30000.00,
+      "is_fully_paid": false
+    }
+  }
+}
+```
+
+### 5. Dashboard & Analytics
+
+#### 5.1 Get Dashboard Summary
+
+**Endpoint:** `GET /api/v1/expenses/summary.php`
+
+Retrieves comprehensive dashboard data including totals, category breakdown, and payment status overview.
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Dashboard summary retrieved successfully",
+  "data": {
+    "totals": {
+      "current_month": 125000.00,
+      "current_month_paid": 95000.00,
+      "current_month_unpaid": 30000.00,
+      "last_month": 108500.00,
+      "year_to_date": 850000.00
+    },
+    "category_breakdown": [
+      {
+        "category_id": 1,
+        "category_name": "Rent",
+        "color_code": "#FF6B6B",
+        "icon": "home",
+        "total_amount": 50000.00,
+        "transaction_count": 1,
+        "percentage": 40.00
+      }
+    ]
+  }
+}
+```
 
 ---
 

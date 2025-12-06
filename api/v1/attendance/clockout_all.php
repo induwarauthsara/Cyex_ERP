@@ -12,6 +12,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../ApiResponse.php';
 require_once __DIR__ . '/../ApiAuth.php';
+require_once __DIR__ . '/../expenses/sync_salary_expense.php';
 
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -129,6 +130,9 @@ try {
                     
                     $salary_paid = $DaySalary;
                     
+                    // Sync with expenses
+                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    
                 } elseif ($emp_worked_hours < $WorkingDayHours) {
                     $pay_amount = $emp_worked_hours * $HourSalary;
                     $emp_worked_hours_formatted = number_format($emp_worked_hours, 2);
@@ -142,6 +146,9 @@ try {
                     
                     $salary_paid = $pay_amount;
                     
+                    // Sync with expenses
+                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    
                 } else {
                     // Overtime - still pay full salary but log it
                     $emp_worked_hours_formatted = number_format($emp_worked_hours, 2);
@@ -153,6 +160,9 @@ try {
                     insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today, Overtime Hours : $emp_worked_hours_formatted", "Update Employee Day Salary (Overtime) by Admin via API");
                     
                     $salary_paid = $DaySalary;
+                    
+                    // Sync with expenses
+                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
                 }
 
                 // Deduct salary from Company Profit

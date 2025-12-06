@@ -12,6 +12,7 @@ require_once('../config.php');
 require_once('../ApiResponse.php');
 require_once('../ApiAuth.php');
 require_once('../../../inc/config.php');
+require_once('../expenses/sync_salary_expense.php');
 
 // Authenticate and require admin role
 $user = ApiAuth::requireAuth();
@@ -132,11 +133,19 @@ try {
             throw new Exception("Failed to log transaction");
         }
         
+        // 5. Sync to Expense Management System
+        $current_month = date('Y-m');
+        $sync_result = syncSalaryExpense($con, $employee_id, $employee['emp_name'], $current_month);
+        
+        // Add payment to expense_payments table
+        $expense_id = $sync_result['expense_id'];
+        $payment_id = addSalaryPayment($con, $expense_id, $amount, $account, 'Salary Payment', $user['employee_id']);
+        
         // Commit transaction
         mysqli_commit($con);
         
         // Return success
-        ApiResponse::success('Salary paid successfully', [
+        ApiResponse::success([
             'employee' => [
                 'id' => $employee_id,
                 'name' => $employee['emp_name']
@@ -148,8 +157,14 @@ try {
                 'id' => $user['employee_id'],
                 'name' => $user['employee_name']
             ],
-            'paid_at' => date('Y-m-d H:i:s')
-        ], 201);
+            'paid_at' => date('Y-m-d H:i:s'),
+            'expense_sync' => [
+                'expense_id' => $expense_id,
+                'payment_id' => $payment_id,
+                'monthly_earned' => $sync_result['monthly_earned'],
+                'monthly_paid' => $sync_result['monthly_paid'] + $amount
+            ]
+        ], 'Salary paid successfully', 201);
         
     } catch (Exception $e) {
         mysqli_rollback($con);

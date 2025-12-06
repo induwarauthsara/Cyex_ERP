@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        
+        .endpoint-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .endpoint-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .method-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .get {
+            background: #3498db;
+            color: white;
+        }
+        
+        .post {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .put {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .delete {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        .response {
+            margin-top: 15px;
+            padding: 15px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+        }
+        
+        .response.show {
+            display: block;
+        }
+        
+        input,
+        select,
+        textarea {
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .form-group label {
+            display: inline-block;
+            width: 150px;
+            font-weight: 500;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Expenses Management API Tester</h1>
+        <p style="color: #7f8c8d; margin-bottom: 30px;">Test all API endpoints for the Expenses Management module</p>
+
+        <!-- Token Section -->
+        <div class="endpoint-section" style="border-left-color: #2ecc71;">
+            <h3>🔑 Authentication</h3>
+            <div class="form-group">
+                <label>JWT Token:</label>
+                <input type="text" id="jwt-token" placeholder="Paste JWT Token here..." style="width: 100%;">
+            </div>
+            <button onclick="loadTokenFromStorage()" style="background: #2ecc71;">Load from LocalStorage</button>
+        </div>
+
+        <!-- 1. Get Categories -->
+        <div class="endpoint-section">
+            <h3><span class="method-badge get">GET</span> Get All Categories</h3>
+            <p><code>/api/v1/expenses/categories.php</code></p>
+            <button onclick="testGetCategories()">Test Endpoint</button>
+            <div class="response" id="response-categories"></div>
+        </div>
+
+        <!-- 2. Add Category -->
+        <div class="endpoint-section">
+            <h3><span class="method-badge post">POST</span> Add New Category</h3>
+            <p><code>/api/v1/expenses/add_category.php</code></p>
+            <div class="form-group">
+                <label>Category Name:</label>
+                <input type="text" id="cat-name" value="Test Category" style="width: 300px;">
+            </div>
+            <div class="form-group">
+                <label>Description:</label>
+                <input type="text" id="cat-desc" value="Testing category creation" style="width: 300px;">
+            </div>
+            <div class="form-group">
+                <label>Color:</label>
+                <input type="color" id="cat-color" value="#FF5733">
+            </div>
+            <div class="form-group">
+                <label>Icon:</label>
+                <input type="text" id="cat-icon" value="rocket" style="width: 150px;">
+            </div>
+            <button onclick="testAddCategory()">Test Endpoint</button>
+            <div class="response" id="response-add-category"></div>
+        </div>
+
+        <!-- 3. Add One-Time Expense -->
+        <div class="endpoint-section">
+            <h3><span class="method-badge post">POST</span> Add One-Time Expense</h3>
+            <p><code>/api/v1/expenses/add.php</code></p>
+            <div class="form-group">
+                <label>Title:</label>
+                <input type="text" id="exp-title" value="Test Expense" style="width: 300px;">
+            </div>
+            <div class="form-group">
+                <label>Amount:</label>
+                <input type="number" id="exp-amount" value="5000" style="width: 150px;">
+            </div>
+            <div class="form-group">
+                <label>Category ID:</label>
+                <input type="number" id="exp-category" value="1" style="width: 100px;">
+            </div>
+            <div class="form-group">
+                <label>Payment Method:</label>
+                <select id="exp-method" style="width: 200px;">
+                    <option>Cash</option>
+                    <option>Bank Transfer</option>
+                    <option>Credit Card</option>
+                </select>
+            </div>
+            <button onclick="testAddExpense()">Test Endpoint</button>
+            <div class="response" id="response-add-expense"></div>
+        </div>
+
+        <!-- 4. Add Recurring Expense -->
+        <div class="endpoint-section">
+            <h3><span class="method-badge post">POST</span> Add Recurring Expense</h3>
+            <p><code>/api/v1/expenses/add.php</code></p>
+            <div class="form-group">
+                <label>Title:</label>
+                <input type="text" id="rec-title" value="Monthly Rent" style="width: 300px;">
+            </div>
+            <div class="form-group">
+                <label>Amount:</label>
+                <input type="number" id="rec-amount" value="50000" style="width: 150px;">
+            </div>
+            <div class="form-group">
+                <label>Category ID:</label>
+                <input type="number" id="rec-category" value="1" style="width: 100px;">
+            </div>
+            <div class="form-group">
+                <label>Frequency:</label>
+                <select id="rec-frequency" style="width: 200px;">
+                    <option value="monthly">Monthly</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="daily">Daily</option>
+                    <option value="annually">Annually</option>
+                </select>
+            </div>
+            <button onclick="testAddRecurring()">Test Endpoint</button>
+            <div class="response" id="response-add-recurring"></div>
+        </div>
+
+        <!-- 5. List Expenses -->
+        <div class="endpoint-section">
+            <h3><span class="method-badge get">GET</span> List All Expenses</h3>
+            <p><code>/api/v1/expenses/list.php</code></p>
+            <div class="form-group">
+                <label>Limit:</label>
+                <input type="number" id="list-limit" value="10" style="width: 100px;">
+            </div>
+            <button onclick="testListExpenses()">Test Endpoint</button>
+            <div class="response" id="response-list"></div>
+        </div>
+
+        <!-- 6. Get Summary -->
+        <div class="endpoint-section">
+            <h3><span class="method-badge get">GET</span> Get Dashboard Summary</h3>
+            <p><code>/api/v1/expenses/summary.php</code></p>
+            <button onclick="testGetSummary()">Test Endpoint</button>
+            <div class="response" id="response-summary"></div>
+        </div>
+
+        <!-- 7. Get Recurring -->
+        <div class="endpoint-section">
+            <h3><span class="method-badge get">GET</span> List Recurring Expenses</h3>
+            <p><code>/api/v1/expenses/recurring.php</code></p>
+            <button onclick="testGetRecurring()">Test Endpoint</button>
+            <div class="response" id="response-recurring"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = '/api/v1/expenses';
+
+        // Load token on page load
+        document.addEventListener('DOMContentLoaded', loadTokenFromStorage);
+
+        function loadTokenFromStorage() {
+            const token = localStorage.getItem('auth_token') || localStorage.getItem('token') || '';
+            document.getElementById('jwt-token').value = token;
+            if (token) {
+                console.log('Token loaded from storage');
+            } else {
+                console.log('No token found in storage');
+            }
+        }
+
+        function getHeaders() {
+            const token = document.getElementById('jwt-token').value;
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            };
+        }
+
+        function showResponse(elementId, data, status) {
+            const el = document.getElementById(elementId);
+            el.textContent = JSON.stringify(data, null, 2);
+            el.classList.add('show');
+
+            // Add status indicator
+            const section = el.parentElement;
+            let statusEl = section.querySelector('.status');
+            if (!statusEl) {
+                statusEl = document.createElement('span');
+                statusEl.className = 'status';
+                section.querySelector('h3').appendChild(statusEl);
+            }
+            statusEl.textContent = status >= 200 && status < 300 ? '✓ Success' : '✗ Error';
+            statusEl.className = status >= 200 && status < 300 ? 'status success' : 'status error';
+        }
+
+        async function testGetCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/categories.php`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                showResponse('response-categories', data, response.status);
+            } catch (error) {
+                showResponse('response-categories', {
+                    error: error.message
+                }, 500);
+            }
+        }
+
+        async function testAddCategory() {
+            try {
+                const payload = {
+                    category_name: document.getElementById('cat-name').value,
+                    description: document.getElementById('cat-desc').value,
+                    color_code: document.getElementById('cat-color').value,
+                    icon: document.getElementById('cat-icon').value
+                };
+
+                const response = await fetch(`${API_BASE}/add_category.php`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                showResponse('response-add-category', data, response.status);
+            } catch (error) {
+                showResponse('response-add-category', {
+                    error: error.message
+                }, 500);
+            }
+        }
+
+        async function testAddExpense() {
+            try {
+                const payload = {
+                    expense_type: 'one-time',
+                    title: document.getElementById('exp-title').value,
+                    amount: parseFloat(document.getElementById('exp-amount').value),
+                    category_id: parseInt(document.getElementById('exp-category').value),
+                    payment_method: document.getElementById('exp-method').value,
+                    status: 'paid'
+                };
+
+                const response = await fetch(`${API_BASE}/add.php`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                showResponse('response-add-expense', data, response.status);
+            } catch (error) {
+                showResponse('response-add-expense', {
+                    error: error.message
+                }, 500);
+            }
+        }
+
+        async function testAddRecurring() {
+            try {
+                const payload = {
+                    expense_type: 'recurring',
+                    title: document.getElementById('rec-title').value,
+                    amount: parseFloat(document.getElementById('rec-amount').value),
+                    category_id: parseInt(document.getElementById('rec-category').value),
+                    frequency: document.getElementById('rec-frequency').value,
+                    start_date: new Date().toISOString().split('T')[0]
+                };
+
+                const response = await fetch(`${API_BASE}/add.php`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                showResponse('response-add-recurring', data, response.status);
+            } catch (error) {
+                showResponse('response-add-recurring', {
+                    error: error.message
+                }, 500);
+            }
+        }
+
+        async function testListExpenses() {
+            try {
+                const limit = document.getElementById('list-limit').value;
+                const response = await fetch(`${API_BASE}/list.php?limit=${limit}`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                showResponse('response-list', data, response.status);
+            } catch (error) {
+                showResponse('response-list', {
+                    error: error.message
+                }, 500);
+            }
+        }
+
+        async function testGetSummary() {
+            try {
+                const response = await fetch(`${API_BASE}/summary.php`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                showResponse('response-summary', data, response.status);
+            } catch (error) {
+                showResponse('response-summary', {
+                    error: error.message
+                }, 500);
+            }
+        }
+
+        async function testGetRecurring() {
+            try {
+                const response = await fetch(`${API_BASE}/recurring.php`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                showResponse('response-recurring', data, response.status);
+            } catch (error) {
+                showResponse('response-recurring', {
+                    error: error.message
+                }, 500);
+            }
+        }
+    </script>
+</body>
+
+</html>

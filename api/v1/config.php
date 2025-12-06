@@ -29,6 +29,11 @@ define('JWT_EXPIRY', 86400); // 24 hours
 // Include main config
 require_once __DIR__ . '/../../inc/config.php';
 
+// Alias connection variable for compatibility
+if (isset($con) && !isset($conn)) {
+    $conn = $con;
+}
+
 // Handle CORS
 if (API_CORS_ENABLED) {
     header('Access-Control-Allow-Origin: ' . API_CORS_ORIGINS);
