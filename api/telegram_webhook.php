@@ -40,45 +40,6 @@ $is_private = (isset($message['chat']['type']) && $message['chat']['type'] === '
 if ($is_private) {
     $res = mysqli_query($con, "SELECT setting_value FROM telegram_config WHERE setting_key = 'allow_dm'");
     $setting = mysqli_fetch_assoc($res);
-<?php
-/**
- * telegram_webhook.php
- * Receives incoming updates from Telegram (Commands & Messages)
- */
-
-// Include Config & Service
-require_once(__DIR__ . '/../inc/config.php');
-require_once(__DIR__ . '/../inc/TelegramService.php');
-
-// 1. Get incoming update
-$content = file_get_contents("php://input");
-// DEBUG LOGGING
-file_put_contents(__DIR__ . '/webhook_debug_log.txt', date('Y-m-d H:i:s') . " - " . $content . "\n", FILE_APPEND);
-
-$update = json_decode($content, true);
-
-if (!$update) {
-    echo "Srijaya ERP Telegram Webhook is Active.";
-    exit;
-}
-
-// 2. Initialize Service
-$tg = new TelegramService($con);
-
-// 3. Extract Message Details
-$message = $update['message'] ?? null;
-if (!$message) exit;
-
-$chat_id = $message['chat']['id'];
-$text = $message['text'] ?? '';
-$message_id = $message['message_id'];
-$thread_id = $message['message_thread_id'] ?? null;
-
-// Check DM Permission (Private Chat Block)
-$is_private = (isset($message['chat']['type']) && $message['chat']['type'] === 'private');
-if ($is_private) {
-    $res = mysqli_query($con, "SELECT setting_value FROM telegram_config WHERE setting_key = 'allow_dm'");
-    $setting = mysqli_fetch_assoc($res);
     // Exit if allow_dm is not '1'
     if (!$setting || $setting['setting_value'] !== '1') {
          exit; 
