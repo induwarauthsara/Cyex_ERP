@@ -20,6 +20,39 @@ try {
     error_log("Error fetching settings: " . $e->getMessage());
 }
 
+// Fetch Telegram Settings
+$tg_config = ['bot_token' => '', 'master_chat_id' => '', 'bot_enabled' => '0'];
+$tg_topics = [];
+$tg_schedules = [];
+
+try {
+    // Check if tables exist first
+    $tableCheck = mysqli_query($con, "SHOW TABLES LIKE 'telegram_config'");
+    if (mysqli_num_rows($tableCheck) > 0) {
+        // Config
+        $res = mysqli_query($con, "SELECT setting_key, setting_value FROM telegram_config");
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) {
+                $tg_config[$row['setting_key']] = $row['setting_value'];
+            }
+        }
+
+        // Topics
+        $res = mysqli_query($con, "SELECT * FROM telegram_topics ORDER BY id ASC");
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) $tg_topics[] = $row;
+        }
+
+        // Schedules
+        $res = mysqli_query($con, "SELECT ts.*, tt.topic_name FROM telegram_schedules ts LEFT JOIN telegram_topics tt ON ts.target_topic_key = tt.topic_key");
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) $tg_schedules[] = $row;
+        }
+    }
+} catch (Exception $e) {
+    // Silent fail or log
+}
+
 // Set default values if not found in database
 if (!isset($current_settings['sell_Insufficient_stock_item'])) {
     $current_settings['sell_Insufficient_stock_item'] = ['value' => '1', 'description' => 'Allow selling out-of-stock items'];
@@ -470,6 +503,64 @@ if (!isset($current_settings['quotation_auto_generate'])) {
             right: 10px !important;
         }
     }
+
+    /* Tab Navigation Styles */
+    .settings-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        gap: 0.5rem;
+    }
+
+    .tab-btn {
+        padding: 0.8rem 2rem;
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        color: #6c757d;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tab-btn:hover {
+        background: #f8f9fa;
+        color: #2c3e50;
+    }
+
+    .tab-btn.active {
+        background: #e7f1ff;
+        color: #007bff;
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 <div class="settings-container">
@@ -479,231 +570,496 @@ if (!isset($current_settings['quotation_auto_generate'])) {
         <p>Configure system behavior and preferences</p>
     </div>
 
-    <!-- Billing Configuration Section -->
-    <div class="settings-section">
-        <h2 class="section-title">
-            <i class="fas fa-file-invoice-dollar"></i>
-            Billing Configuration
-        </h2>
-        <p class="section-description">
-            Control billing system inventory and stock management behavior
-        </p>
-
-        <form id="billingSettingsForm">
-            <div class="row">
-                <!-- Out-of-Stock Sales Setting -->
-                <div class="col-lg-6 col-md-12">
-                    <div class="setting-item <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'active' : 'inactive'; ?>" id="setting_sell_Insufficient_stock_item">
-                        <div class="setting-header">
-                            <h3 class="setting-title">
-                                <i class="fas fa-exclamation-triangle text-warning"></i>
-                                Out-of-Stock Sales
-                            </h3>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="sell_Insufficient_stock_item"
-                                    name="sell_Insufficient_stock_item" value="1"
-                                    <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'checked' : ''; ?>>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <p class="setting-description">
-                            Allow selling products when stock is insufficient. Stock can go negative for urgent sales.
-                        </p>
-                        <div class="setting-status">
-                            <span class="status-badge <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'enabled' : 'disabled'; ?>"
-                                id="status_sell_Insufficient_stock_item">
-                                <i class="fas <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'fa-check-circle' : 'fa-times-circle'; ?>"></i>
-                                <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Inactive Batch Sales Setting -->
-                <div class="col-lg-6 col-md-12">
-                    <div class="setting-item <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'active' : 'inactive'; ?>" id="setting_sell_Inactive_batch_products">
-                        <div class="setting-header">
-                            <h3 class="setting-title">
-                                <i class="fas fa-ban text-info"></i>
-                                Inactive Batch Sales
-                            </h3>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="sell_Inactive_batch_products"
-                                    name="sell_Inactive_batch_products" value="1"
-                                    <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'checked' : ''; ?>>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <p class="setting-description">
-                            Allow selling from inactive or expired batches. Useful for clearing old inventory.
-                        </p>
-                        <div class="setting-status">
-                            <span class="status-badge <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'enabled' : 'disabled'; ?>"
-                                id="status_sell_Inactive_batch_products">
-                                <i class="fas <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'fa-check-circle' : 'fa-times-circle'; ?>"></i>
-                                <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-    <!-- Invoice Configuration Section -->
-    <div class="settings-section">
-        <h2 class="section-title">
-            <i class="fas fa-print"></i>
-            Invoice Configuration
-        </h2>
-        <p class="section-description">
-            Manage invoice printing and display preferences
-        </p>
-
-        <div class="row">
-            <!-- Print Type Setting -->
-            <div class="col-12">
-                <div class="setting-item active" id="setting_invoice_print_type">
-                    <div class="setting-header">
-                        <h3 class="setting-title">
-                            <i class="fas fa-receipt text-primary"></i>
-                            Default Print Type
-                        </h3>
-                    </div>
-                    <p class="setting-description">
-                        Choose how invoices should be printed by default.
-                    </p>
-                    
-                    <div class="print-type-options mt-3">
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" id="print_type_receipt" name="invoice_print_type" class="custom-control-input" value="receipt" 
-                                <?php echo ($current_settings['invoice_print_type']['value'] == 'receipt') ? 'checked' : ''; ?>>
-                            <label class="custom-control-label" for="print_type_receipt">Receipt Print Only</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" id="print_type_standard" name="invoice_print_type" class="custom-control-input" value="standard" 
-                                <?php echo ($current_settings['invoice_print_type']['value'] == 'standard') ? 'checked' : ''; ?>>
-                            <label class="custom-control-label" for="print_type_standard">Standard Invoice Only</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline">
-                            <input type="radio" id="print_type_both" name="invoice_print_type" class="custom-control-input" value="both" 
-                                <?php echo ($current_settings['invoice_print_type']['value'] == 'both') ? 'checked' : ''; ?>>
-                            <label class="custom-control-label" for="print_type_both">Ask Every Time (Both)</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Tab Navigation -->
+    <div class="settings-tabs">
+        <button class="tab-btn active" data-tab="general">
+            <i class="fas fa-sliders-h"></i> General
+        </button>
+        <button class="tab-btn" data-tab="telegram">
+            <i class="fab fa-telegram"></i> Telegram Bot
+        </button>
     </div>
 
-    <!-- Quotation Configuration Section -->
-    <div class="settings-section">
-        <h2 class="section-title">
-            <i class="fas fa-file-invoice"></i>
-            Quotation Configuration
-        </h2>
-        <p class="section-description">
-            Manage quotation numbering and printing preferences
-        </p>
+    <!-- TAB 1: General Settings -->
+    <div id="tab-general" class="tab-content active">
 
-        <div class="row">
-            <!-- Quotation Validity Days -->
-            <div class="col-md-4 col-12">
-                <div class="setting-item active" id="setting_quotation_validity_days">
-                    <div class="setting-header">
-                        <h3 class="setting-title">
-                            <i class="fas fa-calendar-days text-success"></i>
-                            Validity Period
-                        </h3>
+        <!-- Billing Configuration Section -->
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fas fa-file-invoice-dollar"></i>
+                Billing Configuration
+            </h2>
+            <p class="section-description">
+                Control billing system inventory and stock management behavior
+            </p>
+
+            <form id="billingSettingsForm">
+                <div class="row">
+                    <!-- Out-of-Stock Sales Setting -->
+                    <div class="col-lg-6 col-md-12">
+                        <div class="setting-item <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'active' : 'inactive'; ?>" id="setting_sell_Insufficient_stock_item">
+                            <div class="setting-header">
+                                <h3 class="setting-title">
+                                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    Out-of-Stock Sales
+                                </h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="sell_Insufficient_stock_item"
+                                        name="sell_Insufficient_stock_item" value="1"
+                                        <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <p class="setting-description">
+                                Allow selling products when stock is insufficient. Stock can go negative for urgent sales.
+                            </p>
+                            <div class="setting-status">
+                                <span class="status-badge <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'enabled' : 'disabled'; ?>"
+                                    id="status_sell_Insufficient_stock_item">
+                                    <i class="fas <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'fa-check-circle' : 'fa-times-circle'; ?>"></i>
+                                    <?php echo ($current_settings['sell_Insufficient_stock_item']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <p class="setting-description">
-                        Default number of days a quotation remains valid
-                    </p>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input type="number" class="form-control" id="quotation_validity_days" 
-                                   name="quotation_validity_days" 
-                                   value="<?php echo $current_settings['quotation_validity_days']['value']; ?>" 
-                                   min="1" max="365" required>
-                            <div class="input-group-append">
-                                <span class="input-group-text">days</span>
+
+                    <!-- Inactive Batch Sales Setting -->
+                    <div class="col-lg-6 col-md-12">
+                        <div class="setting-item <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'active' : 'inactive'; ?>" id="setting_sell_Inactive_batch_products">
+                            <div class="setting-header">
+                                <h3 class="setting-title">
+                                    <i class="fas fa-ban text-info"></i>
+                                    Inactive Batch Sales
+                                </h3>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="sell_Inactive_batch_products"
+                                        name="sell_Inactive_batch_products" value="1"
+                                        <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <p class="setting-description">
+                                Allow selling from inactive or expired batches. Useful for clearing old inventory.
+                            </p>
+                            <div class="setting-status">
+                                <span class="status-badge <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'enabled' : 'disabled'; ?>"
+                                    id="status_sell_Inactive_batch_products">
+                                    <i class="fas <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'fa-check-circle' : 'fa-times-circle'; ?>"></i>
+                                    <?php echo ($current_settings['sell_Inactive_batch_products']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Configuration Section -->
+                    <div class="settings-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-print"></i>
+                            Invoice Configuration
+                        </h2>
+                        <p class="section-description">
+                            Manage invoice printing and display preferences
+                        </p>
+
+                        <div class="row">
+                            <!-- Print Type Setting -->
+                            <div class="col-12">
+                                <div class="setting-item active" id="setting_invoice_print_type">
+                                    <div class="setting-header">
+                                        <h3 class="setting-title">
+                                            <i class="fas fa-receipt text-primary"></i>
+                                            Default Print Type
+                                        </h3>
+                                    </div>
+                                    <p class="setting-description">
+                                        Choose how invoices should be printed by default.
+                                    </p>
+
+                                    <div class="print-type-options mt-3">
+                                        <div class="custom-control custom-radio custom-control-inline">
+                                            <input type="radio" id="print_type_receipt" name="invoice_print_type" class="custom-control-input" value="receipt"
+                                                <?php echo ($current_settings['invoice_print_type']['value'] == 'receipt') ? 'checked' : ''; ?>>
+                                            <label class="custom-control-label" for="print_type_receipt">Receipt Print Only</label>
+                                        </div>
+                                        <div class="custom-control custom-radio custom-control-inline">
+                                            <input type="radio" id="print_type_standard" name="invoice_print_type" class="custom-control-input" value="standard"
+                                                <?php echo ($current_settings['invoice_print_type']['value'] == 'standard') ? 'checked' : ''; ?>>
+                                            <label class="custom-control-label" for="print_type_standard">Standard Invoice Only</label>
+                                        </div>
+                                        <div class="custom-control custom-radio custom-control-inline">
+                                            <input type="radio" id="print_type_both" name="invoice_print_type" class="custom-control-input" value="both"
+                                                <?php echo ($current_settings['invoice_print_type']['value'] == 'both') ? 'checked' : ''; ?>>
+                                            <label class="custom-control-label" for="print_type_both">Ask Every Time (Both)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quotation Configuration Section -->
+                    <div class="settings-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-file-invoice"></i>
+                            Quotation Configuration
+                        </h2>
+                        <p class="section-description">
+                            Manage quotation numbering and printing preferences
+                        </p>
+
+                        <div class="row">
+                            <!-- Quotation Validity Days -->
+                            <div class="col-md-4 col-12">
+                                <div class="setting-item active" id="setting_quotation_validity_days">
+                                    <div class="setting-header">
+                                        <h3 class="setting-title">
+                                            <i class="fas fa-calendar-days text-success"></i>
+                                            Validity Period
+                                        </h3>
+                                    </div>
+                                    <p class="setting-description">
+                                        Default number of days a quotation remains valid
+                                    </p>
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="quotation_validity_days"
+                                                name="quotation_validity_days"
+                                                value="<?php echo $current_settings['quotation_validity_days']['value']; ?>"
+                                                min="1" max="365" required>
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">days</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quotation Prefix -->
+                            <div class="col-md-4 col-12">
+                                <div class="setting-item active" id="setting_quotation_prefix">
+                                    <div class="setting-header">
+                                        <h3 class="setting-title">
+                                            <i class="fas fa-hashtag text-info"></i>
+                                            Number Prefix
+                                        </h3>
+                                    </div>
+                                    <p class="setting-description">
+                                        Prefix for quotation numbers (e.g., QT, QUOT)
+                                    </p>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="quotation_prefix"
+                                            name="quotation_prefix"
+                                            value="<?php echo $current_settings['quotation_prefix']['value']; ?>"
+                                            maxlength="10" required
+                                            placeholder="QT">
+                                        <small class="form-text text-muted">Format: <?php echo $current_settings['quotation_prefix']['value']; ?>000001</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Auto Generate Numbers -->
+                            <div class="col-md-4 col-12">
+                                <div class="setting-item active" id="setting_quotation_auto_generate">
+                                    <div class="setting-header">
+                                        <h3 class="setting-title">
+                                            <i class="fas fa-robot text-warning"></i>
+                                            Auto Generate
+                                        </h3>
+                                    </div>
+                                    <p class="setting-description">
+                                        Automatically generate quotation numbers
+                                    </p>
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch" style="padding-top: 10px;">
+                                            <input type="checkbox" class="custom-control-input"
+                                                id="quotation_auto_generate"
+                                                name="quotation_auto_generate"
+                                                <?php echo ($current_settings['quotation_auto_generate']['value'] == '1') ? 'checked' : ''; ?>>
+                                            <label class="custom-control-label" for="quotation_auto_generate">
+                                                <?php echo ($current_settings['quotation_auto_generate']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+
+
+        <!-- Save Section (General) -->
+        <div class="save-section">
+            <div class="button-group">
+                <button type="button" id="resetBtn" class="btn-reset">
+                    <i class="fas fa-undo"></i> &nbsp; Reset to Default
+                </button>
+                <button type="submit" form="billingSettingsForm" class="btn-save">
+                    <i class="fas fa-save"></i> &nbsp; Save General Settings
+                </button>
+            </div>
+            <div class="text-muted mt-2" style="font-size: 0.8rem; margin-top: 10px;">
+                Press Ctrl+S to quick save | Ctrl+R to reset
+            </div>
+        </div>
+
+    </div> <!-- End General Tab -->
+
+    <!-- TAB 2: Telegram Integration -->
+    <div id="tab-telegram" class="tab-content">
+
+        <!-- Telegram Bot Configuration Section -->
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fab fa-telegram text-primary"></i>
+                Telegram Bot Integration
+            </h2>
+            <p class="section-description">
+                Manage your Telegram Bot connection, topics, and automated reporting schedules.
+            </p>
+
+            <form id="telegramSettingsForm">
+                <!-- 1. Connection Settings -->
+                <div class="setting-item active">
+                    <div class="setting-header">
+                        <h3 class="setting-title"><i class="fas fa-link"></i> Connection Details</h3>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnTestTelegram">
+                            <i class="fas fa-paper-plane"></i> Test Connection
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Bot Token</label>
+                                <input type="password" class="form-control" name="bot_token" id="tg_bot_token" value="<?php echo htmlspecialchars($tg_config['bot_token']); ?>" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Master Chat ID</label>
+                                <input type="text" class="form-control" name="master_chat_id" id="tg_chat_id" value="<?php echo htmlspecialchars($tg_config['master_chat_id']); ?>" placeholder="-1001234567890">
+                                <small class="text-muted">ID of the Supergroup</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Bot Status</label> <br>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="bot_enabled" value="1" <?php echo ($tg_config['bot_enabled'] == '1') ? 'checked' : ''; ?>>
+                                    <span class="toggle-slider"></span>
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Quotation Prefix -->
-            <div class="col-md-4 col-12">
-                <div class="setting-item active" id="setting_quotation_prefix">
+                <!-- 2. Topics Manager -->
+                <div class="setting-item active">
                     <div class="setting-header">
-                        <h3 class="setting-title">
-                            <i class="fas fa-hashtag text-info"></i>
-                            Number Prefix
-                        </h3>
+                        <h3 class="setting-title"><i class="fas fa-list-ul"></i> Topic Mapping</h3>
                     </div>
-                    <p class="setting-description">
-                        Prefix for quotation numbers (e.g., QT, QUOT)
-                    </p>
-                    <div class="form-group">
-                        <input type="text" class="form-control" id="quotation_prefix" 
-                               name="quotation_prefix" 
-                               value="<?php echo $current_settings['quotation_prefix']['value']; ?>" 
-                               maxlength="10" required 
-                               placeholder="QT">
-                        <small class="form-text text-muted">Format: <?php echo $current_settings['quotation_prefix']['value']; ?>000001</small>
+                    <p class="setting-description">Map system features to specific Telegram Topics (Threads).</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Function</th>
+                                    <th>Topic ID</th>
+                                    <th>Active</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($tg_topics as $topic): ?>
+                                    <tr>
+                                        <td style="vertical-align: middle;">
+                                            <strong><?php echo $topic['topic_name']; ?></strong> <br>
+                                            <small class="text-muted"><?php echo $topic['description']; ?></small>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm" name="topic_id[<?php echo $topic['id']; ?>]" value="<?php echo $topic['topic_id']; ?>" placeholder="e.g. 2">
+                                        </td>
+                                        <td>
+                                            <label class="toggle-switch" style="width: 40px; height: 20px;">
+                                                <input type="checkbox" name="topic_active[<?php echo $topic['id']; ?>]" value="1" <?php echo ($topic['is_active'] == 1) ? 'checked' : ''; ?>>
+                                                <span class="toggle-slider" style="border-radius: 20px;"></span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
 
-            <!-- Auto Generate Numbers -->
-            <div class="col-md-4 col-12">
-                <div class="setting-item active" id="setting_quotation_auto_generate">
+                <!-- 3. Schedule Manager -->
+                <div class="setting-item active">
                     <div class="setting-header">
-                        <h3 class="setting-title">
-                            <i class="fas fa-robot text-warning"></i>
-                            Auto Generate
-                        </h3>
+                        <h3 class="setting-title"><i class="fas fa-clock"></i> Reporting Schedule</h3>
                     </div>
-                    <p class="setting-description">
-                        Automatically generate quotation numbers
-                    </p>
-                    <div class="form-group">
-                        <div class="custom-control custom-switch" style="padding-top: 10px;">
-                            <input type="checkbox" class="custom-control-input" 
-                                   id="quotation_auto_generate" 
-                                   name="quotation_auto_generate"
-                                   <?php echo ($current_settings['quotation_auto_generate']['value'] == '1') ? 'checked' : ''; ?>>
-                            <label class="custom-control-label" for="quotation_auto_generate">
-                                <?php echo ($current_settings['quotation_auto_generate']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
-                            </label>
-                        </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Report</th>
+                                    <th>Schedule Time (Hour)</th>
+                                    <th>Target Topic</th>
+                                    <th>Active</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($tg_schedules as $sched): ?>
+                                    <tr>
+                                        <td style="vertical-align: middle;">
+                                            <?php echo ucwords(str_replace('_', ' ', $sched['report_type'])); ?>
+                                        </td>
+                                        <td>
+                                            <select class="form-control form-control-sm" name="sched_hour[<?php echo $sched['id']; ?>]">
+                                                <?php for ($i = 0; $i < 24; $i++): ?>
+                                                    <option value="<?php echo $i; ?>" <?php echo ($sched['schedule_hour'] == $i) ? 'selected' : ''; ?>>
+                                                        <?php echo sprintf("%02d:00", $i); ?> (<?php echo date("g A", strtotime("$i:00")); ?>)
+                                                    </option>
+                                                <?php endfor; ?>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-light"><?php echo $sched['topic_name'] ?? 'Unknown'; ?></span>
+                                        </td>
+                                        <td>
+                                            <label class="toggle-switch" style="width: 40px; height: 20px;">
+                                                <input type="checkbox" name="sched_active[<?php echo $sched['id']; ?>]" value="1" <?php echo ($sched['is_active'] == 1) ? 'checked' : ''; ?>>
+                                                <span class="toggle-slider" style="border-radius: 20px;"></span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
 
-
+                <div class="text-right">
+                    <button type="button" class="btn btn-success btn-save-telegram" onclick="$('#telegramSettingsForm').submit()">
+                        <i class="fas fa-save"></i> Save Telegram Settings
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
-            </div>
-        </form>
-    </div>
+    </div> <!-- End Telegram Tab -->
 
-    <!-- Save Section -->
-    <div class="save-section">
-        <div class="button-group">
-            <button type="button" id="resetBtn" class="btn-reset">
-                <i class="fas fa-undo"></i> &nbsp;  Reset to Default
-            </button>
-            <button type="submit" form="billingSettingsForm" class="btn-save">
-                <i class="fas fa-save"></i>  &nbsp; Save Settings
-            </button>
-        </div>
-        <div class="text-muted mt-2" style="font-size: 0.8rem; margin-top: 10px;">
-            Press Ctrl+S to quick save | Ctrl+R to reset
-        </div>
-    </div>
-</div>
+</div> <!-- End Settings Container -->
 
-<!-- JavaScript for Settings Form -->
 <script>
+    /**
+     * Tab Switching System - Explicit Display Control
+     * Handles both CSS classes and inline display properties
+     */
+    (function() {
+        'use strict';
+
+        // Tab switching function
+        function switchToTab(tabId) {
+            console.log('=== Switching to tab:', tabId, '===');
+
+            // Get all tab buttons and contents
+            const allButtons = document.querySelectorAll('.tab-btn');
+            const allContents = document.querySelectorAll('.tab-content');
+
+            console.log('Found elements:', {
+                buttons: allButtons.length,
+                contents: allContents.length
+            });
+
+            // 1. Hide ALL tab contents and deactivate ALL buttons
+            allButtons.forEach(function(btn) {
+                btn.classList.remove('active');
+                console.log('Deactivated button:', btn.getAttribute('data-tab'));
+            });
+
+            allContents.forEach(function(content) {
+                content.classList.remove('active');
+                content.style.display = 'none';
+                console.log('Hidden content:', content.id);
+            });
+
+            // 2. Show the target tab content
+            const targetContent = document.getElementById('tab-' + tabId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+                targetContent.style.display = 'block';
+                console.log('✓ Showed content:', targetContent.id);
+            } else {
+                console.error('✗ Tab content NOT found:', 'tab-' + tabId);
+                return false;
+            }
+
+            // 3. Activate the target button
+            const targetButton = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+            if (targetButton) {
+                targetButton.classList.add('active');
+                console.log('✓ Activated button:', tabId);
+            } else {
+                console.error('✗ Tab button NOT found for:', tabId);
+            }
+
+            console.log('=== Tab switch complete ===');
+            return true;
+        }
+
+        // Initialize tab system
+        function initTabSystem() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            console.log('🚀 Tab System Initializing...');
+            console.log('Buttons found:', tabButtons.length);
+            console.log('Contents found:', tabContents.length);
+
+            // Ensure initial state is correct
+            tabContents.forEach(function(content) {
+                if (!content.classList.contains('active')) {
+                    content.style.display = 'none';
+                } else {
+                    content.style.display = 'block';
+                }
+            });
+
+            // Add click handlers to all tab buttons
+            tabButtons.forEach(function(button) {
+                const tabId = button.getAttribute('data-tab');
+                console.log('Attaching click handler to:', tabId);
+
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchToTab(tabId);
+                });
+            });
+
+            // Expose globally
+            window.switchTab = switchToTab;
+
+            console.log('✓ Tab System Ready');
+        }
+
+        // Auto-initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTabSystem);
+        } else {
+            // DOM already loaded
+            initTabSystem();
+        }
+    })();
+</script>
+
+<!-- Main Settings Script -->
+<script>
+    /* Tab system initialized above */
+
     $(document).ready(function() {
         // Update status badges and visual states when switches are toggled
         $('input[type="checkbox"]').change(function() {
@@ -745,7 +1101,7 @@ if (!isset($current_settings['quotation_auto_generate'])) {
                     $('#sell_Insufficient_stock_item').prop('checked', true).trigger('change');
                     $('#sell_Inactive_batch_products').prop('checked', true).trigger('change');
                     $('#print_type_standard').prop('checked', true);
-                    
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Settings Reset!',
@@ -759,7 +1115,7 @@ if (!isset($current_settings['quotation_auto_generate'])) {
             });
         });
 
-        // Handle form submission
+        // General Form Submission (Existing)
         $('#billingSettingsForm').submit(function(e) {
             e.preventDefault();
 
@@ -818,7 +1174,6 @@ if (!isset($current_settings['quotation_auto_generate'])) {
                     console.error('AJAX Error:', error);
                 },
                 complete: function() {
-                    // Restore button state after delay
                     setTimeout(() => {
                         submitBtn.html(originalText).prop('disabled', false);
                     }, 2000);
@@ -831,17 +1186,20 @@ if (!isset($current_settings['quotation_auto_generate'])) {
             // Ctrl+S to save
             if (e.ctrlKey && e.which === 83) {
                 e.preventDefault();
-                $('#billingSettingsForm').submit();
-            }
-            // Ctrl+R to reset
-            if (e.ctrlKey && e.which === 82) {
-                e.preventDefault();
-                $('#resetBtn').click();
+                // Determine which tab is active and submit appropriate form
+                if ($('#tab-general').hasClass('active')) {
+                    $('#billingSettingsForm').submit();
+                } else {
+                    $('#telegramSettingsForm').submit();
+                }
             }
         });
 
         // Add tooltips for better UX
-        $('[data-toggle="tooltip"]').tooltip();
+        // Add tooltips for better UX
+        if ($().tooltip) {
+            $('[data-toggle="tooltip"]').tooltip();
+        }
 
         // Loading animation keyframes
         const style = document.createElement('style');
@@ -855,6 +1213,84 @@ if (!isset($current_settings['quotation_auto_generate'])) {
             }
         `;
         document.head.appendChild(style);
+
+        // --- Telegram Bot Scripts ---
+
+        // Handle Telegram Form Submission
+        $('#telegramSettingsForm').submit(function(e) {
+            e.preventDefault();
+            const btn = $('.btn-save-telegram');
+            const originalText = btn.html();
+
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+
+            $.ajax({
+                url: 'api/update_telegram_settings.php',
+                method: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function(res) {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Saved!',
+                            text: 'Telegram settings updated successfully.',
+                            timer: 2000,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Connection failed', 'error');
+                },
+                complete: function() {
+                    btn.html(originalText).prop('disabled', false);
+                }
+            });
+        });
+
+        // Test Telegram Connection
+        $('#btnTestTelegram').click(function() {
+            const token = $('#tg_bot_token').val();
+            const chatId = $('#tg_chat_id').val();
+
+            if (!token || !chatId) {
+                Swal.fire('Missing Info', 'Please enter Bot Token and Chat ID first.', 'warning');
+                return;
+            }
+
+            const btn = $(this);
+            const originalIcon = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Testing...');
+
+            $.ajax({
+                url: 'api/test_telegram_connection.php',
+                method: 'POST',
+                data: {
+                    token: token,
+                    chat_id: chatId
+                },
+                dataType: 'json',
+                success: function(res) {
+                    if (res.success) {
+                        Swal.fire('Connected!', `Successfully connected to bot: <b>${res.bot_name}</b>`, 'success');
+                    } else {
+                        Swal.fire('Connection Failed', res.message || 'Invalid Token or Chat ID', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Server error while testing', 'error');
+                },
+                complete: function() {
+                    btn.html('<i class="fas fa-paper-plane"></i> Test Connection');
+                }
+            });
+        });
+
+
     });
 </script>
-
