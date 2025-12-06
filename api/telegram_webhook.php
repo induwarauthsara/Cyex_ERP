@@ -29,6 +29,17 @@ $text = $message['text'] ?? '';
 $message_id = $message['message_id'];
 $thread_id = $message['message_thread_id'] ?? null;
 
+// Check DM Permission (Private Chat Block)
+$is_private = (isset($message['chat']['type']) && $message['chat']['type'] === 'private');
+if ($is_private) {
+    $res = mysqli_query($con, "SELECT setting_value FROM telegram_config WHERE setting_key = 'allow_dm'");
+    $setting = mysqli_fetch_assoc($res);
+    // Exit if allow_dm is not '1'
+    if (!$setting || $setting['setting_value'] !== '1') {
+         exit; 
+    }
+}
+
 // Only process commands starting with /
 if (strpos($text, '/') === 0) {
     
@@ -53,37 +64,38 @@ if (strpos($text, '/') === 0) {
             // Calculate Today's Sales
             $today = date('Y-m-d');
             
-            // Note: Adjust table/column names based on your actual schema if needed
-            // Assuming 'invoices' table has 'invoice_date' and 'final_amount'
-            $sql = "SELECT SUM(final_amount) as total, COUNT(*) as count FROM invoices WHERE invoice_date = '$today'";
+            // Correct Table: 'invoice' (singular)
+            // Revenue = total - discount
+            // Date Check: DATE(invoice_date) because it's datetime
+            $sql = "SELECT SUM(total - discount) as revenue, COUNT(*) as count FROM invoice WHERE DATE(invoice_date) = '$today'";
             $query = mysqli_query($con, $sql);
             
             if($query) {
                 $row = mysqli_fetch_assoc($query);
-                $total = number_format($row['total'] ?? 0, 2);
+                $revenue = number_format($row['revenue'] ?? 0, 2);
                 $count = $row['count'] ?? 0;
                 
                 $response = "💰 <b>Sales Update ($today)</b>\n\n";
-                $response .= "📈 Total Revenue: <b>Rs. $total</b>\n";
+                $response .= "📈 Total Revenue: <b>Rs. $revenue</b>\n";
                 $response .= "🧾 Invoices Issued: <b>$count</b>";
             } else {
-                $response = "⚠️ Error fetching sales data.";
+                $response = "⚠️ Error fetching sales data: " . mysqli_error($con);
             }
             break;
 
         case '/stock':
-            // Low Stock Count (Assuming 'product_qty' column)
+            // Low Stock Count (Using product_batch table)
             $low_stock_limit = 5; 
-            $sql = "SELECT COUNT(*) as low_count FROM products WHERE product_qty <= $low_stock_limit";
+            $sql = "SELECT COUNT(*) as low_count FROM product_batch WHERE quantity <= $low_stock_limit AND quantity > 0";
             $row = mysqli_fetch_assoc(mysqli_query($con, $sql));
             
-            // Total Products
-            $sql2 = "SELECT COUNT(*) as total_count FROM products";
+            // Total Unique Products
+            $sql2 = "SELECT COUNT(*) as total_count FROM products WHERE active_status = 1";
             $row2 = mysqli_fetch_assoc(mysqli_query($con, $sql2));
 
             $response = "📦 <b>Inventory Snapshot</b>\n\n";
-            $response .= "🔢 Total Products: <b>" . ($row2['total_count'] ?? 0) . "</b>\n";
-            $response .= "⚠️ Low Stock Items: <b>" . ($row['low_count'] ?? 0) . "</b>\n";
+            $response .= "🔢 unique Products: <b>" . ($row2['total_count'] ?? 0) . "</b>\n";
+            $response .= "⚠️ Low Stock Batches: <b>" . ($row['low_count'] ?? 0) . "</b>\n";
             
             if(($row['low_count'] ?? 0) > 0) {
                 $response .= "\n<i>View 'Inventory Alerts' topic for details.</i>";

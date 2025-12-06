@@ -13,12 +13,14 @@ require_once(__DIR__ . '/../../inc/config.php');
 $bot_token = $_POST['bot_token'] ?? '';
 $master_chat_id = $_POST['master_chat_id'] ?? '';
 $bot_enabled = isset($_POST['bot_enabled']) ? '1' : '0';
+$allow_dm = isset($_POST['allow_dm']) ? '1' : '0';
 
 // Config Updates
 $updates = [
     'bot_token' => $bot_token,
     'master_chat_id' => $master_chat_id,
-    'bot_enabled' => $bot_enabled
+    'bot_enabled' => $bot_enabled,
+    'allow_dm' => $allow_dm
 ];
 
 foreach($updates as $key => $val) {

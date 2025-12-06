@@ -21,7 +21,7 @@ try {
 }
 
 // Fetch Telegram Settings
-$tg_config = ['bot_token' => '', 'master_chat_id' => '', 'bot_enabled' => '0'];
+$tg_config = ['bot_token' => '', 'master_chat_id' => '', 'bot_enabled' => '0', 'allow_dm' => '0'];
 $tg_topics = [];
 $tg_schedules = [];
 
@@ -846,11 +846,22 @@ if (!isset($current_settings['quotation_auto_generate'])) {
                             </div>
                         </div>
                         <div class="col-md-3">
+                            <div class="form-group mb-2">
+                                <label style="display:flex; justify-content:space-between; align-items:center;">
+                                    Bot Status
+                                    <label class="toggle-switch mb-0">
+                                        <input type="checkbox" name="bot_enabled" value="1" <?php echo ($tg_config['bot_enabled'] == '1') ? 'checked' : ''; ?>>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </label>
+                            </div>
                             <div class="form-group">
-                                <label>Bot Status</label> <br>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="bot_enabled" value="1" <?php echo ($tg_config['bot_enabled'] == '1') ? 'checked' : ''; ?>>
-                                    <span class="toggle-slider"></span>
+                                <label style="display:flex; justify-content:space-between; align-items:center;">
+                                    Allow DMs
+                                    <label class="toggle-switch mb-0">
+                                        <input type="checkbox" name="allow_dm" value="1" <?php echo ($tg_config['allow_dm'] == '1') ? 'checked' : ''; ?>>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </label>
                             </div>
                         </div>
