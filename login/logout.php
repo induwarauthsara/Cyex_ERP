@@ -7,6 +7,7 @@ session_destroy();
 ?>
 <script>
 // Clear localStorage when logging out
+localStorage.removeItem('auth_token');
 localStorage.removeItem('employee_id');
 localStorage.removeItem('employee_name');
 localStorage.removeItem('employee_role');

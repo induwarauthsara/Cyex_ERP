@@ -584,6 +584,20 @@
             // Initialize Charts
             initializeCharts();
 
+            // Check for success message from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('updated') === '1') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'GRN updated successfully',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             // Event Listeners for Filters
             $('#dateRange, #status, #supplier, #paymentStatus').on('change', function() {
                 applyFilters();
@@ -656,10 +670,26 @@
         // Initialize DataTables with enhanced functionality
         function initializeTables() {
             // GRN DataTable
+            const authToken = localStorage.getItem('auth_token');
             grnTable = $('#grnTable').DataTable({
                 ajax: {
-                    url: '../api/grn.php?action=list',
-                    dataSrc: 'data'
+                    url: '/api/v1/grn/list.php',
+                    dataSrc: 'data',
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
+                    },
+                    error: function(xhr, error, thrown) {
+                        console.error('GRN API Error:', error, thrown);
+                        if (xhr.status === 401) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Session Expired',
+                                text: 'Please log in again'
+                            }).then(() => {
+                                window.location.href = '/login/';
+                            });
+                        }
+                    }
                 },
                 columns: [
                     {
@@ -682,9 +712,9 @@
                         }
                     },
                     {
-                        data: 'supplier_name',
+                        data: 'supplier.name',
                         render: function(data) {
-                            return `<span class="text-white">${data}</span>`;
+                            return `<span class="text-white">${data || 'N/A'}</span>`;
                         }
                     },
                     {
@@ -706,7 +736,7 @@
                         }
                     },
                     {
-                        data: 'grn_total',
+                        data: 'total_amount',
                         render: function(data) {
                             return formatCurrency(data || 0);
                         }
@@ -721,7 +751,7 @@
                         data: null,
                         render: function(data, type, row) {
                             const paidAmount = parseFloat(row.paid_amount || 0);
-                            const totalAmount = parseFloat(row.grn_total || 0);
+                            const totalAmount = parseFloat(row.total_amount || 0);
                             const balance = totalAmount - paidAmount;
                             return `<span class="${balance > 0 ? 'text-red-400' : 'text-green-400'}">${formatCurrency(balance)}</span>`;
                         }
@@ -730,32 +760,27 @@
                         data: null,
                         orderable: false,
                         render: function(data) {
+                            const grnId = data.id; // API returns 'id' not 'grn_id'
+                            const isDraft = data.status === 'draft';
+                            const isCompleted = data.status === 'completed';
+                            
                             return `
-                                <div class="flex justify-end space-x-2">
-                                    <button onclick="viewGRN(${data.grn_id})" 
-                                            class="text-blue-400 hover:text-blue-300 p-1 bg-blue-900 bg-opacity-20 hover:bg-opacity-40 rounded-md px-2 py-1" 
+                                <div class="flex justify-end space-x-1">
+                                    <button onclick="viewGRN(${grnId})" 
+                                            class="text-blue-400 hover:text-blue-300 bg-blue-900 bg-opacity-20 hover:bg-opacity-40 rounded px-2 py-1 text-sm" 
                                             title="View GRN Details">
-                                        <i class="fas fa-eye mr-1"></i>View
+                                        <i class="fas fa-eye"></i>
                                     </button>
-                                    ${data.status === 'draft' ? `
-                                        <button onclick="editGRN(${data.grn_id})" 
-                                                class="text-yellow-400 hover:text-yellow-300 p-1" 
-                                                title="Edit GRN">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button onclick="deleteGRN(${data.grn_id})" 
-                                                class="text-red-400 hover:text-red-300 p-1" 
-                                                title="Delete GRN">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    ` : ''}
-                                    ${data.status === 'draft' ? `
-                                        <button onclick="completeGRN(${data.grn_id})" 
-                                                class="text-purple-400 hover:text-purple-300 p-1" 
-                                                title="Complete GRN">
-                                            <i class="fas fa-check-circle"></i>
-                                        </button>
-                                    ` : ''}
+                                    <button onclick="editGRN(${grnId})" 
+                                            class="text-yellow-400 hover:text-yellow-300 bg-yellow-900 bg-opacity-20 hover:bg-opacity-40 rounded px-2 py-1 text-sm" 
+                                            title="Edit GRN">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteGRN(${grnId})" 
+                                            class="text-red-400 hover:text-red-300 bg-red-900 bg-opacity-20 hover:bg-opacity-40 rounded px-2 py-1 text-sm" 
+                                            title="Delete/Cancel GRN">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                             `;
                         }
@@ -1146,28 +1171,72 @@
         }
 
         function editGRN(grnId) {
-            window.location.href = `edit_grn.php?id=${grnId}`;
+            // Redirect to edit page with GRN ID
+            window.location.href = `edit_grn.php?grn_id=${grnId}`;
         }
 
         function deleteGRN(grnId) {
-            confirmAction('Delete GRN', 'Are you sure you want to delete this GRN?', () => {
-                fetch(`../api/grn.php?action=delete&grn_id=${grnId}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showSuccess('GRN deleted successfully');
-                        grnTable.ajax.reload();
-                        loadDashboardData();
-                    } else {
-                        showError(data.error || 'Failed to delete GRN');
-                    }
-                })
-                .catch(error => {
-                    showError('Error deleting GRN');
-                    console.error(error);
-                });
+            Swal.fire({
+                title: 'Delete GRN?',
+                text: 'This will cancel the GRN and reverse stock changes. This action cannot be undone!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const authToken = localStorage.getItem('auth_token');
+                    
+                    Swal.fire({
+                        title: 'Deleting...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    fetch(`/api/v1/grn/delete.php`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + authToken
+                        },
+                        body: JSON.stringify({ grn_id: grnId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'GRN has been deleted successfully',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            grnTable.ajax.reload(null, false); // Reload table, stay on current page
+                            loadDashboardData();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Failed to delete GRN'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Connection error. Please try again.'
+                        });
+                        console.error(error);
+                    });
+                }
             });
         }
 

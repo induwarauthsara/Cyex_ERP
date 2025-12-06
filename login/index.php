@@ -7,60 +7,7 @@ if (isset($_SESSION['employee_name'])) {
     header("Location: ../index.php");
 }
 
-
-// Check button click
-if (isset($_POST['submit'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    // passwordDataLog(); //DISABLED: Security fix - no longer logging passwords
-
-    $errors = array();
-
-    // Check Username and Password entered
-    if (!isset($username) || strlen(trim($username)) < 1) {
-        $errors[] = 'Username is Missing / Invalid';
-    }
-    if (!isset($password) || strlen(trim($password)) < 1) {
-        $errors[] = 'Password is Missing / Invalid';
-    }
-
-    // Check any erros
-    if (empty($errors)) {
-        // SQL Query
-        $username = mysqli_real_escape_string($con, $username);
-        $password = mysqli_real_escape_string($con, $password);
-
-        $sql = "SELECT * FROM employees WHERE emp_name = '$username' AND password = '$password' AND `status` = '1'";
-        $result = mysqli_query($con, $sql);
-
-        if ($result) {
-            // qury success
-            if (mysqli_num_rows($result) == 1) {
-                // Valied Employee Found
-                $employee = mysqli_fetch_assoc($result);
-                $_SESSION['employee_id'] = $employee['employ_id'];
-                $_SESSION['employee_name'] = $employee['emp_name'];
-                $_SESSION['employee_role'] = $employee['role'];
-
-                // Save user data to localStorage via JavaScript
-                echo "<script>
-                    localStorage.setItem('employee_id', '" . $employee['employ_id'] . "');
-                    localStorage.setItem('employee_name', '" . addslashes($employee['emp_name']) . "');
-                    localStorage.setItem('employee_role', '" . addslashes($employee['role']) . "');
-                    window.location.href = '../index.php';
-                </script>";
-                exit;
-            } else {
-                // invalid username and Password
-                $errors[] = "invalid username and password";
-            }
-        } else {
-            $errors[] = "Database Query Failed";
-        }
-        // Set Login session
-    }
-}
+$errors = array();
 
 // SECURITY FIX: passwordDataLog function REMOVED
 // This function was logging plaintext passwords to a file - MAJOR SECURITY VULNERABILITY
@@ -100,25 +47,22 @@ if (isset($_POST['submit'])) {
 
                 <div class="col-lg-12 login-form">
                     <div class="col-lg-12 login-form">
-                        <form method="POST">
+                        <form id="loginForm" onsubmit="handleLogin(event)">
                             <div class="form-group">
                                 <label class="form-control-label">USERNAME</label>
                                 <input type="text" id="username" name="username" class="form-control" placeholder="Username here" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-control-label">PASSWORD <i class="fa fa-eye-slash" aria-hidden="true" onclick="show_hide_pw()"></i></label>
-                                <input type="password" id="password" name="password" class="form-control" placeholder="Password here" name="password" required>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="Password here" required>
                             </div>
 
                             <div class="col-lg-12 loginbttm">
                                 <div class="col-lg-6 login-btm login-text">
-                                    <?php if (isset($errors) && !empty($errors)) {
-                                        //print_r($errors); // Only For Development Testing
-                                        echo "Invalid Username or Password";
-                                    } ?>
+                                    <span id="errorMessage" style="color: #dc3545;"></span>
                                 </div>
                                 <div class="col-lg-6 login-btm login-button">
-                                    <button type="submit" name="submit" class="btn btn-outline-primary">LOGIN</button>
+                                    <button type="submit" id="loginBtn" class="btn btn-outline-primary">LOGIN</button>
                                 </div>
                             </div>
                         </form>
@@ -129,6 +73,7 @@ if (isset($_POST['submit'])) {
         </div>
 
 
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script>
             function show_hide_pw() {
                 var password_field = document.getElementById('password');
@@ -137,6 +82,66 @@ if (isset($_POST['submit'])) {
                     password_field.setAttribute("type", "text");
                 } else if (password_visible == "text") {
                     password_field.setAttribute("type", "password");
+                }
+            }
+
+            async function handleLogin(event) {
+                event.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const errorMessage = document.getElementById('errorMessage');
+                const loginBtn = document.getElementById('loginBtn');
+                
+                // Clear previous errors
+                errorMessage.textContent = '';
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'LOGGING IN...';
+                
+                try {
+                    const response = await fetch('/api/v1/auth/login.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.data && data.data.token) {
+                        // Store JWT token
+                        localStorage.setItem('auth_token', data.data.token);
+                        
+                        // Store user data
+                        localStorage.setItem('employee_id', data.data.user.id);
+                        localStorage.setItem('employee_name', data.data.user.name);
+                        localStorage.setItem('employee_role', data.data.user.role);
+                        
+                        // Set session via PHP (for backward compatibility)
+                        await fetch('/api/v1/auth/set_session.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + data.data.token
+                            }
+                        });
+                        
+                        // Redirect to main page
+                        window.location.href = '../index.php';
+                    } else {
+                        errorMessage.textContent = data.message || 'Login failed';
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'LOGIN';
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    errorMessage.textContent = 'Connection error. Please try again.';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'LOGIN';
                 }
             }
         </script>

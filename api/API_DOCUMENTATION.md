@@ -1,8 +1,8 @@
 # Srijaya ERP Mobile POS API Documentation
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Base URL:** `https://yourdomain.com/api/v1`  
-**Last Updated:** October 25, 2025
+**Last Updated:** December 5, 2025
 
 ---
 
@@ -26,6 +26,7 @@
    - [Petty Cash](#petty-cash-endpoints)
    - [Suppliers (Admin)](#supplier-endpoints)
    - [Stock Management (Admin)](#stock-management-endpoints)
+   - [GRN - Goods Received Notes (Admin)](#grn-endpoints)
 6. [Rate Limiting](#rate-limiting)
 7. [Code Examples](#code-examples)
 
@@ -3418,6 +3419,752 @@ Authorization: Bearer YOUR_ADMIN_TOKEN
 
 ---
 
+## GRN Endpoints
+
+**Admin Access Required** for all GRN (Goods Received Notes) endpoints.
+
+GRN endpoints allow you to manage goods received from suppliers, including creating new GRN records, viewing existing ones, and tracking payment status. All endpoints are self-contained in the API and don't require access to the purchase folder.
+
+---
+
+### 1. List GRNs
+
+Get a paginated list of Goods Received Notes with filtering options.
+
+**Endpoint:** `GET /api/v1/grn/list.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `per_page` (optional): Items per page (default: 20, max: 100)
+- `search` (optional): Search by GRN number, invoice number, supplier name, or PO number
+- `supplier_id` (optional): Filter by supplier ID
+- `status` (optional): Filter by status (`draft`, `completed`, `cancelled`)
+- `payment_status` (optional): Filter by payment status (`paid`, `partial`, `unpaid`)
+- `date_from` (optional): Filter GRNs from this date (YYYY-MM-DD)
+- `date_to` (optional): Filter GRNs up to this date (YYYY-MM-DD)
+
+**Example Request:**
+```http
+GET /api/v1/grn/list.php?page=1&per_page=20&payment_status=unpaid&supplier_id=5
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "GRN list retrieved successfully",
+  "data": [
+    {
+      "id": 45,
+      "grn_number": "GRN-20251205-0001",
+      "receipt_date": "2025-12-05",
+      "invoice_number": "INV-2025-12345",
+      "invoice_date": "2025-12-04",
+      "status": "completed",
+      "total_amount": 150000.00,
+      "paid_amount": 100000.00,
+      "outstanding_amount": 50000.00,
+      "payment_status": "partial",
+      "payment_method": "bank_transfer",
+      "notes": "First batch of December stock",
+      "created_at": "2025-12-05 10:30:00",
+      "po_id": 12,
+      "po_number": "PO-20251201-0003",
+      "supplier": {
+        "id": 5,
+        "name": "ABC Paper Supplies",
+        "mobile": "0771234567"
+      },
+      "created_by": "Admin User",
+      "item_count": 15
+    }
+  ],
+  "meta": {
+    "timestamp": "2025-12-05 11:00:00",
+    "version": "v1",
+    "pagination": {
+      "total": 150,
+      "per_page": 20,
+      "current_page": 1,
+      "total_pages": 8,
+      "has_more": true
+    }
+  }
+}
+```
+
+---
+
+### 2. GRN Details
+
+Get detailed information about a specific GRN including all items.
+
+**Endpoint:** `GET /api/v1/grn/details.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Query Parameters:**
+- `id` (required): GRN ID
+
+**Example Request:**
+```http
+GET /api/v1/grn/details.php?id=45
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "GRN details retrieved successfully",
+  "data": {
+    "id": 45,
+    "grn_number": "GRN-20251205-0001",
+    "receipt_date": "2025-12-05",
+    "invoice_number": "INV-2025-12345",
+    "invoice_date": "2025-12-04",
+    "status": "completed",
+    "notes": "First batch of December stock",
+    "purchase_order": {
+      "id": 12,
+      "po_number": "PO-20251201-0003",
+      "order_date": "2025-12-01"
+    },
+    "supplier": {
+      "id": 5,
+      "name": "ABC Paper Supplies",
+      "mobile": "0771234567",
+      "address": "Colombo 03"
+    },
+    "payment": {
+      "total_amount": 150000.00,
+      "paid_amount": 100000.00,
+      "outstanding_amount": 50000.00,
+      "payment_status": "partial",
+      "payment_method": "bank_transfer",
+      "payment_reference": "TRN-20251205-001",
+      "payment_notes": "Partial payment via bank transfer"
+    },
+    "items": [
+      {
+        "grn_item_id": 201,
+        "batch_id": 501,
+        "batch_number": "BATCH-2025-001",
+        "product": {
+          "id": 101,
+          "name": "A4 Paper - White",
+          "sku": "PAPER-A4-W",
+          "barcode": "1234567890123",
+          "description": "Premium white A4 paper"
+        },
+        "received_qty": 500.0,
+        "cost": 250.00,
+        "selling_price": 300.00,
+        "expiry_date": null,
+        "notes": null,
+        "total_cost": 125000.00,
+        "total_selling_value": 150000.00
+      },
+      {
+        "grn_item_id": 202,
+        "batch_id": 502,
+        "batch_number": "BATCH-2025-002",
+        "product": {
+          "id": 102,
+          "name": "Printer Ink - Black",
+          "sku": "INK-BLK-001",
+          "barcode": "1234567890124",
+          "description": "Black printer ink cartridge"
+        },
+        "received_qty": 100.0,
+        "cost": 250.00,
+        "selling_price": 350.00,
+        "expiry_date": "2027-12-31",
+        "notes": "Handle with care",
+        "total_cost": 25000.00,
+        "total_selling_value": 35000.00
+      }
+    ],
+    "summary": {
+      "item_count": 2,
+      "total_quantity": 600.0,
+      "calculated_total": 150000.00
+    },
+    "created_by": {
+      "id": 1,
+      "name": "Admin User"
+    },
+    "created_at": "2025-12-05 10:30:00",
+    "updated_at": "2025-12-05 10:30:00"
+  },
+  "meta": {
+    "timestamp": "2025-12-05 11:15:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "GRN not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-12-05 11:15:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 3. Create GRN
+
+Create a new Goods Received Note with items.
+
+**Endpoint:** `POST /api/v1/grn/create.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "supplier_id": 5,
+  "receipt_date": "2025-12-05",
+  "invoice_number": "INV-2025-12345",
+  "invoice_date": "2025-12-04",
+  "po_id": 12,
+  "notes": "First batch of December stock",
+  "status": "completed",
+  "payment_data": {
+    "payment_status": "partial",
+    "paid_amount": 100000.00,
+    "payment_method": "bank_transfer",
+    "payment_reference": "TRN-20251205-001"
+  },
+  "items": [
+    {
+      "product_id": 101,
+      "received_qty": 500.0,
+      "cost": 250.00,
+      "selling_price": 300.00,
+      "batch_data": {
+        "isNew": true,
+        "batchNumber": "BATCH-2025-001"
+      },
+      "expiry_date": null
+    },
+    {
+      "product_id": 102,
+      "received_qty": 100.0,
+      "cost": 250.00,
+      "selling_price": 350.00,
+      "batch_data": {
+        "isNew": false,
+        "batchId": 502
+      },
+      "expiry_date": "2027-12-31"
+    }
+  ]
+}
+```
+
+**Field Descriptions:**
+
+**Required Fields:**
+- `supplier_id` (integer): ID of the supplier
+- `receipt_date` (string): Date goods were received (YYYY-MM-DD)
+- `items` (array): Array of items received (minimum 1 item)
+  - `product_id` (integer): Product ID
+  - `received_qty` (number): Quantity received (must be > 0)
+  - `cost` (number): Cost price per unit
+  - `selling_price` (number): Selling price per unit
+
+**Optional Fields:**
+- `invoice_number` (string): Supplier invoice number
+- `invoice_date` (string): Supplier invoice date (YYYY-MM-DD)
+- `po_id` (integer): Related purchase order ID
+- `notes` (string): General notes for the GRN
+- `status` (string): GRN status (`draft`, `completed`, `cancelled`). Default: `completed`
+- `payment_data` (object): Payment information
+  - `payment_status` (string): `paid`, `partial`, `unpaid`
+  - `paid_amount` (number): Amount paid
+  - `payment_method` (string): `cash`, `bank_transfer`, `cheque`, `credit_card`
+  - `payment_reference` (string): Transaction/reference number
+
+**Item Optional Fields:**
+- `batch_data` (object): Batch information
+  - `isNew` (boolean): True to create new batch, false to restock existing
+  - `batchNumber` (string): Custom batch number (for new batches)
+  - `batchId` (integer): Existing batch ID (for restocking)
+- `batch_number` (string): Legacy batch number field (deprecated, use batch_data)
+- `expiry_date` (string): Expiry date (YYYY-MM-DD)
+
+**Success Response (201):**
+```json
+{
+  "success": true,
+  "message": "GRN created successfully",
+  "data": {
+    "id": 45,
+    "grn_number": "GRN-20251205-0001",
+    "receipt_date": "2025-12-05",
+    "invoice_number": "INV-2025-12345",
+    "status": "completed",
+    "total_amount": 150000.00,
+    "paid_amount": 100000.00,
+    "payment_status": "partial",
+    "supplier": {
+      "id": 5,
+      "name": "ABC Paper Supplies",
+      "mobile": "0771234567"
+    },
+    "created_by": "Admin User",
+    "created_at": "2025-12-05 10:30:00"
+  },
+  "meta": {
+    "timestamp": "2025-12-05 10:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "success": false,
+  "message": "Missing required fields: supplier_id, items",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-12-05 10:30:00",
+    "version": "v1"
+  }
+}
+```
+
+**Validation Rules:**
+- At least one item is required
+- `received_qty` must be greater than 0
+- Prices cannot be negative
+- Supplier ID must exist in the database
+- Product IDs must exist in the database
+- If `batch_data.isNew = true`, a new batch is created
+- If `batch_data.isNew = false`, existing batch quantity is updated
+- Auto-generated batch numbers are unique (format: B-YYYYMMDD-PRODUCT_ID-###)
+- Payment status is automatically calculated if not provided
+
+**Notes:**
+- GRN number is auto-generated in format: `GRN-YYYYMMDD-####`
+- Total amount is calculated from items: `sum(received_qty * cost)`
+- Each item updates or creates a product batch
+- All operations are transactional (all or nothing)
+
+---
+
+### 4. Update GRN
+
+Update an existing Goods Received Note (payment and notes only).
+
+**Endpoint:** `PUT /api/v1/grn/update.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "grn_id": 45,
+  "invoice_number": "INV-2025-12345-UPDATED",
+  "invoice_date": "2025-12-04",
+  "notes": "Updated notes",
+  "payment_status": "paid",
+  "paid_amount": 150000.00,
+  "payment_method": "cash",
+  "payment_reference": "CASH-20251205-001"
+}
+```
+
+**Field Descriptions:**
+- `grn_id` (required, integer): GRN ID to update
+- `invoice_number` (optional, string): Update invoice number
+- `invoice_date` (optional, string): Update invoice date
+- `notes` (optional, string): Update notes
+- `payment_status` (optional, string): `paid`, `partial`, `unpaid`
+- `paid_amount` (optional, number): Update paid amount
+- `payment_method` (optional, string): Update payment method
+- `payment_reference` (optional, string): Update payment reference
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "GRN updated successfully",
+  "data": {
+    "grn": {
+      "grn_id": 45,
+      "grn_number": "GRN-20251205-0001",
+      "receipt_date": "2025-12-05",
+      "invoice_number": "INV-2025-12345-UPDATED",
+      "invoice_date": "2025-12-04",
+      "total_amount": 150000.00,
+      "paid_amount": 150000.00,
+      "payment_status": "paid",
+      "payment_method": "cash",
+      "payment_reference": "CASH-20251205-001",
+      "notes": "Updated notes",
+      "status": "completed",
+      "supplier": {
+        "supplier_id": 5,
+        "supplier_name": "ABC Paper Supplies",
+        "supplier_tel": "0771234567",
+        "supplier_address": "Colombo 03"
+      },
+      "created_at": "2025-12-05 10:30:00",
+      "updated_at": "2025-12-05 14:45:00"
+    }
+  },
+  "meta": {
+    "timestamp": "2025-12-05 14:45:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "GRN not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-12-05 14:45:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 5. Delete GRN
+
+Cancel/Delete a Goods Received Note (marks as cancelled and reverses stock).
+
+**Endpoint:** `DELETE /api/v1/grn/delete.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "grn_id": 45
+}
+```
+
+**Or via Query String:**
+```http
+DELETE /api/v1/grn/delete.php?grn_id=45
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "GRN cancelled successfully",
+  "data": {
+    "grn_id": 45
+  },
+  "meta": {
+    "timestamp": "2025-12-05 15:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "success": false,
+  "message": "GRN not found",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-12-05 15:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "success": false,
+  "message": "GRN is already cancelled",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-12-05 15:00:00",
+    "version": "v1"
+  }
+}
+```
+
+**Notes:**
+- Deleting/cancelling a GRN reverses all stock quantities
+- Batch quantities are decreased by the received quantity
+- This operation is transactional
+
+---
+
+### 6. Search Products for GRN
+
+Search products to add to GRN with batch information.
+
+**Endpoint:** `GET /api/v1/grn/search_products.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Query Parameters:**
+- `q` (optional): Search term (product name, SKU, or barcode)
+- `type` (optional): Product type filter. Values: `standard`, `all`. Default: `standard`
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 20, max: 100)
+
+**Example Request:**
+```http
+GET /api/v1/grn/search_products.php?q=paper&type=standard&page=1&limit=20
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "products": [
+      {
+        "product_id": 101,
+        "product_name": "A4 Paper - White",
+        "sku": "PAPER-A4-W",
+        "barcode": "1234567890123",
+        "product_type": "standard",
+        "cost": 250.00,
+        "selling_price": 300.00,
+        "current_stock": 1500.0,
+        "stock_alert_limit": 100.0
+      },
+      {
+        "product_id": 102,
+        "product_name": "A4 Paper - Color",
+        "sku": "PAPER-A4-C",
+        "barcode": "1234567890124",
+        "product_type": "standard",
+        "cost": 280.00,
+        "selling_price": 350.00,
+        "current_stock": 800.0,
+        "stock_alert_limit": 50.0
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 45,
+      "total_pages": 3,
+      "has_more": true
+    }
+  },
+  "meta": {
+    "timestamp": "2025-12-05 11:30:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 7. Get Product Batches
+
+Get all batches for a specific product.
+
+**Endpoint:** `GET /api/v1/grn/get_product_batches.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Query Parameters:**
+- `product_id` (required): Product ID
+
+**Example Request:**
+```http
+GET /api/v1/grn/get_product_batches.php?product_id=101
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "batches": [
+      {
+        "batch_id": 501,
+        "batch_number": "BATCH-2025-001",
+        "cost": 250.00,
+        "selling_price": 300.00,
+        "quantity": 500.0,
+        "expiry_date": null,
+        "alert_quantity": 50,
+        "status": "active",
+        "discount_price": null,
+        "created_at": "2025-12-01 10:00:00"
+      },
+      {
+        "batch_id": 502,
+        "batch_number": "BATCH-2025-002",
+        "cost": 245.00,
+        "selling_price": 300.00,
+        "quantity": 1000.0,
+        "expiry_date": "2026-12-31",
+        "alert_quantity": 100,
+        "status": "active",
+        "discount_price": 280.00,
+        "created_at": "2025-11-15 09:30:00"
+      }
+    ],
+    "total": 2
+  },
+  "meta": {
+    "timestamp": "2025-12-05 11:45:00",
+    "version": "v1"
+  }
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "success": false,
+  "message": "Product ID is required",
+  "errors": [],
+  "meta": {
+    "timestamp": "2025-12-05 11:45:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+### 8. Get Suppliers
+
+Get all suppliers or search suppliers for GRN.
+
+**Endpoint:** `GET /api/v1/grn/get_suppliers.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_ADMIN_TOKEN
+```
+
+**Query Parameters:**
+- `search` (optional): Search term (supplier name, phone, or email)
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 50, max: 100)
+
+**Example Request:**
+```http
+GET /api/v1/grn/get_suppliers.php?search=ABC&page=1&limit=20
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "suppliers": [
+      {
+        "supplier_id": 5,
+        "supplier_name": "ABC Paper Supplies",
+        "supplier_tel": "0771234567",
+        "supplier_email": "abc@example.com",
+        "supplier_address": "No. 123, Galle Road",
+        "supplier_city": "Colombo 03",
+        "supplier_country": "Sri Lanka"
+      },
+      {
+        "supplier_id": 8,
+        "supplier_name": "ABC Stationery Ltd",
+        "supplier_tel": "0777654321",
+        "supplier_email": "info@abcstationery.com",
+        "supplier_address": "456 Main Street",
+        "supplier_city": "Kandy",
+        "supplier_country": "Sri Lanka"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 2,
+      "total_pages": 1,
+      "has_more": false
+    }
+  },
+  "meta": {
+    "timestamp": "2025-12-05 12:00:00",
+    "version": "v1"
+  }
+}
+```
+
+---
+
+## GRN Workflow for Mobile App
+
+### Complete Flow:
+
+1. **Get Suppliers** → `GET /api/v1/grn/get_suppliers.php`
+2. **Search Products** → `GET /api/v1/grn/search_products.php?type=standard`
+3. **Get Product Batches** (if restocking) → `GET /api/v1/grn/get_product_batches.php?product_id=X`
+4. **Create GRN** → `POST /api/v1/grn/create.php`
+5. **View GRN List** → `GET /api/v1/grn/list.php`
+6. **View GRN Details** → `GET /api/v1/grn/details.php?id=X`
+7. **Update Payment** (optional) → `PUT /api/v1/grn/update.php`
+8. **Cancel GRN** (if needed) → `DELETE /api/v1/grn/delete.php`
+
+### Mobile App Implementation Tips:
+
+1. **Cache Suppliers**: Load suppliers once and cache locally
+2. **Debounce Product Search**: Wait 300ms after typing stops before searching
+3. **Batch Selection UI**: Show radio buttons for "New Batch" vs "Restock Existing"
+4. **Auto-fill Prices**: When selecting existing batch, auto-fill cost and selling price
+5. **Calculate Totals**: Show running total as items are added
+6. **Payment Status**: Auto-calculate payment status based on paid amount
+7. **Offline Support**: Save draft GRNs locally and sync when online
+8. **Validation**: Validate all required fields before submission
+9. **Error Handling**: Show user-friendly error messages
+10. **Success Feedback**: Show success message and GRN number after creation
+
+---
+
 ## Security Best Practices
 
 1. **Always use HTTPS** in production
@@ -3444,4 +4191,4 @@ For API support or questions:
 
 **Document End**
 
-*Last Updated: October 22, 2025*
+*Last Updated: December 5, 2025*

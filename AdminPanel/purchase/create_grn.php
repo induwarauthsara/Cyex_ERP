@@ -34,7 +34,7 @@ if ($po_id) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create GRN</title>
+    <title>Create GRN - Goods Received Note</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -76,25 +76,19 @@ if ($po_id) {
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- Moment.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-
     <style>
-        /* Select2 Dark Theme styles */
+        /* Select2 Dark Theme */
         .select2-container--default .select2-selection--single {
             background-color: #374151 !important;
             border: 1px solid #4b5563 !important;
             color: #ffffff !important;
             border-radius: 0.5rem !important;
+            height: 42px !important;
         }
 
         .select2-container--default .select2-selection--single .select2-selection__rendered {
             color: #ffffff !important;
-            line-height: 28px !important;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__placeholder {
-            color: #d1d5db !important;
+            line-height: 40px !important;
         }
 
         .select2-dropdown {
@@ -102,106 +96,33 @@ if ($po_id) {
             border: 1px solid #4b5563 !important;
         }
 
-        .select2-search--dropdown .select2-search__field {
-            background-color: #4b5563 !important;
-            color: #ffffff !important;
-            border: 1px solid #6b7280 !important;
-        }
-
         .select2-results__option {
-            color: #ffffff !important;
             background-color: #374151 !important;
+            color: #ffffff !important;
         }
 
         .select2-results__option--highlighted {
-            background-color: #4b5563 !important;
-            color: #ffffff !important;
-        }
-
-        .select2-results__option--selected {
-            background-color: #3b82f6 !important;
-            color: #ffffff !important;
-        }
-
-        .select2-container--default .select2-selection__arrow {
-            height: 26px !important;
-        }
-
-        .select2-container--default .select2-selection__arrow b {
-            border-color: #ffffff transparent transparent transparent !important;
-        }
-
-        /* Custom styles for tooltips */
-        .tooltip {
-            @apply invisible absolute;
-        }
-
-        .has-tooltip:hover .tooltip {
-            @apply visible z-50;
-        }
-        
-        /* Fix for product name column width */
-        .product-name {
-            word-break: break-word;
-            min-width: 200px;
-            max-width: 300px;
-            display: block;
-        }
-        
-        /* Table column widths */
-        #itemsTable th:first-child,
-        #itemsTable td:first-child {
-            width: 25%;
-            min-width: 250px;
-        }
-        
-        #itemsTable th:nth-child(2),
-        #itemsTable td:nth-child(2),
-        #itemsTable th:nth-child(3),
-        #itemsTable td:nth-child(3) {
-            width: 10%;
-        }
-        
-        #itemsTable th:nth-child(4),
-        #itemsTable td:nth-child(4) {
-            width: 15%;
-        }
-        
-        #itemsTable th:nth-child(5),
-        #itemsTable td:nth-child(5),
-        #itemsTable th:nth-child(6),
-        #itemsTable td:nth-child(6) {
-            width: 12%;
-        }
-        
-        #itemsTable th:nth-child(7),
-        #itemsTable td:nth-child(7) {
-            width: 15%;
-        }
-        
-        #itemsTable th:last-child,
-        #itemsTable td:last-child {
-            width: 5%;
+            background-color: #2563eb !important;
         }
     </style>
 </head>
 
 <body class="bg-gray-900 text-white">
     <div class="min-h-screen">
-        <!-- Navigation -->
-        <nav class="bg-gray-800 border-b border-gray-700">
+        <!-- Header -->
+        <nav class="bg-gray-800 shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <h1 class="text-xl font-bold">Create GRN</h1>
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold text-white">
+                                <i class="fas fa-box mr-2"></i>Create GRN
+                            </h1>
                         </div>
-                        <div class="hidden md:block">
-                            <div class="ml-10 flex items-baseline space-x-4">
-                                <a href="index.php" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                    <i class="fas fa-arrow-left mr-2"></i>Back to PO / GRN List
-                                </a>
-                            </div>
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="index.php" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-arrow-left mr-2"></i>Back to List
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -209,169 +130,124 @@ if ($po_id) {
         </nav>
 
         <!-- Main Content -->
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <!-- GRN Form -->
-            <form id="grnForm" class="bg-gray-800 shadow-md rounded-lg p-6">
-                <!-- GRN Type Selection -->
-                <?php if (!$po_id): ?>
-                    <div class="mb-6">
-                        <div class="flex items-center space-x-4">
-                            <button type="button" onclick="setGRNType('po')"
-                                class="px-4 py-2 rounded-lg font-medium grn-type-btn"
-                                data-type="po">
-                                From Purchase Order
-                            </button>
-                            <button type="button" onclick="setGRNType('direct')"
-                                class="px-4 py-2 rounded-lg font-medium grn-type-btn"
-                                data-type="direct">
-                                Direct GRN
-                            </button>
+        <main class="max-w-6xl mx-auto py-6 px-4">
+            <form id="grnForm" class="space-y-6">
+
+                <!-- Basic Information Card -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                        Basic Information
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Receipt Date <span class="text-red-500">*</span></label>
+                            <input type="date" id="receiptDate"
+                                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                value="<?= date('Y-m-d') ?>" required>
                         </div>
-                    </div>
-                <?php endif; ?>
 
-                <!-- Header Section -->
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-6">
-                    <!-- Date -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400">Receipt Date</label>
-                        <input type="date" id="receiptDate" name="receiptDate"
-                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                            value="<?= date('Y-m-d') ?>" required>
-                    </div>
-
-                    <!-- Supplier Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400">Supplier</label>
-                        <?php if ($po_data): ?>
-                            <input type="hidden" id="supplier" name="supplier" value="<?= $po_data['supplier_id'] ?>">
-                            <p class="mt-1 text-white"><?= htmlspecialchars($po_data['supplier_name']) ?></p>
-                        <?php else: ?>
-                            <div class="flex items-center space-x-2">
-                                <select id="supplier" name="supplier"
-                                    class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                                    required>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Supplier <span class="text-red-500">*</span></label>
+                            <?php if ($po_data): ?>
+                                <input type="hidden" id="supplier" name="supplier" value="<?= $po_data['supplier_id'] ?>">
+                                <div class="px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white">
+                                    <?= htmlspecialchars($po_data['supplier_name']) ?>
+                                </div>
+                            <?php else: ?>
+                                <select id="supplier" class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white" required>
                                     <option value="">Select Supplier</option>
                                 </select>
-                                <button type="button" onclick="addNewSupplier()" 
-                                    class="mt-1 bg-green-600 hover:bg-green-700 text-white px-2 py-2 rounded-lg" 
-                                    title="Add New Supplier">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                            <?php endif; ?>
+                        </div>
 
-                    <!-- PO Selection (for PO-based GRN) -->
-                    <div id="poSelection" style="display: none;">
-                        <label class="block text-sm font-medium text-gray-400">Purchase Order</label>
-                        <select id="purchaseOrder" name="purchaseOrder"
-                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                            <option value="">Select Purchase Order</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Invoice Number</label>
+                            <input type="text" id="invoiceNumber"
+                                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
+                                placeholder="Supplier invoice number">
+                        </div>
 
-                    <!-- Invoice Details -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400">Invoice Number</label>
-                        <input type="text" id="invoiceNumber" name="invoiceNumber"
-                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400">Invoice Date</label>
-                        <input type="date" id="invoiceDate" name="invoiceDate"
-                            class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Invoice Date</label>
+                            <input type="date" id="invoiceDate"
+                                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Items Section -->
-                <div class="mb-6">
+                <!-- Items Card -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold">Received Items</h2>
-                        <?php if (!$po_data): ?>
-                            <button type="button" onclick="openAddProductModal()"
-                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                                <i class="fas fa-plus mr-2"></i>Add Item
-                            </button>
-                        <?php endif; ?>
+                        <h2 class="text-lg font-semibold flex items-center">
+                            <i class="fas fa-boxes mr-2 text-green-500"></i>
+                            Items Received
+                        </h2>
+                        <button type="button" onclick="openAddItemModal()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-plus mr-2"></i>Add Item
+                        </button>
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-700" id="itemsTable">
+                        <table class="w-full">
                             <thead>
-                                <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase w-1/5">Product</th>
-                                    <?php if ($po_data): ?>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Ordered Qty</th>
-                                    <?php endif; ?>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Received Qty</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Batch Number</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Cost</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Selling Price</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Expiry Date</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Action</th>
+                                <tr class="text-left text-sm text-gray-400 border-b border-gray-700">
+                                    <th class="pb-3 px-2">Product</th>
+                                    <th class="pb-3 px-2 w-32">Quantity</th>
+                                    <th class="pb-3 px-2 w-32">Cost</th>
+                                    <th class="pb-3 px-2 w-32">Selling Price</th>
+                                    <th class="pb-3 px-2 w-32">Total</th>
+                                    <th class="pb-3 px-2 w-16"></th>
                                 </tr>
                             </thead>
                             <tbody id="itemsBody" class="divide-y divide-gray-700">
-                                <?php if ($po_data): ?>
-                                    <!-- PO items will be loaded here -->
-                                <?php endif; ?>
+                                <!-- Items will be added here -->
                             </tbody>
+                            <tfoot>
+                                <tr class="border-t-2 border-gray-600">
+                                    <td colspan="4" class="pt-4 px-2 text-right font-semibold">Total Amount:</td>
+                                    <td class="pt-4 px-2 font-bold text-green-400" id="totalAmount">Rs. 0.00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
                         </table>
+                        <div id="emptyMessage" class="text-center py-8 text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-2"></i>
+                            <p>No items added yet. Click "Add Item" to start.</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Notes Section -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-400">Notes</label>
-                    <textarea id="notes" name="notes" rows="3"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white"></textarea>
-                </div>
+                <!-- Payment Card -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-money-bill-wave mr-2 text-yellow-500"></i>
+                        Payment Details
+                    </h2>
 
-                <!-- Payment Section -->
-                <div class="mb-6 bg-gray-700 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-white mb-4">Payment Information</h3>
-                    
-                    <!-- Total Amount Display -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="bg-gray-600 rounded-lg p-3">
-                            <label class="block text-sm font-medium text-gray-400">Total GRN Amount</label>
-                            <div id="totalAmount" class="text-xl font-bold text-white">Rs. 0.00</div>
-                        </div>
-                        <div class="bg-gray-600 rounded-lg p-3">
-                            <label class="block text-sm font-medium text-gray-400">Outstanding Amount</label>
-                            <div id="outstandingAmount" class="text-xl font-bold text-yellow-400">Rs. 0.00</div>
-                        </div>
-                        <div class="bg-gray-600 rounded-lg p-3">
-                            <label class="block text-sm font-medium text-gray-400">Payment Status</label>
-                            <div id="paymentStatusDisplay" class="text-lg font-medium text-red-400">Unpaid</div>
-                        </div>
-                    </div>
-
-                    <!-- Payment Method Selection -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Payment Status</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="radio" name="paymentType" value="paid" class="text-blue-600 bg-gray-700 border-gray-600" onchange="handlePaymentTypeChange()">
-                                    <span class="ml-2 text-green-400">Full Payment</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="paymentType" value="partial" class="text-blue-600 bg-gray-700 border-gray-600" onchange="handlePaymentTypeChange()">
-                                    <span class="ml-2 text-yellow-400">Partial Payment</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="paymentType" value="unpaid" class="text-blue-600 bg-gray-700 border-gray-600" checked onchange="handlePaymentTypeChange()">
-                                    <span class="ml-2 text-red-400">Credit/Unpaid</span>
-                                </label>
-                            </div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Payment Status</label>
+                            <select id="paymentStatus" onchange="handlePaymentStatusChange()"
+                                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white">
+                                <option value="unpaid">Unpaid (Credit)</option>
+                                <option value="partial">Partial Payment</option>
+                                <option value="paid">Fully Paid</option>
+                            </select>
                         </div>
 
-                        <div id="paymentMethodSection" style="display: none;">
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Payment Method</label>
-                            <select id="paymentMethod" name="paymentMethod" class="block w-full rounded-md bg-gray-700 border-gray-600 text-white">
+                        <div id="paidAmountDiv" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Paid Amount</label>
+                            <input type="number" id="paidAmount" step="0.01" min="0"
+                                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white"
+                                placeholder="0.00" onchange="updateOutstanding()">
+                        </div>
+
+                        <div id="paymentMethodDiv" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Payment Method</label>
+                            <select id="paymentMethod"
+                                class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white">
                                 <option value="">Select Method</option>
                                 <option value="cash">Cash</option>
                                 <option value="bank_transfer">Bank Transfer</option>
@@ -379,1371 +255,702 @@ if ($po_id) {
                                 <option value="credit_card">Credit Card</option>
                             </select>
                         </div>
-
-                        <div id="paidAmountSection" style="display: none;">
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Paid Amount</label>
-                            <input type="number" id="paidAmount" name="paidAmount" step="0.01" min="0" 
-                                class="block w-full rounded-md bg-gray-700 border-gray-600 text-white" 
-                                placeholder="Enter paid amount" onchange="calculateOutstanding()">
-                        </div>
                     </div>
 
-                    <!-- Payment Reference and Notes -->
-                    <div id="paymentDetailsSection" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Payment Reference</label>
-                            <input type="text" id="paymentReference" name="paymentReference" 
-                                class="block w-full rounded-md bg-gray-700 border-gray-600 text-white" 
-                                placeholder="Reference number, cheque no, etc.">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Payment Notes</label>
-                            <input type="text" id="paymentNotes" name="paymentNotes" 
-                                class="block w-full rounded-md bg-gray-700 border-gray-600 text-white" 
-                                placeholder="Additional payment notes">
-                        </div>
+                    <div id="paymentReferenceDiv" style="display: none;" class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Payment Reference</label>
+                        <input type="text" id="paymentReference"
+                            class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white"
+                            placeholder="Transaction ID, Cheque No, etc.">
                     </div>
 
-                    <!-- Credit Terms (for unpaid/partial) -->
-                    <div id="creditTermsSection" style="display: block;" class="bg-gray-600 rounded-lg p-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-yellow-400 font-medium">Credit Terms</span>
-                            <span class="text-white">Amount will be added to supplier's outstanding balance</span>
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-300">Outstanding Balance:</span>
+                            <span id="outstandingAmount" class="text-xl font-bold text-yellow-400">Rs. 0.00</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Submit Buttons -->
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="window.history.back()"
-                        class="px-4 py-2 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700">
-                        Cancel
-                    </button>
-                    <button type="button" onclick="saveDraft()"
-                        class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                        Save as Draft
-                    </button>
-                    <button type="button" onclick="completeGRN()"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Complete GRN
+                <!-- Notes Card -->
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-sticky-note mr-2 text-purple-500"></i>
+                        Notes (Optional)
+                    </h2>
+                    <textarea id="notes" rows="3"
+                        class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
+                        placeholder="Add any additional notes or comments..."></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end gap-3">
+                    <a href="index.php"
+                        class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </a>
+                    <button type="button" onclick="submitGRN()"
+                        class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-semibold">
+                        <i class="fas fa-check mr-2"></i>Save GRN
                     </button>
                 </div>
             </form>
         </main>
     </div>
 
-    <!-- Item Row Template for Direct GRN -->
-    <template id="directItemTemplate">
-        <tr class="item-row">
-            <td class="px-4 py-2 w-1/5">
-                <input type="hidden" class="product-id">
-                <p class="product-name w-full"></p>
-            </td>
-            <td class="px-4 py-2">
-                <input type="number" class="received-qty w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    min="1" value="1" required oninput="updatePaymentCalculations()">
-            </td>
-            <td class="px-4 py-2">
-                <input type="text" class="batch-number w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    required>
-            </td>
-            <td class="px-4 py-2">
-                <input type="number" class="cost w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    min="0.01" step="0.01" required oninput="updatePaymentCalculations()">
-            </td>
-            <td class="px-4 py-2">
-                <input type="number" class="selling-price w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    min="0.01" step="0.01" required>
-            </td>
-            <td class="px-4 py-2">
-                <div class="flex items-center space-x-2">
-                    <input type="checkbox" class="has-expiry rounded bg-gray-700 border-gray-600 text-blue-600" id="has-expiry">
-                    <input type="date" class="expiry-date w-full rounded-md bg-gray-700 border-gray-600 text-white" disabled>
-                </div>
-            </td>
-            <td class="px-4 py-2">
-                <button type="button" onclick="removeItem(this)"
-                    class="text-red-500 hover:text-red-400">
-                    <i class="fas fa-trash"></i>
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center z-50">
+        <div class="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Add Item</h3>
+                <button onclick="closeAddItemModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
                 </button>
-            </td>
-        </tr>
-    </template>
+            </div>
 
-    <!-- Item Row Template for PO-based GRN -->
-    <template id="poItemTemplate">
-        <tr class="item-row" data-po-item-id="">
-            <td class="px-4 py-2">
-                <input type="hidden" class="product-id">
-                <span class="product-name"></span>
-            </td>
-            <td class="px-4 py-2">
-                <input type="number" class="ordered-qty w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    min="0" value="0" readonly>
-            </td>
-            <td class="px-4 py-2">
-                <input type="number" class="received-qty w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    min="0" value="0" required oninput="updatePaymentCalculations()">
-            </td>
-            <td class="px-4 py-2">
-                <input type="text" class="batch-number w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    required>
-            </td>
-            <td class="px-4 py-2">
-                <input type="number" class="cost w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    min="0.01" step="0.01" readonly>
-            </td>
-            <td class="px-4 py-2">
-                <input type="number" class="selling-price w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                    min="0.01" step="0.01" readonly>
-            </td>
-            <td class="px-4 py-2">
-                <input type="date" class="expiry-date w-full rounded-md bg-gray-700 border-gray-600 text-white" readonly>
-            </td>
-            <td class="px-4 py-2">
-                <button type="button" onclick="removeItem(this)"
-                    class="text-red-500 hover:text-red-400">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    </template>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Product <span class="text-red-500">*</span></label>
+                    <div class="flex">
+                        <select id="productSelect" class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white">
+                            <option value="">Search for a product...</option>
+                        </select>
+                        <label class="flex items-center ml-10">
+                            <input type="checkbox" id="standardOnlyFilter" checked
+                                class="mr-2 rounded bg-gray-700 border-gray-600 text-blue-600">
+                            <span class="text-sm text-gray-400">Standard items only</span>
+                        </label>
+                    </div>
+                </div>
 
-    <!-- Quick Add Supplier Modal -->
-    <div id="supplierModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h3 class="text-xl font-bold mb-4">Add New Supplier</h3>
-            <form id="quickSupplierForm">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-400">Supplier Name</label>
-                    <input type="text" id="supplierName" name="supplierName"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white"
-                        required>
+                <!-- Batch Selection Section -->
+                <div id="batchSection" style="display: none;" class="grid grid-cols-3 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Batch</label>
+                        <select id="existingBatchSelect" class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white" onchange="handleBatchSelect()">
+                            <option value="">Loading batches...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">&nbsp;</label>
+                        <button type="button" onclick="toggleNewBatch()" id="newBatchBtn"
+                            class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white hover:bg-gray-600">
+                            <i class="fas fa-plus mr-1"></i>New
+                        </button>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-400">Phone Number</label>
-                    <input type="text" id="supplierTel" name="supplierTel"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Quantity <span class="text-red-500">*</span></label>
+                        <input type="number" id="itemQuantity" step="1"
+                            class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white" value="1">
+                    </div>
+
+                    <div id="availableStockDiv" style="display: none;">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Available Stock</label>
+                        <div class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-400 flex items-center">
+                            <i class="fas fa-box mr-2"></i>
+                            <span id="availableStock">0</span>
+                        </div>
+                    </div>
+
+                    <div id="newBatchNumberDiv" style="display: none;">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">New Batch Number</label>
+                        <input type="text" id="itemBatch"
+                            class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white"
+                            placeholder="Auto-generated">
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-400">Address</label>
-                    <textarea id="supplierAddress" name="supplierAddress" rows="2"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white"></textarea>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Cost Price <span class="text-red-500">*</span></label>
+                        <input type="number" id="itemCost" step="0.01" min="0"
+                            class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white"
+                            placeholder="0.00" onchange="calculateProfit()">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Selling Price <span class="text-red-500">*</span></label>
+                        <input type="number" id="itemSelling" step="0.01" min="0"
+                            class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white"
+                            placeholder="0.00" onchange="calculateProfit()">
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-400">Note</label>
-                    <textarea id="supplierNote" name="supplierNote" rows="2"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white"></textarea>
+
+                <div class="bg-gray-700 rounded-lg p-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-300">Profit Margin:</span>
+                        <span id="profitMargin" class="font-semibold text-green-400">0%</span>
+                    </div>
                 </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeSupplierModal()"
-                        class="px-4 py-2 bg-gray-600 text-white rounded-lg">
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="hasExpiry" onchange="toggleExpiry()"
+                            class="mr-2 rounded bg-gray-700 border-gray-600 text-blue-600">
+                        <span class="text-sm text-gray-300">This product has an expiry date</span>
+                    </label>
+                    <input type="date" id="itemExpiry" disabled
+                        class="mt-2 w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="closeAddItemModal()"
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">
                         Cancel
                     </button>
-                    <button type="button" onclick="saveSupplier()"
-                        class="px-4 py-2 bg-green-600 text-white rounded-lg">
-                        Save Supplier
+                    <button type="button" onclick="addItem()"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                        <i class="fas fa-plus mr-2"></i>Add Item
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Add Product Modal -->
-    <div id="addProductModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl">
-            <h3 class="text-xl font-bold mb-4">Add Product to GRN</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-400 mb-2">Select Product</label>
-                <select id="productSelect" class="block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                    <option value="">Search and select product</option>
-                </select>
-            </div>
-            
-            <!-- Product Type Filter Checkbox -->
-            <div class="mb-4">
-                <label class="flex items-center text-sm text-gray-300">
-                    <input type="checkbox" checked id="standardProductsOnly" class="mr-2 rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500">
-                    Only Show Standard Product List (hide Combo / Service / Digital Products)
-                </label>
-            </div>
-            
-            <!-- Batch Selection Section -->
-            <div id="batchSelectionSection" class="mb-4 hidden">
-                <h4 class="font-medium text-lg mb-3 text-white">Batch Management</h4>
-                
-                <!-- Batch Selection Options -->
-                <div class="mb-4">
-                    <label class="flex items-center mb-2">
-                        <input type="radio" name="batchOption" id="selectExistingBatch" value="existing" 
-                               class="mr-2 text-blue-600 bg-gray-700 border-gray-600 focus:ring-blue-500">
-                        <span class="text-gray-300">Select Existing Batch</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="radio" name="batchOption" id="createNewBatch" value="new" 
-                               class="mr-2 text-blue-600 bg-gray-700 border-gray-600 focus:ring-blue-500">
-                        <span class="text-gray-300">Create New Batch</span>
-                    </label>
-                </div>
-                
-                <!-- Existing Batches List -->
-                <div id="existingBatchesSection" class="hidden mb-4">
-                    <label class="block text-sm font-medium text-gray-400 mb-2">Select Batch</label>
-                    <select id="batchSelect" class="block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                        <option value="">Choose a batch...</option>
-                    </select>
-                    
-                    <!-- Selected Batch Details -->
-                    <div id="selectedBatchDetails" class="hidden mt-3 bg-gray-600 p-3 rounded-md">
-                        <h5 class="font-medium text-white mb-2">Batch Details</h5>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                            <div>
-                                <span class="text-gray-400">Available Qty:</span>
-                                <span id="batchAvailableQty" class="text-white font-medium ml-1">-</span>
-                            </div>
-                            <div>
-                                <span class="text-gray-400">Cost:</span>
-                                <span id="batchCost" class="text-white font-medium ml-1">-</span>
-                            </div>
-                            <div>
-                                <span class="text-gray-400">Selling Price:</span>
-                                <span id="batchSellingPrice" class="text-white font-medium ml-1">-</span>
-                            </div>
-                            <div>
-                                <span class="text-gray-400">Status:</span>
-                                <span id="batchStatus" class="text-white font-medium ml-1">-</span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 text-sm mt-2">
-                            <div>
-                                <span class="text-gray-400">Alert Qty:</span>
-                                <span id="batchAlertQty" class="text-white font-medium ml-1">-</span>
-                            </div>
-                            <div>
-                                <span class="text-gray-400">Expiry Date:</span>
-                                <span id="batchExpiryDate" class="text-white font-medium ml-1">-</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- New Batch Creation Section -->
-                <div id="newBatchSection" class="hidden">
-                    <div class="bg-gray-600 p-4 rounded-md">
-                        <h5 class="font-medium text-white mb-3">Create New Batch</h5>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">Batch Number (Optional)</label>
-                                <input type="text" id="newBatchNumber" placeholder="Auto-generated if empty"
-                                       class="block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">Alert Quantity</label>
-                                <input type="number" id="newBatchAlertQty" value="5" min="0" step="0.001"
-                                       class="block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">Status</label>
-                                <select id="newBatchStatus" class="block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                                    <option value="active" selected>Active (Available for Sale)</option>
-                                    <option value="discontinued">Discontinued</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">Discount Price (Optional)</label>
-                                <input type="number" id="newBatchDiscountPrice" min="0" step="0.01"
-                                       class="block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-400">Quantity <span class="text-red-400">*</span></label>
-                    <input type="number" id="modalQuantity" min="0.001" step="0.001" value="1"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400">Cost <span class="text-red-400">*</span></label>
-                    <input type="number" id="modalCost" min="0.01" step="0.01"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400">Selling Price <span class="text-red-400">*</span></label>
-                    <input type="number" id="modalSellingPrice" min="0.01" step="0.01"
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400">Profit (Auto-calculated)</label>
-                    <input type="number" id="modalProfit" readonly
-                        class="mt-1 block w-full rounded-md bg-gray-600 border-gray-600 text-gray-300 cursor-not-allowed">
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-400">Batch Number (For existing batch only)</label>
-                    <input type="text" id="modalBatchNumber" readonly
-                        class="mt-1 block w-full rounded-md bg-gray-600 border-gray-600 text-gray-300 cursor-not-allowed">
-                    <small class="text-gray-500">This field is auto-filled when selecting existing batch or creating new batch</small>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400" for="modalHasExpiry">
-                        <input type="checkbox" id="modalHasExpiry" class="mr-2 rounded bg-gray-700 border-gray-600 text-blue-600">
-                        Has Expiry Date
-                    </label>
-                    <input type="date" id="modalExpiryDate" disabled
-                        class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white">
-                </div>
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeAddProductModal()"
-                    class="px-4 py-2 bg-gray-600 text-white rounded-lg">
-                    Cancel
-                </button>
-                <button type="button" onclick="addSelectedProduct()"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg">
-                    Add Product
-                </button>
             </div>
         </div>
     </div>
 
     <script>
-    // Global variables to track GRN type
-    let currentGRNType = 'direct'; // default
-    
-    // GRN Type selection function
-    function setGRNType(type) {
-        currentGRNType = type;
-        
-        // Update button styles
-        document.querySelectorAll('.grn-type-btn').forEach(btn => {
-            btn.classList.remove('bg-blue-600', 'text-white');
-            btn.classList.add('bg-gray-600', 'text-gray-300');
-        });
-        
-        const activeBtn = document.querySelector(`[data-type="${type}"]`);
-        activeBtn.classList.remove('bg-gray-600', 'text-gray-300');
-        activeBtn.classList.add('bg-blue-600', 'text-white');
-        
-        // Show/hide relevant sections
-        if (type === 'po') {
-            document.getElementById('poSelection').style.display = 'block';
-            // Load purchase orders for the supplier
-            loadPurchaseOrders();
-        } else {
-            document.getElementById('poSelection').style.display = 'none';
-            document.getElementById('purchaseOrder').value = '';
-            // Clear any PO-related items
-            document.getElementById('itemsBody').innerHTML = '';
-        }
-        
-        // Show/hide Add Item button
-        const addItemBtn = document.querySelector('button[onclick="openAddProductModal()"]');
-        if (addItemBtn) {
-            addItemBtn.style.display = type === 'direct' ? 'block' : 'none';
-        }
-    }
-    
-    // Load purchase orders for selected supplier
-    function loadPurchaseOrders() {
-        const supplierId = document.getElementById('supplier').value;
-        if (!supplierId) {
-            document.getElementById('purchaseOrder').innerHTML = '<option value="">Select Purchase Order</option>';
-            return;
-        }
-        
-        $.ajax({
-            url: '../api/purchase.php',
-            type: 'GET',
-            data: {
-                action: 'get_pending_orders',
-                supplier_id: supplierId
-            },
-            dataType: 'json',
-            success: function(response) {
-                const select = document.getElementById('purchaseOrder');
-                select.innerHTML = '<option value="">Select Purchase Order</option>';
-                
-                if (response.success && response.data.length > 0) {
-                    response.data.forEach(function(po) {
-                        const option = document.createElement('option');
-                        option.value = po.po_id;
-                        option.textContent = `PO-${po.po_number} - ${po.total_amount} (${po.order_date})`;
-                        select.appendChild(option);
-                    });
-                }
-            },
-            error: function() {
-                console.error('Failed to load purchase orders');
-            }
-        });
-    }
-    
-    // Handle purchase order selection
-    function handlePOSelection() {
-        const poId = document.getElementById('purchaseOrder').value;
-        if (poId && currentGRNType === 'po') {
-            loadPOItems(poId);
-        } else {
-            document.getElementById('itemsBody').innerHTML = '';
-        }
-    }
-    
-    // Quick Add Supplier functionality
-    function addNewSupplier() {
-        document.getElementById('supplierModal').classList.remove('hidden');
-    }
+        let itemCounter = 0;
+        let authToken = localStorage.getItem('auth_token');
 
-    function closeSupplierModal() {
-        document.getElementById('supplierModal').classList.add('hidden');
-        document.getElementById('quickSupplierForm').reset();
-    }
+        // Check if authenticated
+        if (!authToken) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Authentication Required',
+                text: 'Please log in to continue',
+            }).then(() => {
+                window.location.href = '/login/';
+            });
+        }
 
-    function saveSupplier() {
-        const supplierName = document.getElementById('supplierName').value;
-        const supplierTel = document.getElementById('supplierTel').value;
-        const supplierAddress = document.getElementById('supplierAddress').value;
-        const note = document.getElementById('supplierNote').value;
-        
-        if (!supplierName) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Supplier name is required'
-            });
-            return;
-        }
-        
-        // Send AJAX request to create supplier using suppliers.php
-        $.ajax({
-            url: '../../suppliers/suppliers.php',
-            type: 'POST',
-            data: {
-                action: 'add_supplier',
-                supplier_name: supplierName,
-                supplier_tel: supplierTel,
-                supplier_address: supplierAddress,
-                note: note
-            },
-            dataType: 'json',
-            success: function(response) {
-                if (response.status === 'success') {
-                    // Add the new supplier to the dropdown
-                    const supplierSelect = $('#supplier');
-                    const newOption = new Option(supplierName, response.supplier_id, true, true);
-                    supplierSelect.append(newOption).trigger('change');
-                    
-                    // Close modal
-                    closeSupplierModal();
-                    
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
-                    });
-                } else {
-                    throw new Error(response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to add supplier: ' + error
-                });
-            }
-        });
-    }
-    
-    // Product Modal Functionality
-    function openAddProductModal() {
-        document.getElementById('addProductModal').classList.remove('hidden');
-    }
-    
-    function closeAddProductModal() {
-        document.getElementById('addProductModal').classList.add('hidden');
-        $('#productSelect').val('').trigger('change');
-        $('#batchSelect').val('').trigger('change');
-        
-        // Reset all form fields
-        document.getElementById('modalQuantity').value = '1';
-        document.getElementById('modalCost').value = '';
-        document.getElementById('modalSellingPrice').value = '';
-        document.getElementById('modalProfit').value = '';
-        document.getElementById('modalBatchNumber').value = '';
-        document.getElementById('modalHasExpiry').checked = false;
-        document.getElementById('modalExpiryDate').disabled = true;
-        document.getElementById('modalExpiryDate').value = '';
-        
-        // Reset new batch fields
-        document.getElementById('newBatchNumber').value = '';
-        document.getElementById('newBatchAlertQty').value = '5';
-        document.getElementById('newBatchStatus').value = 'active';
-        document.getElementById('newBatchDiscountPrice').value = '';
-        
-        // Hide all sections
-        hideAllBatchSections();
-        
-        // Uncheck radio buttons
-        $('input[name="batchOption"]').prop('checked', false);
-    }
-    
-    // Toggle expiry date field based on checkbox
-    document.getElementById('modalHasExpiry').addEventListener('change', function() {
-        document.getElementById('modalExpiryDate').disabled = !this.checked;
-    });
-    
-    // Batch Management Functions
-    let currentBatches = [];
-    
-    function loadProductBatches(productId) {
-        $.ajax({
-            url: '../../products/API/fetch_Single_product_batches.php',
-            type: 'GET',
-            data: { product_id: productId },
-            dataType: 'json',
-            success: function(batches) {
-                currentBatches = batches;
-                if (batches.length > 0) {
-                    populateBatchSelection(batches);
-                    $('#batchSelectionSection').removeClass('hidden');
-                    
-                    // Default to existing batch if available
-                    $('#selectExistingBatch').prop('checked', true).trigger('change');
-                } else {
-                    // No batches found, force new batch creation
-                    $('#createNewBatch').prop('checked', true).trigger('change');
-                    $('#batchSelectionSection').removeClass('hidden');
-                    
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'No Existing Batches',
-                        text: 'No batches found for this product. You will create a new batch.',
-                        timer: 3000
-                    });
-                }
-            },
-            error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to fetch product batches'
-                });
-                hideAllBatchSections();
-            }
-        });
-    }
-    
-    function populateBatchSelection(batches) {
-        const batchSelect = $('#batchSelect');
-        batchSelect.empty().append('<option value="">Choose a batch...</option>');
-        
-        batches.forEach(batch => {
-            batchSelect.append(`<option value="${batch.batch_id}">${batch.display_name}</option>`);
-        });
-    }
-    
-    function loadBatchDetails(batchId) {
-        const batch = currentBatches.find(b => b.batch_id == batchId);
-        if (batch) {
-            // Display batch details
-            $('#batchAvailableQty').text(batch.quantity);
-            $('#batchCost').text(batch.cost);
-            $('#batchSellingPrice').text(batch.selling_price);
-            $('#batchStatus').text(batch.status.charAt(0).toUpperCase() + batch.status.slice(1));
-            $('#batchAlertQty').text(batch.alert_quantity);
-            $('#batchExpiryDate').text(batch.expiry_date || 'No expiry');
-            
-            // Auto-fill form fields
-            $('#modalBatchNumber').val(batch.batch_name);
-            $('#modalCost').val(parseFloat(batch.cost.replace(/,/g, '')));
-            $('#modalSellingPrice').val(parseFloat(batch.selling_price.replace(/,/g, '')));
-            
-            // Handle expiry date
-            if (batch.expiry_date) {
-                $('#modalHasExpiry').prop('checked', true);
-                $('#modalExpiryDate').prop('disabled', false).val(batch.expiry_date);
-            } else {
-                $('#modalHasExpiry').prop('checked', false);
-                $('#modalExpiryDate').prop('disabled', true).val('');
-            }
-            
-            calculateProfit();
-            $('#selectedBatchDetails').removeClass('hidden');
-        }
-    }
-    
-    function calculateProfit() {
-        const cost = parseFloat($('#modalCost').val()) || 0;
-        const sellingPrice = parseFloat($('#modalSellingPrice').val()) || 0;
-        const profit = sellingPrice - cost;
-        $('#modalProfit').val(profit.toFixed(2));
-    }
-    
-    function clearModalFields() {
-        $('#modalCost').val('');
-        $('#modalSellingPrice').val('');
-        $('#modalProfit').val('');
-        $('#modalBatchNumber').val('');
-        $('#modalHasExpiry').prop('checked', false);
-        $('#modalExpiryDate').prop('disabled', true).val('');
-        $('#selectedBatchDetails').addClass('hidden');
-    }
-    
-    function hideAllBatchSections() {
-        $('#batchSelectionSection').addClass('hidden');
-        $('#existingBatchesSection').addClass('hidden');
-        $('#newBatchSection').addClass('hidden');
-        $('#selectedBatchDetails').addClass('hidden');
-        clearModalFields();
-    }
-    
-    // Add selected product to the GRN items table
-    function addSelectedProduct() {
-        const productSelect = document.getElementById('productSelect');
-        const productId = productSelect.value;
-        const productName = productSelect.options[productSelect.selectedIndex].text;
-        const quantity = parseFloat(document.getElementById('modalQuantity').value);
-        const cost = parseFloat(document.getElementById('modalCost').value);
-        const sellingPrice = parseFloat(document.getElementById('modalSellingPrice').value);
-        const batchNumber = document.getElementById('modalBatchNumber').value;
-        const hasExpiry = document.getElementById('modalHasExpiry').checked;
-        const expiryDate = document.getElementById('modalExpiryDate').value;
-        
-        // Get batch option
-        const batchOption = $('input[name="batchOption"]:checked').val();
-        const selectedBatchId = $('#batchSelect').val();
-        
-        // Validation
-        if (!productId) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please select a product'
-            });
-            return;
-        }
-        
-        // Validate batch selection
-        if (!batchOption) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please select whether to use existing batch or create new batch'
-            });
-            return;
-        }
-        
-        if (batchOption === 'existing' && !selectedBatchId) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please select an existing batch'
-            });
-            return;
-        }
-        
-        if (!quantity || quantity <= 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please enter a valid quantity'
-            });
-            return;
-        }
-        
-        if (!cost || cost <= 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please enter a valid cost'
-            });
-            return;
-        }
-        
-        if (!sellingPrice || sellingPrice <= 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please enter a valid selling price'
-            });
-            return;
-        }
-        
-        // For new batch, validate batch number if provided
-        if (batchOption === 'new' && batchNumber && batchNumber.trim() === '') {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Batch number cannot be empty if provided'
-            });
-            return;
-        }
-        
-        if (hasExpiry && !expiryDate) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please enter expiry date'
-            });
-            return;
-        }
-        
-        // Collect batch data for new batch creation
-        let batchData = null;
-        if (batchOption === 'new') {
-            batchData = {
-                isNew: true,
-                batchNumber: batchNumber || '', // Will be auto-generated if empty
-                alertQuantity: parseFloat($('#newBatchAlertQty').val()) || 5,
-                status: $('#newBatchStatus').val() || 'active',
-                discountPrice: parseFloat($('#newBatchDiscountPrice').val()) || null
-            };
-        } else {
-            batchData = {
-                isNew: false,
-                batchId: selectedBatchId
-            };
-        }
-        
-        // Get the template
-        const template = document.getElementById('directItemTemplate');
-        const clone = document.importNode(template.content, true);
-        
-        // Fill in the values
-        clone.querySelector('.product-id').value = productId;
-        clone.querySelector('.product-name').textContent = productName;
-        clone.querySelector('.received-qty').value = quantity;
-        clone.querySelector('.batch-number').value = batchNumber || 'Auto-generated';
-        clone.querySelector('.cost').value = cost;
-        clone.querySelector('.selling-price').value = sellingPrice;
-        
-        // Store batch data in a hidden field
-        const hiddenBatchData = document.createElement('input');
-        hiddenBatchData.type = 'hidden';
-        hiddenBatchData.className = 'batch-data';
-        hiddenBatchData.value = JSON.stringify(batchData);
-        clone.querySelector('tr').appendChild(hiddenBatchData);
-        
-        // Handle expiry date
-        const expiryCheckbox = clone.querySelector('.has-expiry');
-        const expiryInput = clone.querySelector('.expiry-date');
-        expiryCheckbox.checked = hasExpiry;
-        expiryInput.disabled = !hasExpiry;
-        if (hasExpiry) {
-            expiryInput.value = expiryDate;
-        }
-        
-        // Add event listener for expiry checkbox
-        expiryCheckbox.addEventListener('change', function() {
-            const expiryField = this.closest('tr').querySelector('.expiry-date');
-            expiryField.disabled = !this.checked;
-            if (!this.checked) {
-                expiryField.value = '';
-            }
-        });
-        
-        // Add to table
-        document.getElementById('itemsBody').appendChild(clone);
-        
-        // Update payment calculations
-        updatePaymentCalculations();
-        
-        // Close modal
-        closeAddProductModal();
-    }
-    
-    // Remove item row
-    function removeItem(button) {
-        const row = button.closest('tr');
-        row.remove();
-        
-        // Update payment calculations
-        updatePaymentCalculations();
-    }
-    
-    // Initialize Select2 for supplier and product selection
-    $(document).ready(function() {
-        // Initialize supplier select with AJAX
-        $('#supplier').select2({
-            placeholder: 'Search for a supplier',
-            allowClear: true,
-            ajax: {
-                url: '../../suppliers/suppliers.php',
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return {
-                        action: 'get_suppliers',
-                        search: params.term
-                    };
-                },
-                processResults: function(data) {
-                    if (data.status === 'success') {
-                        return {
-                            results: data.data.map(function(supplier) {
-                                return {
-                                    id: supplier.supplier_id,
-                                    text: supplier.supplier_name
-                                };
-                            })
-                        };
-                    }
-                    return { results: [] };
-                },
-                cache: true
-            },
-            minimumInputLength: 1
-        });
-        
-        // Initialize product select with AJAX
-        $('#productSelect').select2({
-            placeholder: 'Search for a product',
-            allowClear: true,
-            dropdownParent: $('#addProductModal'),
-            ajax: {
-                url: '../../products/API/getProducts.php',
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    var data = {
-                        search: params.term
-                    };
-                    
-                    // Add product type filter if checkbox is checked
-                    if ($('#standardProductsOnly').is(':checked')) {
-                        data.product_type = 'standard';
-                    }
-                    
-                    return data;
-                },
-                processResults: function(data) {
-                    return {
-                        results: data.map(function(product) {
-                            return {
-                                id: product.id,
-                                text: product.name
-                            };
-                        })
-                    };
-                },
-                cache: false // Disable cache to reflect filter changes
-            },
-            minimumInputLength: 1
-        });
-        
-        // Add event listener for checkbox to refresh product search
-        $('#standardProductsOnly').on('change', function() {
-            // Clear current selection and reset the Select2
-            $('#productSelect').val(null).trigger('change');
-            
-            // Force refresh of Select2 options by clearing cache
-            $('#productSelect').select2('destroy').select2({
-                placeholder: 'Search for a product',
+        $(document).ready(function() {
+
+            // Initialize supplier select
+            $('#supplier').select2({
+                placeholder: 'Search for a supplier',
                 allowClear: true,
-                dropdownParent: $('#addProductModal'),
                 ajax: {
-                    url: '../../products/API/getProducts.php',
+                    url: '/api/v1/grn/get_suppliers.php',
                     dataType: 'json',
                     delay: 250,
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
+                    },
                     data: function(params) {
-                        var data = {
+                        return {
                             search: params.term
                         };
-                        
-                        // Add product type filter if checkbox is checked
-                        if ($('#standardProductsOnly').is(':checked')) {
-                            data.product_type = 'standard';
-                        }
-                        
-                        return data;
                     },
                     processResults: function(data) {
+                        if (data.success && data.data && data.data.suppliers) {
+                            return {
+                                results: data.data.suppliers.map(function(supplier) {
+                                    return {
+                                        id: supplier.supplier_id,
+                                        text: supplier.supplier_name
+                                    };
+                                })
+                            };
+                        }
                         return {
-                            results: data.map(function(product) {
-                                return {
-                                    id: product.id,
-                                    text: product.name
-                                };
-                            })
+                            results: []
                         };
                     },
-                    cache: false
-                },
-                minimumInputLength: 1
-            });
-        });
-        
-        // Product selection change handler
-        $('#productSelect').on('change', function() {
-            const productId = $(this).val();
-            if (productId) {
-                loadProductBatches(productId);
-            } else {
-                hideAllBatchSections();
-            }
-        });
-        
-        // Batch option radio button handlers
-        $('input[name="batchOption"]').on('change', function() {
-            const selectedOption = $('input[name="batchOption"]:checked').val();
-            
-            if (selectedOption === 'existing') {
-                $('#existingBatchesSection').removeClass('hidden');
-                $('#newBatchSection').addClass('hidden');
-                $('#modalBatchNumber').prop('readonly', true).addClass('bg-gray-600 cursor-not-allowed').removeClass('bg-gray-700');
-            } else if (selectedOption === 'new') {
-                $('#existingBatchesSection').addClass('hidden');
-                $('#newBatchSection').removeClass('hidden');
-                $('#modalBatchNumber').prop('readonly', false).removeClass('bg-gray-600 cursor-not-allowed').addClass('bg-gray-700');
-                clearModalFields();
-            }
-        });
-        
-        // Batch selection handler
-        $('#batchSelect').on('change', function() {
-            const batchId = $(this).val();
-            if (batchId) {
-                loadBatchDetails(batchId);
-            } else {
-                $('#selectedBatchDetails').addClass('hidden');
-                clearModalFields();
-            }
-        });
-        
-        // Cost and selling price change handlers for profit calculation
-        $('#modalCost, #modalSellingPrice').on('input', function() {
-            calculateProfit();
-        });
-
-        // Handle supplier selection change for PO mode
-        $('#supplier').on('change', function() {
-            if (currentGRNType === 'po') {
-                loadPurchaseOrders();
-            }
-        });
-        
-        // Handle purchase order selection
-        $('#purchaseOrder').on('change', function() {
-            handlePOSelection();
-        });
-        
-        // Set default GRN type to direct
-        setGRNType('direct');
-
-        <?php if ($po_id): ?>
-        // Load PO items if we have a PO ID
-        loadPOItems(<?= $po_id ?>);
-        <?php endif; ?>
-    });
-    
-    // Function to load PO items
-    function loadPOItems(poId) {
-        $.ajax({
-            url: 'get_po_items.php',
-            type: 'GET',
-            data: {
-                po_id: poId
-            },
-            dataType: 'json',
-            success: function(response) {
-                let items = [];
-                if (response.success && response.items) {
-                    items = response.items;
-                } else if (Array.isArray(response)) {
-                    items = response; // fallback for old format
+                    cache: true
                 }
-                
-                if (items.length > 0) {
-                    const itemsBody = document.getElementById('itemsBody');
-                    itemsBody.innerHTML = ''; // Clear existing items
-                    
-                    items.forEach(function(item) {
-                        const template = document.getElementById('poItemTemplate');
-                        if (template) {
-                            const clone = document.importNode(template.content, true);
-                            
-                            clone.querySelector('.product-id').value = item.product_id;
-                            clone.querySelector('.product-name').textContent = item.product_name;
-                            clone.querySelector('.ordered-qty').value = item.quantity;
-                            clone.querySelector('.received-qty').value = item.remaining_qty || item.quantity;
-                            clone.querySelector('.cost').value = item.unit_cost;
-                            
-                            // Generate a batch number (PO number + current date)
-                            const today = new Date();
-                            const batchNumber = 'PO-' + item.po_number + '-' + today.toISOString().split('T')[0];
-                            clone.querySelector('.batch-number').value = batchNumber;
-                            
-                            // Add to table
-                            itemsBody.appendChild(clone);
+            });
+
+            // Initialize product select
+            $('#productSelect').select2({
+                placeholder: 'Search for a product',
+                allowClear: true,
+                dropdownParent: $('#addItemModal'),
+                ajax: {
+                    url: '/api/v1/grn/search_products.php',
+                    dataType: 'json',
+                    delay: 250,
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
+                    },
+                    data: function(params) {
+                        return {
+                            q: params.term,
+                            type: $('#standardOnlyFilter').is(':checked') ? 'standard' : 'all'
+                        };
+                    },
+                    processResults: function(data) {
+                        if (data.success && data.data && data.data.products) {
+                            return {
+                                results: data.data.products.map(function(product) {
+                                    return {
+                                        id: product.product_id,
+                                        text: product.product_name,
+                                        cost: product.cost || 0,
+                                        selling_price: product.selling_price || 0
+                                    };
+                                })
+                            };
                         }
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'No Items',
-                        text: 'No pending items found for this purchase order.'
-                    });
+                        return {
+                            results: []
+                        };
+                    },
+                    cache: true
                 }
-            },
-            error: function() {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to load PO items'
-                });
+            });
+
+            // Refresh product search when filter changes
+            $('#standardOnlyFilter').on('change', function() {
+                $('#productSelect').val(null).trigger('change');
+            });
+
+            // Auto-fill prices when product is selected
+            $('#productSelect').on('select2:select', function(e) {
+                const data = e.params.data;
+                const productId = data.id;
+
+                // Load batches for this product
+                loadProductBatches(productId);
+
+                // Show batch section
+                document.getElementById('batchSection').style.display = 'grid';
+
+                // Set default prices
+                if (data.cost) $('#itemCost').val(data.cost);
+                if (data.selling_price) $('#itemSelling').val(data.selling_price);
+                calculateProfit();
+            });
+
+            updateEmptyMessage();
+        });
+
+        function loadProductBatches(productId) {
+            $.ajax({
+                url: '/api/v1/grn/get_product_batches.php',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken
+                },
+                data: {
+                    product_id: productId
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.data && response.data.batches) {
+                        const select = $('#existingBatchSelect');
+                        select.html('');
+
+                        if (response.data.batches.length > 0) {
+                            response.data.batches.forEach(function(batch, index) {
+                                const expiry = batch.expiry_date ? ' - Exp: ' + batch.expiry_date : '';
+                                const option = `<option value="${batch.batch_id}" 
+                                    data-stock="${batch.quantity}"
+                                    data-cost="${batch.cost}"
+                                    data-selling="${batch.selling_price}"
+                                    data-expiry="${batch.expiry_date || ''}"
+                                    data-batch-number="${batch.batch_number}"
+                                    ${index === 0 ? 'selected' : ''}>
+                                    ${batch.batch_number} (Stock: ${batch.quantity})${expiry}
+                                </option>`;
+                                select.append(option);
+                            });
+
+                            // Show available stock div and auto-select first batch
+                            document.getElementById('availableStockDiv').style.display = 'block';
+                            handleBatchSelect();
+                        } else {
+                            select.html('<option value="">No existing batches</option>');
+                            // Auto-switch to new batch mode
+                            toggleNewBatch();
+                        }
+                    }
+                },
+                error: function() {
+                    console.error('Failed to load batches');
+                    $('#existingBatchSelect').html('<option value="">Error loading batches</option>');
+                }
+            });
+        }
+
+        function toggleNewBatch() {
+            const isNewMode = currentBatchMode === 'existing';
+            currentBatchMode = isNewMode ? 'new' : 'existing';
+
+            const select = document.getElementById('existingBatchSelect');
+            const newBatchDiv = document.getElementById('newBatchNumberDiv');
+            const availableStockDiv = document.getElementById('availableStockDiv');
+            const btn = document.getElementById('newBatchBtn');
+
+            if (isNewMode) {
+                select.disabled = true;
+                select.classList.add('opacity-50');
+                newBatchDiv.style.display = 'block';
+                availableStockDiv.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-undo mr-1"></i>Use Existing';
+                btn.classList.add('bg-blue-600');
+                btn.classList.remove('bg-gray-700');
+            } else {
+                select.disabled = false;
+                select.classList.remove('opacity-50');
+                newBatchDiv.style.display = 'none';
+                availableStockDiv.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-plus mr-1"></i>New';
+                btn.classList.remove('bg-blue-600');
+                btn.classList.add('bg-gray-700');
+                handleBatchSelect();
             }
-        });
-    }
-
-    // Payment Management Functions
-    function handlePaymentTypeChange() {
-        const paymentType = document.querySelector('input[name="paymentType"]:checked').value;
-        const paymentMethodSection = document.getElementById('paymentMethodSection');
-        const paidAmountSection = document.getElementById('paidAmountSection');
-        const paymentDetailsSection = document.getElementById('paymentDetailsSection');
-        const creditTermsSection = document.getElementById('creditTermsSection');
-
-        // Reset payment fields
-        document.getElementById('paymentMethod').value = '';
-        document.getElementById('paidAmount').value = '';
-        document.getElementById('paymentReference').value = '';
-        document.getElementById('paymentNotes').value = '';
-
-        if (paymentType === 'paid') {
-            // Full payment
-            paymentMethodSection.style.display = 'block';
-            paidAmountSection.style.display = 'block';
-            paymentDetailsSection.style.display = 'block';
-            creditTermsSection.style.display = 'none';
-            
-            // Set paid amount to total amount
-            const totalAmount = calculateTotalAmount();
-            document.getElementById('paidAmount').value = totalAmount.toFixed(2);
-            document.getElementById('paidAmount').readOnly = true;
-            
-        } else if (paymentType === 'partial') {
-            // Partial payment
-            paymentMethodSection.style.display = 'block';
-            paidAmountSection.style.display = 'block';
-            paymentDetailsSection.style.display = 'block';
-            creditTermsSection.style.display = 'block';
-            
-            document.getElementById('paidAmount').readOnly = false;
-            document.getElementById('paidAmount').value = '';
-            
-        } else {
-            // Unpaid/Credit
-            paymentMethodSection.style.display = 'none';
-            paidAmountSection.style.display = 'none';
-            paymentDetailsSection.style.display = 'none';
-            creditTermsSection.style.display = 'block';
         }
 
-        calculateOutstanding();
-        updatePaymentStatus();
-    }
+        function handleBatchSelect() {
+            if (currentBatchMode === 'new') return;
 
-    function calculateTotalAmount() {
-        let total = 0;
-        const itemRows = document.querySelectorAll('#itemsBody .item-row');
-        
-        itemRows.forEach(row => {
-            const qty = parseFloat(row.querySelector('.received-qty').value) || 0;
-            const cost = parseFloat(row.querySelector('.cost').value) || 0;
-            total += qty * cost;
-        });
-        
-        return total;
-    }
+            const select = document.getElementById('existingBatchSelect');
+            const selectedOption = select.options[select.selectedIndex];
 
-    function calculateOutstanding() {
-        const totalAmount = calculateTotalAmount();
-        const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
-        const outstanding = Math.max(0, totalAmount - paidAmount);
+            if (select.value && selectedOption) {
+                // Auto-fill prices
+                document.getElementById('itemCost').value = selectedOption.dataset.cost || '';
+                document.getElementById('itemSelling').value = selectedOption.dataset.selling || '';
+                document.getElementById('itemBatch').value = selectedOption.dataset.batchNumber || '';
 
-        // Update display
-        document.getElementById('totalAmount').textContent = `Rs. ${totalAmount.toFixed(2)}`;
-        document.getElementById('outstandingAmount').textContent = `Rs. ${outstanding.toFixed(2)}`;
-        
-        // Validate paid amount doesn't exceed total
-        if (paidAmount > totalAmount) {
-            document.getElementById('paidAmount').value = totalAmount.toFixed(2);
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Amount',
-                text: 'Paid amount cannot exceed total amount',
-                timer: 3000
-            });
-        }
+                // Show available stock
+                const availableStock = selectedOption.dataset.stock || '0';
+                document.getElementById('availableStock').textContent = availableStock;
 
-        updatePaymentStatus();
-    }
-
-    function updatePaymentStatus() {
-        const totalAmount = calculateTotalAmount();
-        const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
-        const paymentStatusDisplay = document.getElementById('paymentStatusDisplay');
-        
-        if (paidAmount === 0) {
-            paymentStatusDisplay.textContent = 'Unpaid';
-            paymentStatusDisplay.className = 'text-lg font-medium text-red-400';
-        } else if (paidAmount >= totalAmount) {
-            paymentStatusDisplay.textContent = 'Paid';
-            paymentStatusDisplay.className = 'text-lg font-medium text-green-400';
-        } else {
-            paymentStatusDisplay.textContent = 'Partial';
-            paymentStatusDisplay.className = 'text-lg font-medium text-yellow-400';
-        }
-    }
-
-    // Call calculate functions when items change
-    function updatePaymentCalculations() {
-        calculateOutstanding();
-    }
-
-    // Form submission functions
-    function completeGRN() {
-        // Validate form data
-        const validationResult = validateGRNForm();
-        if (!validationResult.valid) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: validationResult.message
-            });
-            return;
-        }
-
-        // Show confirmation dialog
-        Swal.fire({
-            title: 'Complete GRN?',
-            text: 'Are you sure you want to complete this GRN? This will update stock levels.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, Complete GRN',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                submitGRN('completed');
+                calculateProfit();
             }
-        });
-    }
-
-    function saveDraft() {
-        // Validate basic required fields
-        const supplierId = document.getElementById('supplier').value;
-        const receiptDate = document.getElementById('receiptDate').value;
-
-        if (!supplierId) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please select a supplier'
-            });
-            return;
         }
 
-        if (!receiptDate) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Please enter a receipt date'
-            });
-            return;
+        function openAddItemModal() {
+            document.getElementById('addItemModal').classList.remove('hidden');
+            resetItemForm();
         }
 
-        submitGRN('draft');
-    }
-
-    function validateGRNForm() {
-        // Check supplier
-        const supplierId = document.getElementById('supplier').value;
-        if (!supplierId) {
-            return { valid: false, message: 'Please select a supplier' };
+        function closeAddItemModal() {
+            document.getElementById('addItemModal').classList.add('hidden');
+            resetItemForm();
         }
 
-        // Check receipt date
-        const receiptDate = document.getElementById('receiptDate').value;
-        if (!receiptDate) {
-            return { valid: false, message: 'Please enter a receipt date' };
+        function resetItemForm() {
+            $('#productSelect').val(null).trigger('change');
+            document.getElementById('itemQuantity').value = '1';
+            document.getElementById('itemBatch').value = '';
+            document.getElementById('itemCost').value = '';
+            document.getElementById('itemSelling').value = '';
+            document.getElementById('hasExpiry').checked = false;
+            document.getElementById('itemExpiry').value = '';
+            document.getElementById('itemExpiry').disabled = true;
+            document.getElementById('profitMargin').textContent = '0%';
+
+            // Reset batch section
+            document.getElementById('batchSection').style.display = 'none';
+            document.getElementById('availableStockDiv').style.display = 'none';
+            currentBatchMode = 'existing';
+            document.getElementById('newBatchNumberDiv').style.display = 'none';
+            document.getElementById('existingBatchSelect').disabled = false;
+            document.getElementById('existingBatchSelect').classList.remove('opacity-50');
+            const btn = document.getElementById('newBatchBtn');
+            btn.innerHTML = '<i class="fas fa-plus mr-1"></i>New';
+            btn.classList.remove('bg-blue-600');
+            btn.classList.add('bg-gray-700');
+            $('#existingBatchSelect').html('<option value="">Loading batches...</option>');
         }
 
-        // Check if there are items
-        const itemRows = document.querySelectorAll('#itemsBody .item-row');
-        if (itemRows.length === 0) {
-            return { valid: false, message: 'Please add at least one item to the GRN' };
+        function toggleExpiry() {
+            const hasExpiry = document.getElementById('hasExpiry').checked;
+            document.getElementById('itemExpiry').disabled = !hasExpiry;
+            if (!hasExpiry) {
+                document.getElementById('itemExpiry').value = '';
+            }
         }
 
-        // Validate each item
-        for (let i = 0; i < itemRows.length; i++) {
-            const row = itemRows[i];
-            const productId = row.querySelector('.product-id').value;
-            const receivedQty = parseFloat(row.querySelector('.received-qty').value);
-            const cost = parseFloat(row.querySelector('.cost').value);
-            const sellingPrice = parseFloat(row.querySelector('.selling-price').value);
-            const batchNumber = row.querySelector('.batch-number').value;
+        function calculateProfit() {
+            const cost = parseFloat(document.getElementById('itemCost').value) || 0;
+            const selling = parseFloat(document.getElementById('itemSelling').value) || 0;
 
+            if (cost > 0) {
+                const profit = ((selling - cost) / cost * 100).toFixed(2);
+                document.getElementById('profitMargin').textContent = profit + '%';
+                document.getElementById('profitMargin').className = profit >= 0 ? 'font-semibold text-green-400' : 'font-semibold text-red-400';
+            } else {
+                document.getElementById('profitMargin').textContent = '0%';
+            }
+        }
+
+        function addItem() {
+            const productSelect = $('#productSelect');
+            const productId = productSelect.val();
+            const productName = productSelect.select2('data')[0]?.text || '';
+            const quantity = parseFloat(document.getElementById('itemQuantity').value);
+            const cost = parseFloat(document.getElementById('itemCost').value);
+            const selling = parseFloat(document.getElementById('itemSelling').value);
+            const hasExpiry = document.getElementById('hasExpiry').checked;
+            const expiry = document.getElementById('itemExpiry').value;
+
+            // Get batch option
+            let batch = '';
+            let batchData = {};
+
+            // Validation
             if (!productId) {
-                return { valid: false, message: `Row ${i + 1}: Product is required` };
+                Swal.fire('Error', 'Please select a product', 'error');
+                return;
+            }
+            if (!quantity || quantity <= 0) {
+                Swal.fire('Error', 'Please enter a valid quantity', 'error');
+                return;
+            }
+            if (!cost || cost < 0) {
+                Swal.fire('Error', 'Please enter a valid cost price', 'error');
+                return;
+            }
+            if (!selling || selling < 0) {
+                Swal.fire('Error', 'Please enter a valid selling price', 'error');
+                return;
             }
 
-            if (!receivedQty || receivedQty <= 0) {
-                return { valid: false, message: `Row ${i + 1}: Valid received quantity is required` };
+            // Handle batch based on option
+            if (currentBatchMode === 'existing') {
+                const existingBatchId = $('#existingBatchSelect').val();
+                if (!existingBatchId) {
+                    Swal.fire('Error', 'Please select an existing batch or create new', 'error');
+                    return;
+                }
+                const selectedOption = document.getElementById('existingBatchSelect').options[document.getElementById('existingBatchSelect').selectedIndex];
+                batch = selectedOption.dataset.batchNumber;
+                batchData = {
+                    isNew: false,
+                    batchId: existingBatchId
+                };
+            } else {
+                batch = document.getElementById('itemBatch').value || 'Auto-generated';
+                batchData = {
+                    isNew: true,
+                    batchNumber: document.getElementById('itemBatch').value || ''
+                };
             }
 
-            if (!cost || cost <= 0) {
-                return { valid: false, message: `Row ${i + 1}: Valid cost is required` };
-            }
+            const total = (quantity * cost).toFixed(2);
+            itemCounter++;
 
-            if (!sellingPrice || sellingPrice <= 0) {
-                return { valid: false, message: `Row ${i + 1}: Valid selling price is required` };
-            }
+            const row = `
+                <tr class="item-row" data-item-id="${itemCounter}">
+                    <td class="py-3 px-2">
+                        <div class="font-medium">${productName}</div>
+                        <small class="text-gray-500">Batch: ${batch}</small>
+                        <input type="hidden" class="product-id" value="${productId}">
+                        ${hasExpiry ? '<br><small class="text-gray-500">Exp: ' + expiry + '</small>' : ''}
+                    </td>
+                    <td class="py-3 px-2">
+                        <input type="number" class="quantity w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white" 
+                            value="${quantity}" step="1" min="0.001" onchange="updateRowTotal(this)">
+                    </td>
+                    <td class="py-3 px-2">
+                        <input type="number" class="cost w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white" 
+                            value="${cost}" step="0.01" min="0" onchange="updateRowTotal(this)">
+                    </td>
+                    <td class="py-3 px-2">
+                        <input type="number" class="selling w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white" 
+                            value="${selling}" step="0.01" min="0">
+                    </td>
+                    <td class="py-3 px-2 font-semibold row-total">Rs. ${total}</td>
+                    <td class="py-3 px-2 text-center">
+                        <button type="button" onclick="removeItem(this)" class="text-red-500 hover:text-red-400">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                    <input type="hidden" class="batch" value="${batch}">
+                    <input type="hidden" class="expiry" value="${expiry}">
+                    <input type="hidden" class="batch-data" value='${JSON.stringify(batchData)}'>
+                </tr>
+            `;
 
-            if (!batchNumber.trim()) {
-                return { valid: false, message: `Row ${i + 1}: Batch number is required` };
-            }
+            document.getElementById('itemsBody').insertAdjacentHTML('beforeend', row);
+            updateEmptyMessage();
+            updateTotalAmount();
+            updateOutstanding();
+            closeAddItemModal();
         }
 
-        return { valid: true };
-    }
+        function removeItem(button) {
+            button.closest('tr').remove();
+            updateEmptyMessage();
+            updateTotalAmount();
+            updateOutstanding();
+        }
 
-    function collectFormData() {
-        // Collect basic form data
-        const formData = {
-            supplier_id: document.getElementById('supplier').value,
-            receipt_date: document.getElementById('receiptDate').value,
-            invoice_number: document.getElementById('invoiceNumber').value || '',
-            invoice_date: document.getElementById('invoiceDate').value || '',
-            notes: document.getElementById('notes').value || '',
-            po_id: currentGRNType === 'po' ? document.getElementById('purchaseOrder').value : null,
-            items: []
-        };
+        function updateRowTotal(input) {
+            const row = input.closest('tr');
+            const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+            const cost = parseFloat(row.querySelector('.cost').value) || 0;
+            const total = (quantity * cost).toFixed(2);
+            row.querySelector('.row-total').textContent = 'Rs. ' + total;
+            updateTotalAmount();
+            updateOutstanding();
+        }
 
-        // Collect payment data
-        const paymentType = document.querySelector('input[name="paymentType"]:checked').value;
-        const totalAmount = calculateTotalAmount();
-        const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
-        
-        formData.payment_data = {
-            total_amount: totalAmount,
-            paid_amount: paidAmount,
-            payment_status: paymentType,
-            payment_method: document.getElementById('paymentMethod').value || null,
-            payment_reference: document.getElementById('paymentReference').value || null,
-            payment_notes: document.getElementById('paymentNotes').value || null
-        };
+        function updateTotalAmount() {
+            let total = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+                const cost = parseFloat(row.querySelector('.cost').value) || 0;
+                total += quantity * cost;
+            });
+            document.getElementById('totalAmount').textContent = 'Rs. ' + total.toFixed(2);
+            return total;
+        }
 
-        // Collect items data
-        const itemRows = document.querySelectorAll('#itemsBody .item-row');
-        itemRows.forEach(row => {
-            const hasExpiryCheckbox = row.querySelector('.has-expiry');
-            const hasExpiry = hasExpiryCheckbox ? hasExpiryCheckbox.checked : false;
-            const expiryDate = hasExpiry ? row.querySelector('.expiry-date').value : null;
-            
-            // Get batch data from hidden field
-            const batchDataElement = row.querySelector('.batch-data');
-            let batchData = null;
-            if (batchDataElement) {
-                try {
-                    batchData = JSON.parse(batchDataElement.value);
-                } catch (e) {
-                    console.error('Failed to parse batch data:', e);
-                }
+        function updateEmptyMessage() {
+            const hasItems = document.querySelectorAll('.item-row').length > 0;
+            document.getElementById('emptyMessage').style.display = hasItems ? 'none' : 'block';
+        }
+
+        function handlePaymentStatusChange() {
+            const status = document.getElementById('paymentStatus').value;
+            const paidAmountDiv = document.getElementById('paidAmountDiv');
+            const paymentMethodDiv = document.getElementById('paymentMethodDiv');
+            const paymentReferenceDiv = document.getElementById('paymentReferenceDiv');
+
+            if (status === 'paid') {
+                paidAmountDiv.style.display = 'none';
+                paymentMethodDiv.style.display = 'block';
+                paymentReferenceDiv.style.display = 'block';
+                const total = updateTotalAmount();
+                document.getElementById('paidAmount').value = total.toFixed(2);
+            } else if (status === 'partial') {
+                paidAmountDiv.style.display = 'block';
+                paymentMethodDiv.style.display = 'block';
+                paymentReferenceDiv.style.display = 'block';
+                document.getElementById('paidAmount').value = '';
+            } else {
+                paidAmountDiv.style.display = 'none';
+                paymentMethodDiv.style.display = 'none';
+                paymentReferenceDiv.style.display = 'none';
+                document.getElementById('paidAmount').value = '0';
+            }
+            updateOutstanding();
+        }
+
+        function updateOutstanding() {
+            const total = updateTotalAmount();
+            const status = document.getElementById('paymentStatus').value;
+            let paid = 0;
+
+            if (status === 'paid') {
+                paid = total;
+            } else if (status === 'partial') {
+                paid = parseFloat(document.getElementById('paidAmount').value) || 0;
             }
 
-            const item = {
-                product_id: parseInt(row.querySelector('.product-id').value),
-                received_qty: parseFloat(row.querySelector('.received-qty').value),
-                cost: parseFloat(row.querySelector('.cost').value),
-                selling_price: parseFloat(row.querySelector('.selling-price').value),
-                batch_number: row.querySelector('.batch-number').value,
-                expiry_date: expiryDate,
-                po_item_id: row.dataset.poItemId ? parseInt(row.dataset.poItemId) : null,
-                batch_data: batchData // Include batch management data
+            const outstanding = total - paid;
+            document.getElementById('outstandingAmount').textContent = 'Rs. ' + outstanding.toFixed(2);
+        }
+
+        function submitGRN() {
+            // Validation
+            const supplier = document.getElementById('supplier').value;
+            const receiptDate = document.getElementById('receiptDate').value;
+            const items = document.querySelectorAll('.item-row');
+
+            if (!supplier) {
+                Swal.fire('Error', 'Please select a supplier', 'error');
+                return;
+            }
+            if (!receiptDate) {
+                Swal.fire('Error', 'Please select a receipt date', 'error');
+                return;
+            }
+            if (items.length === 0) {
+                Swal.fire('Error', 'Please add at least one item', 'error');
+                return;
+            }
+
+            // Collect data
+            const formData = {
+                supplier_id: supplier,
+                receipt_date: receiptDate,
+                invoice_number: document.getElementById('invoiceNumber').value,
+                invoice_date: document.getElementById('invoiceDate').value,
+                notes: document.getElementById('notes').value,
+                items: [],
+                payment_data: {
+                    payment_status: document.getElementById('paymentStatus').value,
+                    paid_amount: parseFloat(document.getElementById('paidAmount').value) || 0,
+                    payment_method: document.getElementById('paymentMethod').value,
+                    payment_reference: document.getElementById('paymentReference').value
+                }
             };
 
-            formData.items.push(item);
-        });
-
-        return formData;
-    }
-
-    function submitGRN(status = 'completed') {
-        const formData = collectFormData();
-        formData.status = status;
-
-        // Show loading
-        Swal.fire({
-            title: status === 'draft' ? 'Saving Draft...' : 'Completing GRN...',
-            text: 'Please wait while we process your request.',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Submit via AJAX
-        $.ajax({
-            url: 'save_grn.php',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(formData),
-            dataType: 'json',
-            success: function(response) {
-                Swal.close();
-                
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: response.message || `GRN ${status} successfully!`,
-                        showConfirmButton: true
-                    }).then(() => {
-                        // Redirect to dashboard or GRN details
-                        if (response.grn_id) {
-                            window.location.href = `index.php?created=${response.grn_id}`;
-                        } else {
-                            window.location.href = 'index.php';
-                        }
-                    });
-                } else {
-                    throw new Error(response.message || 'Unknown error occurred');
-                }
-            },
-            error: function(xhr, status, error) {
-                Swal.close();
-                
-                let errorMessage = 'Failed to save GRN';
-                
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseText) {
+            items.forEach(row => {
+                const batchDataElement = row.querySelector('.batch-data');
+                let batchData = null;
+                if (batchDataElement && batchDataElement.value) {
                     try {
-                        const errorData = JSON.parse(xhr.responseText);
-                        errorMessage = errorData.message || errorMessage;
+                        batchData = JSON.parse(batchDataElement.value);
                     } catch (e) {
-                        errorMessage = xhr.responseText;
+                        console.error('Failed to parse batch data:', e);
                     }
                 }
 
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: errorMessage,
-                    footer: 'Please check your data and try again.'
+                formData.items.push({
+                    product_id: parseInt(row.querySelector('.product-id').value),
+                    received_qty: parseFloat(row.querySelector('.quantity').value),
+                    cost: parseFloat(row.querySelector('.cost').value),
+                    selling_price: parseFloat(row.querySelector('.selling').value),
+                    batch_number: row.querySelector('.batch').value,
+                    expiry_date: row.querySelector('.expiry').value || null,
+                    batch_data: batchData
                 });
-            }
-        });
-    }
+            });
+
+            // Submit
+            Swal.fire({
+                title: 'Saving GRN...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '/api/v1/grn/create.php',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken,
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'GRN saved successfully',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = 'index.php';
+                        });
+                    } else {
+                        Swal.fire('Error', response.message || 'Failed to save GRN', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    let errorMessage = 'Failed to save GRN';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    Swal.fire('Error', errorMessage, 'error');
+                }
+            });
+        }
+
+
     </script>
 </body>
+
 </html>
