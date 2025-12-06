@@ -57,14 +57,23 @@ if (strpos($text, '/') === 0) {
 
     switch ($command) {
         case '/start':
-            $response = "👋 <b>Hello! I am Srijaya ERP Bot.</b>\n\n";
-            $response .= "I am ready to serve you. Try these commands:\n\n";
-            $response .= "🔹 /today - Daily Business Report\n";
-            $response .= "🔹 /month - Monthly Overview\n";
-            $response .= "🔹 /pending - Outstanding Credit\n";
-            $response .= "🔹 /lowstock - Low Stock Alerts\n";
-            $response .= "🔹 /staff - Staff Attendance\n";
-            $response .= "🔹 /cash - Cash in Hand\n";
+            $response = "🤖 <b>Srijaya ERP Assistant</b>\n";
+            $response .= "<i>Your real-time business companion.</i>\n\n";
+            
+            $response .= "<b>📊 Analysis & Finance</b>\n";
+            $response .= "/today - Daily Sales, Profit & Expenses\n";
+            $response .= "/month - Monthly Overview\n";
+            $response .= "/cash - Current Cash in Hand\n";
+            $response .= "/pending - Outstanding Customer Credit\n\n";
+
+            $response .= "<b>� Inventory & Stock</b>\n";
+            $response .= "/stock - Inventory Statistics\n";
+            $response .= "/lowstock - ⚠️ Low Stock Alert List\n\n";
+
+            $response .= "<b>� Team & Ops</b>\n";
+            $response .= "/staff - Today's Staff Attendance\n\n";
+
+            $response .= "<i>Tap any command above to get instant insights.</i>";
             break;
 
         case '/sales': // Alias for /today
