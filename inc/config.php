@@ -15,6 +15,9 @@ $db_name = 'srijayapos_new';
 // Connect DB
 $con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
 
+// Set Timezone to Sri Lanka
+date_default_timezone_set('Asia/Colombo');
+
 // Check DB connecting Erros
 if (mysqli_connect_errno()) {
     die('Database connection failed' . mysqli_connect_error());

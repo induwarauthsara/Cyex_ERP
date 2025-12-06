@@ -8,6 +8,9 @@
 require_once(__DIR__ . '/../inc/config.php');
 require_once(__DIR__ . '/../inc/TelegramService.php');
 
+// Set Timezone (Override if not Set in Config)
+date_default_timezone_set("Asia/Colombo");
+
 // 1. Get incoming update
 $content = file_get_contents("php://input");
 // DEBUG LOGGING
