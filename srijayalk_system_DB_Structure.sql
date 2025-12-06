@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 21, 2025 at 04:29 AM
+-- Generation Time: Dec 06, 2025 at 04:31 PM
 -- Server version: 10.6.23-MariaDB-cll-lve
--- PHP Version: 8.4.11
+-- PHP Version: 8.4.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -268,6 +268,94 @@ CREATE TABLE `error_log` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `expenses`
+--
+
+CREATE TABLE `expenses` (
+  `expense_id` int(11) NOT NULL,
+  `reference_no` varchar(50) DEFAULT NULL COMMENT 'Receipt/Invoice number',
+  `title` varchar(255) NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `amount_paid` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Total amount paid so far',
+  `category_id` int(11) NOT NULL,
+  `expense_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `payment_method` varchar(50) NOT NULL DEFAULT 'Cash',
+  `status` enum('paid','partial','unpaid','overdue') NOT NULL DEFAULT 'unpaid',
+  `recurring_ref_id` int(11) DEFAULT NULL,
+  `attachment_url` varchar(255) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `expense_categories`
+--
+
+CREATE TABLE `expense_categories` (
+  `category_id` int(11) NOT NULL,
+  `category_name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `color_code` varchar(7) DEFAULT '#808080',
+  `icon` varchar(50) DEFAULT 'money-bill',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1: Active, 0: Inactive'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `expense_payments`
+--
+
+CREATE TABLE `expense_payments` (
+  `payment_id` int(11) NOT NULL,
+  `expense_id` int(11) NOT NULL,
+  `payment_amount` decimal(15,2) NOT NULL,
+  `payment_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `payment_method` varchar(50) NOT NULL DEFAULT 'Cash',
+  `reference_no` varchar(50) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Triggers `expense_payments`
+--
+DELIMITER $$
+CREATE TRIGGER `update_expense_status_after_payment` AFTER INSERT ON `expense_payments` FOR EACH ROW BEGIN
+    DECLARE var_total_amount DECIMAL(15,2);
+    DECLARE var_old_paid DECIMAL(15,2);
+    DECLARE var_new_paid DECIMAL(15,2);
+
+    -- Get expense details
+    SELECT amount, amount_paid INTO var_total_amount, var_old_paid
+    FROM expenses
+    WHERE expense_id = NEW.expense_id;
+    
+    SET var_new_paid = var_old_paid + NEW.payment_amount;
+
+    -- Update parent expense record
+    UPDATE expenses
+    SET 
+        amount_paid = var_new_paid,
+        status = CASE
+            WHEN var_new_paid >= var_total_amount THEN 'paid'
+            WHEN var_new_paid > 0 THEN 'partial'
+            ELSE 'unpaid'
+        END
+    WHERE expense_id = NEW.expense_id;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `fund_transactions`
 --
 
@@ -320,7 +408,7 @@ CREATE TABLE `grn_items` (
   `grn_id` int(11) NOT NULL,
   `po_item_id` int(11) DEFAULT NULL,
   `batch_id` int(11) NOT NULL,
-  `received_qty` decimal(6,3) NOT NULL,
+  `received_qty` decimal(13,3) NOT NULL,
   `cost` decimal(10,2) NOT NULL,
   `selling_price` decimal(10,2) NOT NULL,
   `expiry_date` date DEFAULT NULL,
@@ -663,6 +751,70 @@ CREATE TABLE `purchase_order_items` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `quotations`
+--
+
+CREATE TABLE `quotations` (
+  `id` int(11) NOT NULL,
+  `quotation_number` varchar(50) NOT NULL,
+  `customer_name` varchar(255) NOT NULL,
+  `customer_mobile` varchar(20) DEFAULT NULL,
+  `customer_address` text DEFAULT NULL,
+  `quotation_date` date NOT NULL,
+  `valid_until` date DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `status` enum('draft','sent','accepted','rejected','expired') DEFAULT 'draft',
+  `created_by` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `quotation_items`
+--
+
+CREATE TABLE `quotation_items` (
+  `id` int(11) NOT NULL,
+  `quotation_id` int(11) NOT NULL,
+  `product_id` varchar(50) NOT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `quantity` decimal(8,2) NOT NULL,
+  `rate` decimal(10,2) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `recurring_expenses`
+--
+
+CREATE TABLE `recurring_expenses` (
+  `recurring_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `frequency` enum('daily','weekly','monthly','annually') NOT NULL,
+  `start_date` date NOT NULL,
+  `next_due_date` date NOT NULL,
+  `end_date` date DEFAULT NULL COMMENT 'Null means indefinite',
+  `payment_method` varchar(50) DEFAULT 'Cash',
+  `remind_days_before` int(2) DEFAULT 3 COMMENT 'Days before due date to show reminder',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `salary`
 --
 
@@ -827,6 +979,67 @@ CREATE TABLE `transaction_log` (
   `employ_id` int(4) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_expense_category_summary`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_expense_category_summary` (
+`category_id` int(11)
+,`category_name` varchar(100)
+,`color_code` varchar(7)
+,`icon` varchar(50)
+,`total_transactions` bigint(21)
+,`total_amount` decimal(37,2)
+,`total_paid` decimal(37,2)
+,`current_month_amount` decimal(37,2)
+,`current_month_paid` decimal(37,2)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_expense_payment_history`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_expense_payment_history` (
+`payment_id` int(11)
+,`expense_id` int(11)
+,`expense_title` varchar(255)
+,`total_amount` decimal(15,2)
+,`total_paid` decimal(15,2)
+,`remaining_amount` decimal(16,2)
+,`payment_amount` decimal(15,2)
+,`payment_date` datetime
+,`payment_method` varchar(50)
+,`reference_no` varchar(50)
+,`notes` text
+,`created_by_name` varchar(50)
+,`created_at` timestamp
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_upcoming_recurring_payments`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_upcoming_recurring_payments` (
+`recurring_id` int(11)
+,`title` varchar(255)
+,`amount` decimal(15,2)
+,`next_due_date` date
+,`frequency` enum('daily','weekly','monthly','annually')
+,`payment_method` varchar(50)
+,`remind_days_before` int(2)
+,`category_name` varchar(100)
+,`color_code` varchar(7)
+,`icon` varchar(50)
+,`days_until_due` int(8)
+,`payment_status` varchar(8)
+);
+
 --
 -- Indexes for dumped tables
 --
@@ -933,6 +1146,34 @@ ALTER TABLE `employees`
 --
 ALTER TABLE `error_log`
   ADD PRIMARY KEY (`error_id`);
+
+--
+-- Indexes for table `expenses`
+--
+ALTER TABLE `expenses`
+  ADD PRIMARY KEY (`expense_id`),
+  ADD KEY `idx_date` (`expense_date`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_category` (`category_id`),
+  ADD KEY `idx_recurring_ref` (`recurring_ref_id`),
+  ADD KEY `idx_created_by` (`created_by`),
+  ADD KEY `idx_expense_date` (`expense_date`),
+  ADD KEY `idx_expense_amount` (`amount`);
+
+--
+-- Indexes for table `expense_categories`
+--
+ALTER TABLE `expense_categories`
+  ADD PRIMARY KEY (`category_id`),
+  ADD UNIQUE KEY `idx_category_name` (`category_name`);
+
+--
+-- Indexes for table `expense_payments`
+--
+ALTER TABLE `expense_payments`
+  ADD PRIMARY KEY (`payment_id`),
+  ADD KEY `idx_expense` (`expense_id`),
+  ADD KEY `idx_date` (`payment_date`);
 
 --
 -- Indexes for table `fund_transactions`
@@ -1091,6 +1332,34 @@ ALTER TABLE `purchase_order_items`
   ADD KEY `idx_product_id` (`product_id`);
 
 --
+-- Indexes for table `quotations`
+--
+ALTER TABLE `quotations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `quotation_number` (`quotation_number`),
+  ADD KEY `idx_quotation_number` (`quotation_number`),
+  ADD KEY `idx_customer_name` (`customer_name`),
+  ADD KEY `idx_quotation_date` (`quotation_date`),
+  ADD KEY `idx_status` (`status`);
+
+--
+-- Indexes for table `quotation_items`
+--
+ALTER TABLE `quotation_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_quotation_items_quotation` (`quotation_id`),
+  ADD KEY `idx_product_id` (`product_id`);
+
+--
+-- Indexes for table `recurring_expenses`
+--
+ALTER TABLE `recurring_expenses`
+  ADD PRIMARY KEY (`recurring_id`),
+  ADD KEY `idx_next_due` (`next_due_date`),
+  ADD KEY `idx_category` (`category_id`),
+  ADD KEY `idx_active` (`is_active`);
+
+--
 -- Indexes for table `salary`
 --
 ALTER TABLE `salary`
@@ -1126,6 +1395,12 @@ ALTER TABLE `sales_return_items`
 ALTER TABLE `sequences`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`);
+
+--
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD UNIQUE KEY `setting_name` (`setting_name`);
 
 --
 -- Indexes for table `suppliers`
@@ -1252,6 +1527,24 @@ ALTER TABLE `error_log`
   MODIFY `error_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `expenses`
+--
+ALTER TABLE `expenses`
+  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `expense_categories`
+--
+ALTER TABLE `expense_categories`
+  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `expense_payments`
+--
+ALTER TABLE `expense_payments`
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `fund_transactions`
 --
 ALTER TABLE `fund_transactions`
@@ -1366,6 +1659,24 @@ ALTER TABLE `purchase_order_items`
   MODIFY `po_item_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `quotations`
+--
+ALTER TABLE `quotations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `quotation_items`
+--
+ALTER TABLE `quotation_items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `recurring_expenses`
+--
+ALTER TABLE `recurring_expenses`
+  MODIFY `recurring_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `salary`
 --
 ALTER TABLE `salary`
@@ -1428,6 +1739,33 @@ DROP TABLE IF EXISTS `product_view`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `product_view`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `p`.`description` AS `description`, `pb`.`selling_price` AS `rate`, `pb`.`cost` AS `cost`, `pb`.`profit` AS `profit`, `p`.`has_stock` AS `has_stock`, `p`.`stock_alert_limit` AS `stock_alert_limit`, `p`.`image` AS `image`, `p`.`show_in_landing_page` AS `show_in_landing_page`, `p`.`category_id` AS `category_id`, `p`.`brand_id` AS `brand_id`, `p`.`barcode` AS `barcode`, `p`.`barcode_symbology` AS `barcode_symbology`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sku` AS `sku`, `p`.`active_status` AS `active_status`, coalesce(sum(`pb`.`quantity`),0) AS `stock_qty` FROM (`products` `p` left join `product_batch` `pb` on(`p`.`product_id` = `pb`.`product_id`)) GROUP BY `p`.`product_id` ;
 
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_expense_category_summary`
+--
+DROP TABLE IF EXISTS `v_expense_category_summary`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_category_summary`  AS SELECT `ec`.`category_id` AS `category_id`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, count(`e`.`expense_id`) AS `total_transactions`, coalesce(sum(`e`.`amount`),0) AS `total_amount`, coalesce(sum(`e`.`amount_paid`),0) AS `total_paid`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount` else 0 end),0) AS `current_month_amount`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount_paid` else 0 end),0) AS `current_month_paid` FROM (`expense_categories` `ec` left join `expenses` `e` on(`ec`.`category_id` = `e`.`category_id`)) WHERE `ec`.`status` = 1 GROUP BY `ec`.`category_id`, `ec`.`category_name`, `ec`.`color_code`, `ec`.`icon` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_expense_payment_history`
+--
+DROP TABLE IF EXISTS `v_expense_payment_history`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_payment_history`  AS SELECT `ep`.`payment_id` AS `payment_id`, `ep`.`expense_id` AS `expense_id`, `e`.`title` AS `expense_title`, `e`.`amount` AS `total_amount`, `e`.`amount_paid` AS `total_paid`, `e`.`amount`- `e`.`amount_paid` AS `remaining_amount`, `ep`.`payment_amount` AS `payment_amount`, `ep`.`payment_date` AS `payment_date`, `ep`.`payment_method` AS `payment_method`, `ep`.`reference_no` AS `reference_no`, `ep`.`notes` AS `notes`, coalesce(`emp`.`emp_name`,'Unknown') AS `created_by_name`, `ep`.`created_at` AS `created_at` FROM ((`expense_payments` `ep` join `expenses` `e` on(`ep`.`expense_id` = `e`.`expense_id`)) left join `employees` `emp` on(`ep`.`created_by` = `emp`.`employ_id`)) ORDER BY `ep`.`payment_date` DESC ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_upcoming_recurring_payments`
+--
+DROP TABLE IF EXISTS `v_upcoming_recurring_payments`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY DEFINER VIEW `v_upcoming_recurring_payments`  AS SELECT `re`.`recurring_id` AS `recurring_id`, `re`.`title` AS `title`, `re`.`amount` AS `amount`, `re`.`next_due_date` AS `next_due_date`, `re`.`frequency` AS `frequency`, `re`.`payment_method` AS `payment_method`, `re`.`remind_days_before` AS `remind_days_before`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, to_days(`re`.`next_due_date`) - to_days(curdate()) AS `days_until_due`, CASE WHEN `re`.`next_due_date` < curdate() THEN 'overdue' WHEN to_days(`re`.`next_due_date`) - to_days(curdate()) <= `re`.`remind_days_before` THEN 'due_soon' ELSE 'upcoming' END AS `payment_status` FROM (`recurring_expenses` `re` join `expense_categories` `ec` on(`re`.`category_id` = `ec`.`category_id`)) WHERE `re`.`is_active` = 1 ORDER BY `re`.`next_due_date` ASC ;
+
 --
 -- Constraints for dumped tables
 --
@@ -1465,6 +1803,19 @@ ALTER TABLE `barcode_print_jobs`
 ALTER TABLE `combo_products`
   ADD CONSTRAINT `combo_products_ibfk_1` FOREIGN KEY (`combo_product_id`) REFERENCES `products` (`product_id`),
   ADD CONSTRAINT `combo_products_ibfk_2` FOREIGN KEY (`component_product_id`) REFERENCES `products` (`product_id`);
+
+--
+-- Constraints for table `expenses`
+--
+ALTER TABLE `expenses`
+  ADD CONSTRAINT `fk_expense_category` FOREIGN KEY (`category_id`) REFERENCES `expense_categories` (`category_id`),
+  ADD CONSTRAINT `fk_expense_recurring` FOREIGN KEY (`recurring_ref_id`) REFERENCES `recurring_expenses` (`recurring_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `expense_payments`
+--
+ALTER TABLE `expense_payments`
+  ADD CONSTRAINT `fk_payment_expense` FOREIGN KEY (`expense_id`) REFERENCES `expenses` (`expense_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `goods_receipt_notes`
@@ -1529,6 +1880,18 @@ ALTER TABLE `purchase_order_items`
   ADD CONSTRAINT `poi_product_fk` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`);
 
 --
+-- Constraints for table `quotation_items`
+--
+ALTER TABLE `quotation_items`
+  ADD CONSTRAINT `fk_quotation_items_quotation` FOREIGN KEY (`quotation_id`) REFERENCES `quotations` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `recurring_expenses`
+--
+ALTER TABLE `recurring_expenses`
+  ADD CONSTRAINT `fk_recurring_category` FOREIGN KEY (`category_id`) REFERENCES `expense_categories` (`category_id`);
+
+--
 -- Constraints for table `salary`
 --
 ALTER TABLE `salary`
@@ -1572,11 +1935,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
---
--- Dumping data for table `settings`
---
-
-INSERT INTO `settings` (`setting_name`, `setting_description`, `setting_value`, `created_at`, `updated_at`) VALUES
-('invoice_print_type', 'Default invoice print type', 'standard', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
