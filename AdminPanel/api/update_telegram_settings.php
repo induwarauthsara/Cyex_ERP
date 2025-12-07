@@ -10,8 +10,8 @@ if (!isset($_SESSION['employee_role']) || $_SESSION['employee_role'] !== "Admin"
 
 require_once(__DIR__ . '/../../inc/config.php');
 
-$bot_token = $_POST['bot_token'] ?? '';
-$master_chat_id = $_POST['master_chat_id'] ?? '';
+$bot_token = trim($_POST['bot_token'] ?? '');
+$master_chat_id = trim($_POST['master_chat_id'] ?? '');
 $bot_enabled = isset($_POST['bot_enabled']) ? '1' : '0';
 $allow_dm = isset($_POST['allow_dm']) ? '1' : '0';
 

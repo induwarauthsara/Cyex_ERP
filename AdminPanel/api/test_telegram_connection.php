@@ -10,8 +10,8 @@ if (!isset($_SESSION['employee_role']) || $_SESSION['employee_role'] !== "Admin"
 require_once(__DIR__ . '/../../inc/config.php');
 require_once(__DIR__ . '/../../inc/TelegramService.php');
 
-$token = $_POST['token'] ?? '';
-$chat_id = $_POST['chat_id'] ?? '';
+$token = trim($_POST['token'] ?? '');
+$chat_id = trim($_POST['chat_id'] ?? '');
 
 if(empty($token) || empty($chat_id)) {
     echo json_encode(['success' => false, 'message' => 'Token and Chat ID required']);

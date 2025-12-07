@@ -835,7 +835,12 @@ if (!isset($current_settings['quotation_auto_generate'])) {
                         <div class="col-md-5">
                             <div class="form-group">
                                 <label>Bot Token</label>
-                                <input type="password" class="form-control" name="bot_token" id="tg_bot_token" value="<?php echo htmlspecialchars($tg_config['bot_token']); ?>" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
+                                <div class="input-group">
+                                    <input type="password" class="form-control" name="bot_token" id="tg_bot_token" value="<?php echo htmlspecialchars($tg_config['bot_token']); ?>" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleTokenVisibility" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -1302,6 +1307,18 @@ if (!isset($current_settings['quotation_auto_generate'])) {
             });
         });
 
+        // Toggle Bot Token Visibility
+        $('#toggleTokenVisibility').click(function() {
+            const input = $('#tg_bot_token');
+            const icon = $(this).find('i');
+            if (input.attr('type') === 'password') {
+                input.attr('type', 'text');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                input.attr('type', 'password');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
 
     });
 </script>

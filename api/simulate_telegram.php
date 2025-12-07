@@ -20,8 +20,30 @@ if(isset($_GET['action']) && $_GET['action'] == 'register') {
     exit;
 }
 
+// Helper: Set Commands Link
+if(isset($_GET['action']) && $_GET['action'] == 'set_commands') {
+    $cmds = [
+        ['command' => 'start', 'description' => 'Open Main Menu'],
+        ['command' => 'today', 'description' => 'Daily Sales Report'],
+        ['command' => 'month', 'description' => 'Monthly Overview'],
+        ['command' => 'stock', 'description' => 'Inventory Snapshot'],
+        ['command' => 'lowstock', 'description' => 'Low Stock Alerts'],
+        ['command' => 'pending', 'description' => 'Outstanding Credit'],
+        ['command' => 'staff', 'description' => 'Staff Attendance'],
+        ['command' => 'cash', 'description' => 'Cash in Hand'],
+    ];
+    $json = json_encode($cmds);
+    
+    echo "<h2>⚙️ Setup Bot Menu (Commands)</h2>";
+    echo "<p>Run this to make the '/' command list appear in Telegram.</p>";
+    echo "<p>Replace <code>&lt;YOUR_BOT_TOKEN&gt;</code> and visit this link:</p>";
+    echo "<textarea style='width:100%; height:100px; padding:10px;'>https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setMyCommands?commands=$json</textarea>";
+    echo "<br><br><a href='?'>&larr; Back to Simulator</a>";
+    exit;
+}
+
 echo "<div style='background:#f4f4f4; padding:10px; margin-bottom:20px; border-bottom:2px solid #ccc;'>";
-echo "<b>Tools:</b> <a href='?'>Simulate Command</a> | <a href='?action=register'>📋 Get Production Registration Link</a>";
+echo "<b>Tools:</b> <a href='?'>Simulate Command</a> | <a href='?action=register'>📋 Get Production Registration Link</a> | <a href='?action=set_commands'>⚙️ Set Bot Commands</a>";
 echo "</div>"; 
 
 // 1. Define a Mock Update (What Telegram would send)
