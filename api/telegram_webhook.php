@@ -80,6 +80,19 @@ if (strpos($text, '/') === 0) {
             $response .= "<i>Tap any command above to get instant insights.</i>";
             break;
 
+        case '/topic':
+        case '/id':
+            $response = "🆔 <b>Topic Info</b>\n\n";
+            $response .= "Chat ID: <code>$chat_id</code>\n";
+            if($thread_id) {
+                $response .= "Topic Thread ID: <code>$thread_id</code>\n";
+                $response .= "<i>Use this ID in Admin Panel Settings.</i>";
+            } else {
+                $response .= "Topic Thread ID: <i>(General / No Topic)</i>\n";
+                $response .= "<i>Enable Topics in Group Settings to use this feature.</i>";
+            }
+            break;
+
         case '/sales': // Alias for /today
         case '/today':
             $today = date('Y-m-d');
