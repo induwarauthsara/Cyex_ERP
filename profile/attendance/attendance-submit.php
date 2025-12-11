@@ -135,7 +135,7 @@ if (isset($_SESSION['employee_id']) && isset($_GET['action']) && ($_GET['action'
                             insert_query($sql, "Fall $employee_name's Day Salary from Company Profit : Rs. $DaySalary", "Fall Employee Day Salary from Company Profit Account");
                             
                             // Sync with expenses
-                            syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                            syncSalaryExpense($con, $employee_id, $employee_name, date('Y-m'));
                         }
                 } else {
                     error_log("Could not calculate salary - missing clock in or clock out time for employee: $employee_name");

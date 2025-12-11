@@ -131,7 +131,7 @@ try {
                     $salary_paid = $DaySalary;
                     
                     // Sync with expenses
-                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    syncSalaryExpense($con, $employee_id, $employee_name, date('Y-m'));
                     
                 } elseif ($emp_worked_hours < $WorkingDayHours) {
                     $pay_amount = $emp_worked_hours * $HourSalary;
@@ -147,7 +147,7 @@ try {
                     $salary_paid = $pay_amount;
                     
                     // Sync with expenses
-                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    syncSalaryExpense($con, $employee_id, $employee_name, date('Y-m'));
                     
                 } else {
                     // Overtime - still pay full salary but log it
@@ -162,7 +162,7 @@ try {
                     $salary_paid = $DaySalary;
                     
                     // Sync with expenses
-                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    syncSalaryExpense($con, $employee_id, $employee_name, date('Y-m'));
                 }
 
                 // Deduct salary from Company Profit

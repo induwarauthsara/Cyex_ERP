@@ -98,7 +98,34 @@ function getMonthlyPaidSalary($con, $emp_id, $month_year) {
  * @param string $month_year Month in 'Y-m' format (e.g., '2025-12')
  * @return array ['expense_id' => int, 'monthly_earned' => float, 'monthly_paid' => float]
  */
-function syncSalaryExpense($con, $emp_id, $emp_name, $month_year = null) {
+function syncSalaryExpense($con, $emp_id, $emp_name = null, $month_year = null) {
+    // Backward compatibility: If 1st arg is not mysqli, assume it's emp_id (old signature)
+    if (!($con instanceof mysqli)) {
+        // Shift arguments: ($emp_id, $emp_name, $month_year) passed
+        // $con holds emp_id
+        // $emp_id holds emp_name
+        // $emp_name holds month_year
+        
+        $month_year = $emp_name;
+        $emp_name = $emp_id;
+        $emp_id = $con;
+        
+        // Try to get global connection
+        global $con;
+        if (!isset($con) || !($con instanceof mysqli)) {
+            global $conn;
+            if (isset($conn) && ($conn instanceof mysqli)) {
+                $con = $conn;
+            } else {
+                // Last resort: include config if not present
+                // This might fail if paths are wrong, but worth a try or just die
+                if (file_exists(__DIR__ . '/../../../inc/config.php')) {
+                    require_once __DIR__ . '/../../../inc/config.php';
+                }
+            }
+        }
+    }
+
     if ($month_year === null) {
         $month_year = date('Y-m');
     }

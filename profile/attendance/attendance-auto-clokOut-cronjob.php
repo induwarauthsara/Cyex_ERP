@@ -95,7 +95,7 @@ if ($result) {
                     insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today", "Auto Update Employee Day Salary by Cronjob");
                     
                     // Sync with expenses
-                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    syncSalaryExpense($con, $employee_id, $employee_name, date('Y-m'));
                     
                 } elseif ($emp_worked_hours < $WorkingDayHours) {
                     $pay_amount = $emp_worked_hours * $HourSalary;
@@ -110,7 +110,7 @@ if ($result) {
                     $DaySalary = $pay_amount;
                     
                     // Sync with expenses
-                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    syncSalaryExpense($con, $employee_id, $employee_name, date('Y-m'));
                     
                 } else {
                     // Overtime - still pay full salary but log it
@@ -124,7 +124,7 @@ if ($result) {
                     insert_query($sql, "Employee Name : $employee_name , Salary : $DaySalary , Day : $today, Overtime Hours : $emp_worked_hours_formatted", "Auto Update Employee Day Salary (Overtime) by Cronjob");
                     
                     // Sync with expenses
-                    syncSalaryExpense($employee_id, $employee_name, date('Y-m'));
+                    syncSalaryExpense($con, $employee_id, $employee_name, date('Y-m'));
                 }
 
                 // Deduct salary from Company Profit

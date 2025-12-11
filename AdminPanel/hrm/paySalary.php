@@ -24,9 +24,9 @@ if (isset($_POST['employee_id']) && isset($_POST['amount'])) {
     insert_query($sql, "Employee ID: $employee_id, Rs. $amount", "Employee Salary Paid - Update Salary Table");
 
     // 2. Sync with Expenses - Create/Update expense and add payment
-    $expense_id = syncSalaryExpense($employee_id, $emp_name, $current_month);
-    if ($expense_id) {
-        $payment_id = addSalaryPayment($expense_id, $amount, 'Cash', 'Salary Payment', 1);
+    $expense_result = syncSalaryExpense($con, $employee_id, $emp_name, $current_month);
+    if ($expense_result && isset($expense_result['expense_id'])) {
+        $payment_id = addSalaryPayment($con, $expense_result['expense_id'], $amount, 'Cash', 'Salary Payment', 1);
     }
 
     // 3. Update Employee Salary Balance

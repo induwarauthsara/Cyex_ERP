@@ -158,7 +158,7 @@ if ($action === 'Clock Out') {
                 mysqli_query($con, "UPDATE employees SET salary = salary + $daySalary WHERE employ_id = $employeeId");
                 
                 // Sync with expenses
-                syncSalaryExpense($employeeId, $employeeName, date('Y-m'));
+                syncSalaryExpense($con, $employeeId, $employeeName, date('Y-m'));
                 
             } elseif ($hoursWorked < $workingDayHours) {
                 // Partial salary based on hours
@@ -175,7 +175,7 @@ if ($action === 'Clock Out') {
                 mysqli_query($con, "UPDATE employees SET salary = salary + $salaryPaid WHERE employ_id = $employeeId");
                 
                 // Sync with expenses
-                syncSalaryExpense($employeeId, $employeeName, date('Y-m'));
+                syncSalaryExpense($con, $employeeId, $employeeName, date('Y-m'));
             }
             
             $salaryInfo = [
