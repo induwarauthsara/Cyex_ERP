@@ -161,15 +161,15 @@ if ($action === 'Clock Out') {
                 syncSalaryExpense($con, $employeeId, $employeeName, date('Y-m'));
                 
             } elseif ($hoursWorked < $workingDayHours) {
-                // Partial salary based on hours
+                // Day salary based on hours
                 $hourSalary = $daySalary / $workingDayHours;
                 $salaryPaid = $hourSalary * $hoursWorked;
-                $salaryReason = "Partial salary (" . round($hoursWorked, 2) . " hours)";
+                $salaryReason = "Day salary (" . round($hoursWorked, 2) . " hours)";
                 
                 insert_query(
-                    "INSERT INTO salary (emp_id, date, amount, description) VALUES ($employeeId, '$today', $salaryPaid, 'Partial Salary - $today - $hoursWorked hours')",
+                    "INSERT INTO salary (emp_id, date, amount, description) VALUES ($employeeId, '$today', $salaryPaid, 'Day Salary - $today - $hoursWorked hours')",
                     "Employee: $employeeName, Salary: $salaryPaid",
-                    "Add Partial Salary"
+                    "Add Day Salary"
                 );
                 
                 mysqli_query($con, "UPDATE employees SET salary = salary + $salaryPaid WHERE employ_id = $employeeId");
