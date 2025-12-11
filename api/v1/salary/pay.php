@@ -84,10 +84,11 @@ try {
     
     $account_data = mysqli_fetch_assoc($acc_result);
     
-    // Check if account has sufficient funds
-    if ($account_data['amount'] < $amount) {
-        ApiResponse::error("Insufficient funds in account. Available: Rs. {$account_data['amount']}", 422);
-    }
+    // ----- Validation removed to allow negative balance
+    // Check if account has sufficient funds -
+    // if ($account_data['amount'] < $amount) {
+    //     ApiResponse::error("Insufficient funds in account. Available: Rs. {$account_data['amount']}", 422);
+    // }
     
     // Start transaction
     mysqli_begin_transaction($con);
