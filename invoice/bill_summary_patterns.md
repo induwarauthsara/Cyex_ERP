@@ -18,24 +18,34 @@ This document outlines the various display patterns for the Bill Summary section
 
 ## Patterns
 
-### 1. Simple Bill (No Discount, No Advance)
+### 1. Simple Bill (No Discount, No Advance) /invoice/print.php?id=8823
 **Condition:** `$discount == 0` AND `$advance == 0`
-
 *   **Display:**
     *   **Total**: `$total`
-
 *   **Example:**
     *   **Total: 5,000.00**
 
+### 1a. Unpaid/Credit Bill (No Discount, No Advance) /invoice/print.php?id=8789
+**Condition:** `$Balance != 0` AND `$advance == 0`
+*   **Display:**
+    *   **Total**: `$total`
+    *   **Advance**: `0.00`
+    *   **Balance**: `$total`
+*   **Example:**
+    *   Total: 5,000.00
+    *   Advance: 0.00
+    *   **Balance: 5,000.00**
+
 ---
 
-### 2. Bill with Standard Discount (No Advance)
+### 2. Bill with Standard Discount (No Advance) /invoice/print.php?id=5240 3226
 **Condition:** `$discount > 0` AND `$individual_discount_mode != 1` AND `$advance == 0`
 
 *   **Display:**
     *   **Sub Total**: `$sub_total`
     *   **Discount**: `- $discount`
     *   **Total**: `$total`
+    *   *(Advance and Balance hidden if fully paid)*
 
 *   **Example:**
     *   Sub Total: 5,000.00
@@ -44,7 +54,7 @@ This document outlines the various display patterns for the Bill Summary section
 
 ---
 
-### 3. Bill with Advance Only (No Discount)
+### 3. Bill with Advance Only (No Discount) /invoice/print.php?id=7676 8743
 **Condition:** `$discount == 0` AND `$advance > 0` AND `$advance < $sub_total`
 
 *   **Display:**
@@ -59,7 +69,7 @@ This document outlines the various display patterns for the Bill Summary section
 
 ---
 
-### 4. Bill with Standard Discount + Advance
+### 4. Bill with Standard Discount + Advance /invoice/print.php?id=8464
 **Condition:** `$discount > 0` AND `$individual_discount_mode != 1` AND `$advance > 0` AND `$advance < $total`
 
 *   **Display:**
@@ -88,6 +98,8 @@ This document outlines the various display patterns for the Bill Summary section
     *   **Sub Total**: `$sub_total`
     *   **Discount**: `$total_discount` (Calculated from individual item discounts)
     *   **Total**: `$total`
+    *   **Advance**: `0.00`
+    *   **Balance**: `$total`
 
 *   **Example:**
     *   *(Message: 🎉 You total saved: Rs.500.00)*
@@ -126,8 +138,8 @@ This document outlines the various display patterns for the Bill Summary section
 1. **Sub Total**: Only shown when `$display_total != $sub_total` (i.e., when there's a discount)
 2. **Discount**: Shown when `$discount > 0` OR `($individual_discount_mode == 1 && $total_discount > 0)`
 3. **Total**: Always shown
-4. **Advance**: Shown when `$advance > 0` AND `$advance != $display_total`
-5. **Balance**: Shown when `$advance > 0` AND `$calculated_balance > 0`
+4. **Advance**: Shown when `$advance != $display_total` (Shows 0.00 if have balance.)
+5. **Balance**: Shown when `$calculated_balance > 0` (or Bill is not fully paid)
 
 ### Key Calculations:
 ```php
@@ -153,7 +165,7 @@ $show_balance = ($advance > 0 && $calculated_balance > 0);
 
 ### Fully Paid by Advance (Advance >= Sub Total)
 **Condition:** `$advance >= $sub_total`
-*   **Behavior:** Reverts to **Pattern 1 (Simple Bill)**.
+*   **Behavior:** Explicitly hides Advance and Balance (overrides normal visibility).
 *   **Display:**
     *   **Total**: `$total`
     *   *(Sub Total, Advance, and Balance are hidden)*

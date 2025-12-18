@@ -143,11 +143,19 @@
 
                             $show_total = true; // Always show total
 
-                            $show_advance = ($advance > 0 && $advance != $display_total); // Hide advance if equals total
+                            //past incorrect logic removed lines
+                            //                             $show_advance = ($advance > 0 && $advance != $display_total); // Hide advance if equals total
+                            //                             $show_balance = ($advance > 0 && $calculated_balance > 0); // Only show if balance > 0
 
-                            // Calculate balance using corrected total
+
+                            // Standard visibility based on payment status
+                            // If fully paid (Simple/Cash bill), hide Advance/Balance
+                            // If NOT fully paid (Credit/Partial), show Advance (even if 0) and Balance
+                            $show_advance = ($full_paid == 0);
+                            $show_balance = ($full_paid == 0);
+
+                            // Calculate balance using corrected total for display
                             $calculated_balance = $display_total - $advance;
-                            $show_balance = ($advance > 0 && $calculated_balance > 0); // Only show if balance > 0
 
                             // Override: If Advance covers the full Sub Total, revert to Simple Bill format
                             if ($advance >= $sub_total) {
