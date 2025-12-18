@@ -1,7 +1,0 @@
-[28-Jan-2023 06:30:11 UTC] PHP Notice:  Undefined index: cus in /home/srijayal/bill.srijaya.lk/inc/get_customer_mobile.php on line 4
-[28-Jan-2023 09:41:40 UTC] PHP Notice:  Undefined index: for in /home/srijayal/bill.srijaya.lk/inc/add_petty_cash.php on line 5
-[28-Jan-2023 09:41:40 UTC] PHP Notice:  Undefined index: amount in /home/srijayal/bill.srijaya.lk/inc/add_petty_cash.php on line 6
-[28-Jan-2023 09:41:40 UTC] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/add_petty_cash.php on line 7
-[28-Jan-2023 09:41:40 UTC] PHP Notice:  Undefined index: for in /home/srijayal/bill.srijaya.lk/inc/add_petty_cash.php on line 5
-[28-Jan-2023 09:41:40 UTC] PHP Notice:  Undefined index: amount in /home/srijayal/bill.srijaya.lk/inc/add_petty_cash.php on line 6
-[28-Jan-2023 09:41:40 UTC] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/add_petty_cash.php on line 7

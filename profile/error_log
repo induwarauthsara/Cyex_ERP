@@ -1,6 +1,0 @@
-[27-Oct-2021 06:16:15 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 25
-[27-Oct-2021 06:16:15 America/New_York] PHP Notice:  Undefined index: employee_role in /home/srijayal/bill.srijaya.lk/inc/header.php on line 108
-[27-Oct-2021 06:16:15 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/profile/index.php on line 3
-[27-Oct-2021 06:16:15 America/New_York] PHP Notice:  Undefined index: employee_id in /home/srijayal/bill.srijaya.lk/profile/index.php on line 4
-[27-Oct-2021 06:16:15 America/New_York] PHP Notice:  Undefined index: employee_role in /home/srijayal/bill.srijaya.lk/profile/index.php on line 5
-[27-Oct-2021 06:16:15 America/New_York] PHP Notice:  Undefined variable: employe in /home/srijayal/bill.srijaya.lk/profile/index.php on line 47

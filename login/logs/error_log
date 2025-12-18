@@ -1,7 +1,0 @@
-[26-Sep-2021 17:01:38 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
-[26-Sep-2021 17:01:38 America/New_York] PHP Warning:  include(../9edf4d187d54e7cc46e4731b1e6273242c4f4c39a1d2507a0e58706e25e3a85a7dbb891d62afa849): failed to open stream: No such file or directory in /home/srijayal/bill.srijaya.lk/login/logs/index.php on line 6
-[26-Sep-2021 17:01:38 America/New_York] PHP Warning:  include(../9edf4d187d54e7cc46e4731b1e6273242c4f4c39a1d2507a0e58706e25e3a85a7dbb891d62afa849): failed to open stream: No such file or directory in /home/srijayal/bill.srijaya.lk/login/logs/index.php on line 6
-[26-Sep-2021 17:01:38 America/New_York] PHP Warning:  include(): Failed opening '../9edf4d187d54e7cc46e4731b1e6273242c4f4c39a1d2507a0e58706e25e3a85a7dbb891d62afa849' for inclusion (include_path='.:/opt/alt/php73/usr/share/pear') in /home/srijayal/bill.srijaya.lk/login/logs/index.php on line 6
-[26-Sep-2021 17:03:58 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
-[27-Sep-2021 03:21:53 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
-[29-Sep-2021 02:02:14 America/New_York] PHP Notice:  Undefined index: employee_name in /home/srijayal/bill.srijaya.lk/inc/header.php on line 21
