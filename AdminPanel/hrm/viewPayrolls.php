@@ -75,6 +75,52 @@ if (isset($_GET['employee_id'])) {
 }
 echo "<hr>";
 ?>
+<style>
+    /* Modern Button Styles */
+    .btn-modern {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: white !important;
+        text-decoration: none !important;
+        font-size: 0.9rem;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    .btn-modern:active {
+        transform: translateY(-1px);
+    }
+
+    /* Primary/Action Button (Blue/Purple) */
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    }
+
+    /* Info/History Button (Teal) */
+    .btn-info-custom {
+        background: linear-gradient(135deg, #00cec9 0%, #00b894 100%);
+    }
+    
+    .action-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+</style>
 
 <title>Payroll</title>
 
@@ -99,8 +145,17 @@ echo "<hr>";
         ?>
     </div>
 
-    <!-- Monthly Payroll Button -->
-    <button id="monthlyPayrollBtn" style="height: 35px;">Monthly Payroll</button>
+    <div class="action-group">
+        <!-- Monthly Payroll Button -->
+        <button id="monthlyPayrollBtn" class="btn-modern btn-primary-custom">
+            <i class="fas fa-calendar-alt"></i> Monthly Payroll
+        </button>
+        
+        <!-- Commission History Link -->
+        <a href="commission_history.php" class="btn-modern btn-info-custom">
+            <i class="fas fa-history"></i> Commission History
+        </a>
+    </div>
 </div>
 
 <!-- Table to display Payroll data -->

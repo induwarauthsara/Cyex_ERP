@@ -227,6 +227,12 @@ try {
     $categoryId = !empty($productData['categoryId']) ? (int)$productData['categoryId'] : null;
     $brandId = !empty($productData['brandId']) ? (int)$productData['brandId'] : null;
     
+    // Get employee commission percentage
+    $commissionPercentage = isset($productData['commissionPercentage']) ? floatval($productData['commissionPercentage']) : 0.00;
+    // Validate commission percentage (0-100)
+    if ($commissionPercentage < 0) $commissionPercentage = 0;
+    if ($commissionPercentage > 100) $commissionPercentage = 100;
+    
     // Determine barcode symbology if not provided
     if (empty($productData['barcodeSymbology'])) {
         require_once '../API/detect_barcode_symbology.php';
@@ -256,7 +262,7 @@ try {
 
     // Insert into products table
     $sql = "INSERT INTO products (product_name, product_type, barcode, barcode_symbology, sku, show_in_landing_page, 
-            category_id, brand_id, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            category_id, brand_id, image, employee_commission_percentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $con->prepare($sql);
     if (!$stmt) {
@@ -264,7 +270,7 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssiiis",
+        "sssssiiisd",
         $productName,
         $productType,
         $productCode,
@@ -273,7 +279,8 @@ try {
         $showInEcommerce,
         $categoryId,
         $brandId,
-        $imagePath
+        $imagePath,
+        $commissionPercentage
     );
 
     if (!$stmt->execute()) {

@@ -16,6 +16,67 @@ $total_salary_have_pay = number_format(mysqli_fetch_assoc(mysqli_query($con, "SE
         input {
             margin-top: 0 !important;
         }
+        
+        /* Modern Button Styles */
+        .action-bar {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-modern {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: white !important;
+            text-decoration: none !important;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-modern:active {
+            transform: translateY(-1px);
+        }
+
+        /* Add Button (Green/Primary) */
+        .btn-add {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+        
+        /* Danger Button (Red) */
+        .btn-danger-custom {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5253 100%);
+        }
+
+        /* Info/History Button (Teal) */
+        .btn-info-custom {
+            background: linear-gradient(135deg, #00cec9 0%, #00b894 100%);
+        }
+
+        /* Icons styling */
+        .btn-modern i {
+            font-size: 1.1em;
+        }
     </style>
 </head>
 
@@ -24,8 +85,17 @@ $total_salary_have_pay = number_format(mysqli_fetch_assoc(mysqli_query($con, "SE
     <h2 style="color:white">Total Salary to Pay : Rs. <?= $total_salary_have_pay ?></h2>
 
 
-    <button onclick="addNewEmployee()" id="refreshPage">Add New Employee</button>
-    <button onclick="clockOutAllEmployees()" style="background-color: #ff6b6b; margin-left: 10px;">Clock Out All Employees</button>
+    <div class="action-bar">
+        <button onclick="addNewEmployee()" id="refreshPage" class="btn-modern btn-add">
+            <i class="fas fa-user-plus"></i> Add New Employee
+        </button>
+        <button onclick="clockOutAllEmployees()" class="btn-modern btn-danger-custom">
+            <i class="fas fa-clock"></i> Clock Out All Employees
+        </button>
+        <a href="commission_history.php" class="btn-modern btn-info-custom">
+            <i class="fas fa-history"></i> Commission History
+        </a>
+    </div>
 
     <table id="DataTable" class="display" style="width:100%">
         <thead>

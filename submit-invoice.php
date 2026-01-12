@@ -31,6 +31,19 @@ try {
     error_log("Warning: Could not load settings from database. Using default values. Error: " . $e->getMessage());
 }
 
+// Load employee commission setting
+$employee_commission_enabled = 0;
+try {
+    $commission_setting_query = "SELECT setting_value FROM settings WHERE setting_name = 'employee_commission_enabled'";
+    $commission_result = mysqli_query($con, $commission_setting_query);
+    if ($commission_result && $row = mysqli_fetch_assoc($commission_result)) {
+        $employee_commission_enabled = intval($row['setting_value']);
+    }
+    mysqli_free_result($commission_result);
+} catch (Exception $e) {
+    error_log("Warning: Could not load commission setting. Error: " . $e->getMessage());
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 if ($data === null) {
@@ -177,6 +190,10 @@ mysqli_begin_transaction($con);
 // Initialize total cost and profit for invoice
 $totalInvoiceCost = 0;
 $totalInvoiceProfit = 0;
+
+// Commission tracking (if feature is enabled)
+$totalCommission = 0;
+$commissionRecords = [];
 
 try {
     // Check if customer exists and get or create customer ID
@@ -515,6 +532,40 @@ try {
         $totalInvoiceCost += ($cost * $quantity);
         $totalInvoiceProfit += $profit;
         
+        // Calculate employee commission if feature is enabled and there's profit
+        if ($employee_commission_enabled == 1 && $profit > 0) {
+            // Get product's commission percentage
+            $commQuery = "SELECT p.product_id, p.employee_commission_percentage 
+                          FROM products p 
+                          JOIN product_batch pb ON p.product_id = pb.product_id 
+                          WHERE pb.batch_id = ?";
+            $commStmt = mysqli_prepare($con, $commQuery);
+            if ($commStmt) {
+                mysqli_stmt_bind_param($commStmt, 's', $batch_id);
+                mysqli_stmt_execute($commStmt);
+                $commResult = mysqli_stmt_get_result($commStmt);
+                
+                if ($commRow = mysqli_fetch_assoc($commResult)) {
+                    $productCommissionPercent = floatval($commRow['employee_commission_percentage']);
+                    
+                    if ($productCommissionPercent > 0) {
+                        $commissionAmount = ($profit * $productCommissionPercent / 100);
+                        $totalCommission += $commissionAmount;
+                        
+                        // Store for later insertion
+                        $commissionRecords[] = [
+                            'product_id' => $commRow['product_id'],
+                            'product_name' => $productName,
+                            'product_profit' => $profit,
+                            'commission_percentage' => $productCommissionPercent,
+                            'commission_amount' => $commissionAmount
+                        ];
+                    }
+                }
+                mysqli_stmt_close($commStmt);
+            }
+        }
+        
         // Insert sales record
         $query = "INSERT INTO sales (
                     invoice_number, product, batch, qty, rate, discount_price, 
@@ -834,6 +885,74 @@ try {
     }
     error_log("=== END DEBUG INFO ===");
 
+    // Process accumulated commissions before commit
+    $commissionSummary = null;
+    if ($employee_commission_enabled == 1 && $totalCommission > 0 && $biller) {
+        // 1. Insert commission history records
+        foreach ($commissionRecords as $commRecord) {
+            $commInsertQuery = "INSERT INTO employee_commission_history 
+                (invoice_number, employee_id, product_id, product_name, product_profit, 
+                 commission_percentage, commission_amount) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $commStmt = mysqli_prepare($con, $commInsertQuery);
+            if ($commStmt) {
+                mysqli_stmt_bind_param($commStmt, 'iiisddd', 
+                    $invoiceNumber,
+                    $biller,
+                    $commRecord['product_id'],
+                    $commRecord['product_name'],
+                    $commRecord['product_profit'],
+                    $commRecord['commission_percentage'],
+                    $commRecord['commission_amount']
+                );
+                mysqli_stmt_execute($commStmt);
+                mysqli_stmt_close($commStmt);
+            }
+        }
+        
+        // 2. Add commission to employee salary table
+        $commissionDescription = "Commission from Bill #" . $invoiceNumber;
+        $salaryInsertQuery = "INSERT INTO salary (emp_id, amount, description) VALUES (?, ?, ?)";
+        $salaryStmt = mysqli_prepare($con, $salaryInsertQuery);
+        if ($salaryStmt) {
+            mysqli_stmt_bind_param($salaryStmt, 'ids', $biller, $totalCommission, $commissionDescription);
+            mysqli_stmt_execute($salaryStmt);
+            mysqli_stmt_close($salaryStmt);
+        }
+        
+        // 3. Update employee salary balance (add to pending salary)
+        $updateEmpQuery = "UPDATE employees SET salary = salary + ? WHERE employ_id = ?";
+        $updateStmt = mysqli_prepare($con, $updateEmpQuery);
+        if ($updateStmt) {
+            mysqli_stmt_bind_param($updateStmt, 'di', $totalCommission, $biller);
+            mysqli_stmt_execute($updateStmt);
+            mysqli_stmt_close($updateStmt);
+        }
+        
+        // 4. Log the commission transaction
+        $actionLog = "Commission Added";
+        $logMsg = "Commission of Rs." . number_format($totalCommission, 2) . " added from Invoice #" . $invoiceNumber;
+        $transLogQuery = "INSERT INTO transaction_log (transaction_type, description, amount, employ_id) 
+                          VALUES (?, ?, ?, ?)";
+        $transStmt = mysqli_prepare($con, $transLogQuery);
+        if ($transStmt) {
+            mysqli_stmt_bind_param($transStmt, 'ssdi', $actionLog, $logMsg, $totalCommission, $biller);
+            mysqli_stmt_execute($transStmt);
+            mysqli_stmt_close($transStmt);
+        }
+        
+        error_log("COMMISSION: Rs." . $totalCommission . " added to Employee ID: " . $biller . " from Invoice #" . $invoiceNumber);
+        
+        // Build commission summary for response
+        $commissionSummary = [
+            'enabled' => true,
+            'total_commission' => $totalCommission,
+            'employee_id' => $biller,
+            'records_count' => count($commissionRecords),
+            'details' => $commissionRecords
+        ];
+    }
+
     // Commit transaction
     mysqli_commit($con);    // Send success response
     echo json_encode([
@@ -841,7 +960,8 @@ try {
         'message' => 'Invoice submitted successfully',
         'invoiceNumber' => $invoiceNumber,
         'printReceipt' => $printReceipt,
-        'printType' => $printType
+        'printType' => $printType,
+        'commission' => $commissionSummary
     ]);
     
 } catch (Exception $e) {

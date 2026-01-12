@@ -4,7 +4,7 @@ include 'nav.php';
 // Fetch current settings from database
 $current_settings = [];
 try {
-    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products', 'invoice_print_type', 'quotation_validity_days', 'quotation_prefix', 'quotation_auto_generate')";
+    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products', 'invoice_print_type', 'quotation_validity_days', 'quotation_prefix', 'quotation_auto_generate', 'employee_commission_enabled')";
     $settings_result = mysqli_query($con, $settings_query);
 
     if ($settings_result) {
@@ -71,6 +71,10 @@ if (!isset($current_settings['quotation_prefix'])) {
 }
 if (!isset($current_settings['quotation_auto_generate'])) {
     $current_settings['quotation_auto_generate'] = ['value' => '1', 'description' => 'Auto generate quotation numbers'];
+}
+// Employee Commission Setting
+if (!isset($current_settings['employee_commission_enabled'])) {
+    $current_settings['employee_commission_enabled'] = ['value' => '0', 'description' => 'Enable employee commission from invoice profit'];
 }
 ?>
 
@@ -790,6 +794,65 @@ if (!isset($current_settings['quotation_auto_generate'])) {
             </form>
         </div>
 
+        <!-- Employee Commission Configuration Section -->
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fas fa-hand-holding-usd"></i>
+                Employee Commission
+            </h2>
+            <p class="section-description">
+                Configure employee commission from product profit on each sale. Commission is given to the biller (cashier).
+            </p>
+
+            <div class="row">
+                <!-- Commission Enable/Disable Toggle -->
+                <div class="col-lg-6 col-md-12">
+                    <div class="setting-item <?php echo ($current_settings['employee_commission_enabled']['value'] == '1') ? 'active' : 'inactive'; ?>" id="setting_employee_commission_enabled">
+                        <div class="setting-header">
+                            <h3 class="setting-title">
+                                <i class="fas fa-percentage text-success"></i>
+                                Invoice Commission
+                            </h3>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="employee_commission_enabled"
+                                    name="employee_commission_enabled" value="1"
+                                    <?php echo ($current_settings['employee_commission_enabled']['value'] == '1') ? 'checked' : ''; ?>>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <p class="setting-description">
+                            Enable employee commission from product profit. When enabled, the biller (cashier) will receive commission based on each product's commission percentage setting.
+                        </p>
+                        <div class="setting-status">
+                            <span class="status-badge <?php echo ($current_settings['employee_commission_enabled']['value'] == '1') ? 'enabled' : 'disabled'; ?>"
+                                id="status_employee_commission_enabled">
+                                <i class="fas <?php echo ($current_settings['employee_commission_enabled']['value'] == '1') ? 'fa-check-circle' : 'fa-times-circle'; ?>"></i>
+                                <?php echo ($current_settings['employee_commission_enabled']['value'] == '1') ? 'Enabled' : 'Disabled'; ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commission Info -->
+                <div class="col-lg-6 col-md-12">
+                    <div class="setting-item active">
+                        <div class="setting-header">
+                            <h3 class="setting-title">
+                                <i class="fas fa-info-circle text-info"></i>
+                                How It Works
+                            </h3>
+                        </div>
+                        <p class="setting-description">
+                            <strong>1.</strong> Set commission % for each product in Product Edit page<br>
+                            <strong>2.</strong> When invoice is submitted, commission is calculated from profit<br>
+                            <strong>3.</strong> Commission is added to the biller's salary automatically<br>
+                            <strong>4.</strong> Salary description shows "Commission from Bill #XXX"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
         <!-- Save Section (General) -->
@@ -1141,7 +1204,8 @@ if (!isset($current_settings['quotation_auto_generate'])) {
                 invoice_print_type: $('input[name="invoice_print_type"]:checked').val(),
                 quotation_validity_days: $('#quotation_validity_days').val(),
                 quotation_prefix: $('#quotation_prefix').val(),
-                quotation_auto_generate: $('#quotation_auto_generate').is(':checked') ? '1' : '0'
+                quotation_auto_generate: $('#quotation_auto_generate').is(':checked') ? '1' : '0',
+                employee_commission_enabled: $('#employee_commission_enabled').is(':checked') ? '1' : '0'
             };
 
             // Show loading state

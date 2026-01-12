@@ -66,6 +66,9 @@ $quotation_validity_days = isset($_POST['quotation_validity_days']) ? intval($_P
 $quotation_prefix = isset($_POST['quotation_prefix']) ? trim($_POST['quotation_prefix']) : 'QT';
 $quotation_auto_generate = isset($_POST['quotation_auto_generate']) ? intval($_POST['quotation_auto_generate']) : 1;
 
+// Get employee commission setting
+$employee_commission_enabled = isset($_POST['employee_commission_enabled']) ? intval($_POST['employee_commission_enabled']) : 0;
+
 // Validate values
 if (!in_array($sell_Insufficient_stock_item, [0, 1]) || !in_array($sell_Inactive_batch_products, [0, 1])) {
     echo json_encode([
@@ -128,6 +131,10 @@ try {
         'quotation_auto_generate' => [
             'value' => $quotation_auto_generate,
             'description' => 'Auto generate quotation numbers (1=yes, 0=no)'
+        ],
+        'employee_commission_enabled' => [
+            'value' => $employee_commission_enabled,
+            'description' => 'Enable employee commission from invoice profit (1=yes, 0=no)'
         ]
     ];
 

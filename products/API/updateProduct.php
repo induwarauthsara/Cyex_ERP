@@ -204,6 +204,12 @@ try {
     $categoryId = !empty($productData['categoryId']) ? (int)$productData['categoryId'] : null;
     $brandId = !empty($productData['brandId']) ? (int)$productData['brandId'] : null;
     $activeStatus = isset($productData['activeStatus']) ? ($productData['activeStatus'] ? '1' : '0') : '1';
+    
+    // Get employee commission percentage
+    $commissionPercentage = isset($productData['commissionPercentage']) ? floatval($productData['commissionPercentage']) : 0.00;
+    // Validate commission percentage (0-100)
+    if ($commissionPercentage < 0) $commissionPercentage = 0;
+    if ($commissionPercentage > 100) $commissionPercentage = 100;
 
     // Handle image upload
     $imagePath = $originalImage;
@@ -241,7 +247,8 @@ try {
             category_id = ?, 
             brand_id = ?, 
             active_status = ?, 
-            image = ? 
+            image = ?,
+            employee_commission_percentage = ?
             WHERE product_id = ?";
 
     $stmt = $con->prepare($sql);
@@ -250,7 +257,7 @@ try {
     }
 
     $stmt->bind_param(
-        "sssssiiiisi",
+        "sssssiiiisdi",
         $productName,
         $productType,
         $productCode,
@@ -261,6 +268,7 @@ try {
         $brandId,
         $activeStatus,
         $imagePath,
+        $commissionPercentage,
         $productId
     );
 

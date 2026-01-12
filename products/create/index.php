@@ -360,6 +360,19 @@
                                         <div id="discountPercentage" class="text-success small mt-1"></div>
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="commissionPercentage" class="form-label">
+                                        Employee Commission (%)
+                                        <i class="fas fa-question-circle tooltip-icon"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Percentage of profit given to employee as commission"></i>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="commissionPercentage" min="0" max="100" step="0.01" value="0">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1659,6 +1672,7 @@
                     comboProducts: [],
                     sellingPrice: parseFloat($('#sellingPrice').val()) || 0,
                     discountPrice: parseFloat($('#discountPrice').val()) || null,
+                    commissionPercentage: parseFloat($('#commissionPercentage').val()) || 0,
                 };
 
                 // Based on product type

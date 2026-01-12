@@ -615,6 +615,10 @@
                                                     ${product.active_status == 1 ? 'Active' : 'Inactive'}
                                                 </span>
                                             </p>
+                                            <p>
+                                                <strong>Employee Commission:</strong> 
+                                                <span class="badge bg-secondary">${parseFloat(product.employee_commission_percentage || 0).toFixed(2)}%</span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

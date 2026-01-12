@@ -1,5 +1,18 @@
 <?php require_once '../inc/config.php'; ?>
 <?php require '../inc/header.php'; ?>
+<?php
+// Load employee commission setting
+$employee_commission_enabled = 0;
+try {
+    $comm_query = "SELECT setting_value FROM settings WHERE setting_name = 'employee_commission_enabled'";
+    $comm_result = mysqli_query($con, $comm_query);
+    if ($comm_result && $row = mysqli_fetch_assoc($comm_result)) {
+        $employee_commission_enabled = intval($row['setting_value']);
+    }
+} catch (Exception $e) {
+    $employee_commission_enabled = 0;
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -132,6 +145,57 @@
                 opacity: 1;
             }
         }
+
+        /* Commission Input Styles */
+        .commission-container {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .commission-container .input-group {
+            max-width: 200px;
+        }
+
+        .commission-container label.commission-label {
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .commission-container label.commission-label i {
+            color: #43a047;
+        }
+
+        .commission-sync-indicator {
+            font-size: 0.8rem;
+            color: #558b2f;
+            margin-top: 8px;
+        }
+
+        /* Disabled commission styles */
+        .commission-container.commission-disabled {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            border: 1px solid #bdbdbd;
+            opacity: 0.7;
+        }
+
+        .commission-container.commission-disabled label.commission-label {
+            color: #757575;
+        }
+
+        .commission-container.commission-disabled label.commission-label i {
+            color: #9e9e9e;
+        }
+
+        .commission-container.commission-disabled .commission-sync-indicator {
+            color: #9e9e9e;
+        }
     </style>
 </head>
 
@@ -247,6 +311,7 @@
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label for="discountPrice" class="form-label">Discount Price</label>
@@ -264,6 +329,38 @@
                                         <div class="col-md-6">
                                             <label for="alertQuantity" class="form-label">Alert Quantity</label>
                                             <input type="number" class="form-control" id="alertQuantity" name="alertQuantity" min="0" value="5" step="0.001">
+                                        </div>
+                                    </div>
+
+                                    <!-- Employee Commission Section -->
+                                    <div class="commission-container <?php echo ($employee_commission_enabled != 1) ? 'commission-disabled' : ''; ?>" id="commissionSection">
+                                        <label class="commission-label">
+                                            <i class="fas fa-hand-holding-usd"></i> Employee Commission
+                                            <?php if ($employee_commission_enabled != 1): ?>
+                                            <span class="badge bg-secondary ms-2">Disabled</span>
+                                            <?php endif; ?>
+                                        </label>
+                                        <div class="row g-2 align-items-center">
+                                            <div class="col-auto">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" class="form-control" id="commissionPercentage" 
+                                                        name="commissionPercentage" min="0" max="100" step="0.01" 
+                                                        placeholder="0.00" value="0"
+                                                        <?php echo ($employee_commission_enabled != 1) ? 'disabled' : ''; ?>>
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <small class="text-muted">of product profit</small>
+                                            </div>
+                                        </div>
+                                        <div class="commission-sync-indicator" id="commissionCalculation">
+                                            <i class="fas fa-info-circle"></i>
+                                            <?php if ($employee_commission_enabled != 1): ?>
+                                            <span id="commissionCalcText" class="text-muted">Commission feature is disabled in Settings</span>
+                                            <?php else: ?>
+                                            <span id="commissionCalcText">Commission from profit given to biller</span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -594,6 +691,12 @@
                     $('#initialStock').val(batch.quantity);
                     $('#alertQuantity').val(batch.alert_quantity);
                 }
+            }
+
+            // Load employee commission percentage
+            if (product.employee_commission_percentage !== undefined) {
+                $('#commissionPercentage').val(product.employee_commission_percentage || 0);
+                updateCommissionCalculation();
             }
 
             // Handle combo products
@@ -1049,6 +1152,7 @@
                 showInEcommerce: $('#showInEcommerce').is(':checked'),
                 activeStatus: $('#activeStatus').is(':checked'),
                 hasVariant: hasVariant,
+                commissionPercentage: $('#commissionPercentage').val() || 0,
                 batchesToDelete: deletedBatches
             };
 
@@ -1392,12 +1496,48 @@
             });
         }
 
+        // Commission Auto-Calculation Functions
+        function updateCommissionCalculation() {
+            const cost = parseFloat($('#cost').val()) || 0;
+            const sellingPrice = parseFloat($('#sellingPrice').val()) || 0;
+            const profit = sellingPrice - cost;
+            const percentage = parseFloat($('#commissionPercentage').val()) || 0;
+            
+            if (profit > 0) {
+                if (percentage > 0) {
+                    const commissionValue = (profit * percentage / 100).toFixed(2);
+                    $('#commissionCalcText').html(
+                        `Profit: <strong>Rs.${profit.toFixed(2)}</strong> × ${percentage}% = <strong>Rs.${commissionValue}</strong> commission`
+                    );
+                } else {
+                    $('#commissionCalcText').html(
+                        `Profit: <strong>Rs.${profit.toFixed(2)}</strong>. Set commission % to calculate amount.`
+                    );
+                }
+            } else if (profit <= 0 && (cost > 0 || sellingPrice > 0)) {
+                $('#commissionCalcText').html(
+                    `<span class="text-warning">No profit margin (Profit: Rs.${profit.toFixed(2)})</span>`
+                );
+            } else {
+                $('#commissionCalcText').text('Commission from profit given to biller');
+            }
+        }
+
+        // Setup commission calculation listeners
+        function setupCommissionListeners() {
+            // Update commission calculation when percentage, cost, or selling price changes
+            $('#commissionPercentage, #cost, #sellingPrice').on('input change', function() {
+                updateCommissionCalculation();
+            });
+        }
+
         // Initialize everything when document is ready
         $(document).ready(function() {
             // loadProductData();
             setupFormValidation();
             setupBarcodeSymbologyDetection();
             setupListeners();
+            setupCommissionListeners(); // Commission auto-calculation
 
             // Event handlers for new brand and category creation
             $('#saveNewBrand').click(function() {

@@ -30,6 +30,11 @@ try {
     
     $product = $result->fetch_assoc();
     
+    // Ensure employee_commission_percentage is set and is a float
+    $product['employee_commission_percentage'] = isset($product['employee_commission_percentage']) 
+        ? floatval($product['employee_commission_percentage']) 
+        : 0.00;
+    
     // Get product batches
     $sql = "SELECT * FROM product_batch WHERE product_id = ? ORDER BY created_at DESC";
     $stmt = $con->prepare($sql);
@@ -44,7 +49,7 @@ try {
         $sql = "SELECT cp.*, p.product_name, pb.batch_number, pb.cost, pb.selling_price 
                 FROM combo_products cp 
                 JOIN products p ON cp.component_product_id = p.product_id 
-                JOIN product_batch pb ON cp.batch_number = pb.batch_number 
+                JOIN product_batch pb ON cp.batch_number = pb.batch_number
                 WHERE cp.combo_product_id = ?";
         
         $stmt = $con->prepare($sql);
