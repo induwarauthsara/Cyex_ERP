@@ -325,6 +325,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Product List</h4>
                 <div class="float-end">
+                    <button id="downloadCsvBtn" class="btn btn-success me-2"><i class="fas fa-file-csv"></i> Download CSV</button>
                     <a href="create/" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Product</a>
                     <a href="../view_one_time_products.php" class="btn btn-info"><i class="fas fa-list"></i> View One-Time Products</a>
                 </div>
@@ -540,6 +541,22 @@
             $('#resetFilters').click(function() {
                 $('#filterCategory, #filterBrand, #filterType, #filterStatus').val('');
                 productTable.ajax.reload();
+            });
+
+            // Export CSV button click handler
+            $('#downloadCsvBtn').click(function() {
+                const category = $('#filterCategory').val();
+                const brand = $('#filterBrand').val();
+                const type = $('#filterType').val();
+                const status = $('#filterStatus').val();
+                
+                let url = 'export_csv.php?';
+                if(category) url += `category=${category}&`;
+                if(brand) url += `brand=${brand}&`;
+                if(type) url += `type=${type}&`;
+                if(status) url += `status=${status}&`;
+                
+                window.location.href = url;
             });
         });
 
