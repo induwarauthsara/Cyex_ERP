@@ -61,16 +61,20 @@ require_once '../inc/config.php'; // Include your database configuration
                 $qty = $sale['qty'];
 
                 // Get Product's Raw Material Info
-                $sql = "SELECT item_name, qty FROM makeProduct WHERE product_name='$product'";
-                $result = mysqli_query($con, $sql);
-                while ($record = mysqli_fetch_assoc($result)) {
-                    $item_name = $record['item_name'];
-                    $item_qty = $record['qty'] * $qty;
-
-                    // Restore Stock
-                    $sql = "UPDATE `items` SET qty = qty + $item_qty WHERE item_name = '$item_name'";
-                    if (!mysqli_query($con, $sql)) {
-                        $error_array[] = "Failed to update stock for $item_name.";
+                // Check if makeProduct table exists first
+                $tableCheck = mysqli_query($con, "SHOW TABLES LIKE 'makeProduct'");
+                if (mysqli_num_rows($tableCheck) > 0) {
+                    $sql = "SELECT item_name, qty FROM makeProduct WHERE product_name='$product'";
+                    $result = mysqli_query($con, $sql);
+                    while ($record = mysqli_fetch_assoc($result)) {
+                        $item_name = $record['item_name'];
+                        $item_qty = $record['qty'] * $qty;
+    
+                        // Restore Stock
+                        $sql = "UPDATE `items` SET qty = qty + $item_qty WHERE item_name = '$item_name'";
+                        if (!mysqli_query($con, $sql)) {
+                            $error_array[] = "Failed to update stock for $item_name.";
+                        }
                     }
                 }
 

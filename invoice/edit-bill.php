@@ -1,371 +1,718 @@
-<?php require_once '../inc/config.php'; ?>
-<?php require '../inc/header.php'; ?>
-<!DOCTYPE html>
-<html lang="en">
+<?php 
+require_once '../inc/config.php';
+require '../inc/header.php'; 
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Srijaya Bill</title>
-    <link rel="stylesheet" href="../style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-</head>
-
-<?php
-$invoice_number = $_GET['id'];
-$sql = "select * from invoice where invoice_number = $invoice_number;";
-$result = mysqli_query($con, $sql);
-$invoice_details = mysqli_fetch_assoc($result);
-
-// Invoice details
-$invoice_number = $invoice_details['invoice_number'];
-$invoice_description = $invoice_details['invoice_description'];
-$customer_name = $invoice_details['customer_name'];
-$customer_mobile = $invoice_details['customer_mobile'];
-$invoice_date = $invoice_details['invoice_date'];
-$total =  $invoice_details['total'];
-$discount =  $invoice_details['discount'];
-$advance =  $invoice_details['advance'];
-$balance =  $invoice_details['balance'];
-
-// Todo List of Invoice
-$todo_sql = "SELECT * FROM `todo` WHERE invoice_number = $invoice_number";
-$todo_result = mysqli_query($con, $todo_sql);
-$todo_result = mysqli_fetch_assoc($todo_result);
-if ($todo_result) {
-    $todoName = $todo_result['title'];
-    $todoTime = $todo_result['submision_time'];
-} else {
-    $todoName = "";
-    $todoTime = "";
+// Fetch Invoice Data
+$invoice_number = isset($_GET['id']) ? intval($_GET['id']) : 0;
+if ($invoice_number === 0) {
+    echo "<div class='error'>Invalid Invoice ID</div>";
+    exit;
 }
 
-// Items of Invoices
-$sale_sql = "SELECT * FROM `sales` WHERE invoice_number = $invoice_number";
-$sales_result = mysqli_query($con, $sale_sql);
-// row count
-$sales_row_count = mysqli_num_rows($sales_result);
+$sql = "SELECT i.*, COALESCE(e.emp_name, i.biller) as resolved_biller 
+        FROM invoice i 
+        LEFT JOIN employees e ON i.biller = CAST(e.employ_id AS CHAR) 
+        WHERE i.invoice_number = $invoice_number";
+$result = mysqli_query($con, $sql);
+$invoice = mysqli_fetch_assoc($result);
 
-// One Time Product List
-$product_list = "SELECT * FROM oneTimeProducts_sales WHERE invoice_number = $invoice_number";
-$OTProduct_result = mysqli_query($con, $product_list);
-// row count
-$OTProduct_row_count = mysqli_num_rows($OTProduct_result);
+if (!$invoice) {
+    echo "<div class='error'>Invoice not found</div>";
+    exit;
+}
 
-$total_row_count = $sales_row_count + $OTProduct_row_count;
+// Fetch Items using LEFT JOIN to identify Standard vs OTP
+$sales_q = "SELECT s.*, p.product_id as linked_product_id 
+            FROM sales s 
+            LEFT JOIN products p ON s.product = p.product_name 
+            WHERE s.invoice_number = $invoice_number";
+$sales_res = mysqli_query($con, $sales_q);
+
+$total_rows = mysqli_num_rows($sales_res);
 ?>
 
-<body><br>
-    <div class="main">
-        <div class="bill">
-            <div class="header"> <a href="/index.php">
-                    <div class="logo-img"> <img src="/logo.png" alt="LOGO">
-                </a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Bill #<?php echo $invoice_number; ?> | Srijaya ERP</title>
+    
+    <!-- External Libs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .edit-bill-wrapper {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        .header-brand h1 { margin: 0; color: var(--primary); }
+        .header-meta { text-align: right; color: var(--gray-600); }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus { border-color: var(--primary); outline: none; }
+
+        /* Items Table */
+        .items-table-container {
+            overflow-x: auto;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        table.items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.items-table th {
+            background: var(--light);
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        table.items-table td {
+            padding: 0.75rem;
+            border-top: 1px solid #eee;
+        }
+        table.items-table input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-remove {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-remove:hover { background: #fecaca; }
+
+        /* Footer Actions */
+        .footer-actions {
+            background: var(--gray-100);
+            padding: 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        .totals-section {
+            min-width: 300px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        .total-row.final {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            border-top: 1px solid #ddd;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: filter 0.2s;
+        }
+        .btn-primary:hover { filter: brightness(110%); }
+        
+        .add-product-bar {
+            position: relative;
+            margin-top: 1rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+        
+        /* Search Results Dropdown */
+        #search-results {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            width: calc(100% - 2rem); /* adjusting for padding */
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            left: 1rem;
+            top: 4.5rem; /* Adjust based on input height */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .search-result-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .search-result-item:hover, .search-highlighted {
+            background-color: #f0f7ff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="edit-bill-wrapper">
+    <div class="header-section">
+        <div class="header-brand">
+            <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
+            <p><?php echo $ERP_COMPANY_ADDRESS; ?></p>
+        </div>
+        <div class="header-meta">
+            <h2>Sort Edit Bill #<?php echo $invoice_number; ?></h2>
+            <a href="/index.php" style="color: var(--primary); text-decoration: none;">&larr; Back to Dashboard</a>
+        </div>
+    </div>
+
+    <form id="editInvoiceForm">
+        <div class="card">
+            <h3>Customer & Invoice Details</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input list="customer_list" name="name" id="name" value="<?php echo htmlspecialchars($invoice['customer_name']); ?>" required onchange="customer_add()">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="tele" id="tele" value="<?php echo htmlspecialchars($invoice['customer_mobile']); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label>Invoice Date</label>
+                    <input type="date" name="today" id="date" value="<?php echo $invoice['invoice_date']; ?>" required>
+                </div>
+                <div class="form-group">
+                    <label>Invoice Number</label>
+                    <input type="text" name="bill-no" value="<?php echo $invoice_number; ?>" readonly style="background: #f9f9f9;">
+                </div>
             </div>
-            <div class="topic">
-                <h1><?php echo $ERP_COMPANY_NAME; ?></h1>
-                <h2><?php echo $ERP_COMPANY_ADDRESS; ?>
-                    <br><?php echo $ERP_COMPANY_PHONE; ?>
-                </h2>
+            
+            <div class="form-group">
+                <label>Description / Notes</label>
+                <textarea name="InvoiceDescription" rows="2"><?php echo htmlspecialchars($invoice['invoice_description']); ?></textarea>
             </div>
         </div>
-        <hr>
 
-        <br>
-        <form action="edit-submit.php" method="POST">
-            <!--  === Invoice Details === -->
-            <div id="errors">
-                <p>This changes cannot be undone.</p>
-            </div>
-            <div class="details">
-                <div class="customer-details">
-                    <div class="customer-name">
-                        <label for="name">Customer Name : </label>
-                        <input list="customer_list" type="text" name="name" id="name" onchange="customer_add()" required value="<?php echo $customer_name ?>"> <br>
-                    </div>
-
-                    <div class="customer-tele">
-                        <label for="tele">Customer telephone : </label>
-                        <input type="text" name="tele" id="tele" value="<?php echo $customer_mobile ?>" required> <br>
-                    </div>
-                </div>
-
-                <!--  === Invoice Details === -->
-                <div class="bill-details">
-                    <div class="bill-no">Bill No. <input type="text" value="<?php echo $invoice_number ?>" name="bill-no" required> </div>
-                    <div class="date">Date : <input id="date" type="date" value="<?php echo $invoice_date ?>" name="today" required></div>
-                </div>
-            </div>
-
-            <div class="content">
-                <!-- tabel -->
-                <textarea name="InvoiceDescription" id="InvoiceDescription" placeholder="Add Details about this Job / Invoice. Paper Size, Colour, Size, Binding Margin"><?php echo $invoice_description; ?> </textarea>
-                <div class="container">
-                    <!--Tabel Head Start-->
-                    <div class="Product tabel-head">Description</div>
-                    <div class="QTY tabel-head">Qty</div>
-                    <div class="Rate tabel-head">Rate</div>
-                    <div class="Amount tabel-head">Amount</div>
-                    <!--Tabel Head End-->
-                    <div class="product_list tabel" id="Product">
-                        <div id="list">
-                            <?php
-                            $no = 0;
-                            if (mysqli_num_rows($sales_result) > 0) {
-                                // output data of each row
-                                while ($row = mysqli_fetch_assoc($sales_result)) {
-                                    $product = $row['product'];
-                                    echo "<input id='rowID_$no' type='hidden' name='salesID_$no' value='{$row['sales_id']}'>";
-                                    echo "<input id='product_$no' class='$no' name='product_$no' value='$product'>";
-                                    $no++;
-                                }
-                            }
-                            // One Time Product List
-                            if (mysqli_num_rows($OTProduct_result) > 0) {
-                                // output data of each row
-                                while ($row = mysqli_fetch_assoc($OTProduct_result)) {
-                                    $product = $row['product'];
-                                    echo "<input id='rowID_$no' type='hidden' name='OTProductID_$no' value='{$row['oneTimeProduct_id']}'>";
-                                    echo "<input id='product_$no' class='$no' name='product_$no' value='$product'>";
-                                    $no++;
-                                }
-                            }
-                            ?>
-                        </div>
-                        <hr>
-                        <input list="products" type="text" id="addproduct">
-                        <div onclick="addproduct()" class="add">Add Product</div>
-                    </div>
-
-                    <div class="Qty_list tabel" id="qty">
-                        <?php
-                        $no = 0;
-                        $sales_result = mysqli_query($con, $sale_sql);
-                        if (mysqli_num_rows($sales_result) > 0) {
-                            // output data of each row
-                            while ($row = mysqli_fetch_assoc($sales_result)) {
-                                $qty = $row['qty'];
-                                echo "<input id='qty_$no' type='number' class='$no' oninput=\"change('qty', className, id)\" name='qty_$no' value='$qty'>";
-                                $no++;
-                            }
+        <div class="card">
+            <h3>Items</h3>
+            <div class="items-table-container">
+                <table class="items-table" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Description</th>
+                            <th style="width: 15%;">Qty</th>
+                            <th style="width: 20%;">Rate</th>
+                            <th style="width: 20%;">Amount</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="list">
+                        <?php 
+                        $idx = 0;
+                        function renderRow($idx, $item) {
+                            $product = htmlspecialchars($item['product']);
+                            $qty = $item['qty'];
+                            $rate = $item['rate'];
+                            $amount = $item['amount'];
+                            
+                            // Determine if One Time Product (linked_product_id is NULL)
+                            $isOtp = empty($item['linked_product_id']);
+                            
+                            echo "<tr id='row_$idx'>";
+                            echo "<td>
+                                    <input type='hidden' id='is_otp_$idx' value='" . ($isOtp ? 1 : 0) . "'>
+                                    <input id='product_$idx' name='product_$idx' value='$product' class='$idx' readonly style='width:100%; border:1px solid #ddd; padding:5px; background-color: #f0f0f0; cursor: not-allowed;'>
+                                  </td>";
+                            echo "<td><input type='number' id='qty_$idx' name='qty_$idx' value='$qty' class='$idx' oninput=\"change('qty', '$idx', 'qty_$idx')\" style='width:100%; border:1px solid #ddd; padding:5px;'></td>";
+                            echo "<td><input type='number' id='rate_$idx' name='rate_$idx' value='$rate' class='$idx' oninput=\"change('rate', '$idx', 'rate_$idx')\" style='width:100%; border:1px solid #ddd; padding:5px;'></td>";
+                            echo "<td><input type='number' id='amount_$idx' name='amount_$idx' value='$amount' class='$idx' onchange=\"change('amount', '$idx', 'amount_$idx')\" style='width:100%; border:1px solid #ddd; padding:5px;'></td>";
+                            echo "<td><button type='button' class='btn-remove' onclick=\"remove_row('_$idx', '$idx')\">×</button></td>";
+                            echo "</tr>";
                         }
-                        // One Time Product List
-                        $OTProduct_result = mysqli_query($con, $product_list);
-                        if (mysqli_num_rows($OTProduct_result) > 0) {
-                            // output data of each row
-                            while ($row = mysqli_fetch_assoc($OTProduct_result)) {
-                                $qty = $row['qty'];
-                                echo "<input id='qty_$no' type='number' class='$no' oninput=\"change('qty', className, id)\" name='qty_$no' value='$qty'>";
-                                $no++;
-                            }
+
+                        // Render All Items
+                        while($row = mysqli_fetch_assoc($sales_res)) {
+                            renderRow($idx++, $row);
                         }
                         ?>
-                    </div>
+                    </tbody>
+                </table>
+            </div>
 
-                    <div class="Rate_list tabel" id="rate">
-                        <?php
-                        $no = 0;
-                        $sales_result = mysqli_query($con, $sale_sql);
-                        if (mysqli_num_rows($sales_result) > 0) {
-                            // output data of each row
-                            while ($row = mysqli_fetch_assoc($sales_result)) {
-                                $rate = $row['rate'];
-                                echo "<input id='rate_$no' class='$no' oninput=\"change('rate', className, id)\" name='rate_$no' value='$rate'>";
-                                $no++;
-                            }
-                        }
-                        // One Time Product List
-                        $OTProduct_result = mysqli_query($con, $product_list);
-                        if (mysqli_num_rows($OTProduct_result) > 0) {
-                            // output data of each row
-                            while ($row = mysqli_fetch_assoc($OTProduct_result)) {
-                                $rate = $row['rate'];
-                                echo "<input id='rate_$no' class='$no' oninput=\"change('rate', className, id)\" name='rate_$no' value='$rate'>";
-                                $no++;
-                            }
-                        }
-                        ?>
-                    </div>
+            <!-- Add Product Interface (Modern Search) -->
+            <div class="add-product-bar" style="display: flex; gap: 10px;">
+                 <div style="flex-grow: 1; position: relative;">
+                     <input type="text" id="product-input" placeholder="Search product to add (Name, SKU, Barcode)..." autocomplete="off" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 4px;">
+                     <div id="search-results"></div>
+                 </div>
+                 <button type="button" class="btn-primary" onclick="addCustomItemModal('')" style="white-space: nowrap;">+ Custom Item</button>
+            </div>
+        </div>
 
-                    <div class="amount_list tabel" id="amount">
-                        <div id="amount_list">
-                            <?php
-                            $no = 0;
-                            $sales_result = mysqli_query($con, $sale_sql);
-                            if (mysqli_num_rows($sales_result) > 0) {
-                                // output data of each row
-                                while ($row = mysqli_fetch_assoc($sales_result)) {
-                                    $amount = $row['amount'];
-                                    echo "<input id='amount_$no' class='$no' onchange=\"change('amount', className, id)\" name='amount_$no' value='$amount'>";
-                                    $no++;
+        <div class="footer-actions">
+            <!-- Settings & Staff -->
+            <div style="flex: 1; min-width: 300px;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Sales Employee</label>
+                        <select name="biller" id="biller" style="width:100%; padding:0.75rem; border:1px solid var(--gray-300); border-radius:6px;">
+                            <option value="">Select Employee</option>
+                            <?php 
+                            $emp_q = mysqli_query($con, "SELECT employ_id, emp_name FROM employees WHERE status = '1'");
+                            $found = false;
+                            while($emp = mysqli_fetch_assoc($emp_q)) {
+                                $selected = '';
+                                if ($emp['emp_name'] == $invoice['resolved_biller']) {
+                                    $selected = 'selected';
+                                    $found = true;
+                                } elseif ($emp['employ_id'] == $invoice['biller']) {
+                                    $selected = 'selected';
+                                    $found = true;
                                 }
+                                echo "<option value='{$emp['emp_name']}' $selected>{$emp['emp_name']}</option>";
                             }
-                            // One Time Product List
-                            $OTProduct_result = mysqli_query($con, $product_list);
-                            if (mysqli_num_rows($OTProduct_result) > 0) {
-                                // output data of each row
-                                while ($row = mysqli_fetch_assoc($OTProduct_result)) {
-                                    $amount = $row['amount'];
-                                    echo "<input id='amount_$no' class='$no' onchange=\"change('amount', className, id)\" name='amount_$no' value='$amount'>";
-                                    $no++;
-                                }
+                            // If the current biller is not in the active list (legacy or inactive), show them anyway
+                            if (!$found && !empty($invoice['resolved_biller'])) {
+                                 echo "<option value='{$invoice['resolved_biller']}' selected>{$invoice['resolved_biller']} (Inactive/Other)</option>";
                             }
                             ?>
-                        </div>
-
-                        <div id="remove_button_list">
-                            <?php
-                            $no = 0;
-                            $sales_result = mysqli_query($con, $sale_sql);
-                            if (mysqli_num_rows($sales_result) > 0) {
-                                // output data of each row
-                                while ($row = mysqli_fetch_assoc($sales_result)) {
-                                    echo "<button id='_$no' type='button' class='x' onclick='remove_row(id, className);'>[x]</button>";
-                                    $no++;
-                                }
-                            }
-                            // One Time Product List
-                            $OTProduct_result = mysqli_query($con, $product_list);
-                            if (mysqli_num_rows($OTProduct_result) > 0) {
-                                // output data of each row
-                                while ($row = mysqli_fetch_assoc($OTProduct_result)) {
-                                    echo "<button id='_$no' type='button' class='x' onclick='remove_row(id, className);'>[x]</button>";
-                                    $no++;
-                                }
-                            }
-                            ?></div>
-
-                    </div>
-                    <div class="Total tabel"><input id="total" name="total"></div>
-                    <div class="Discount tabel"> <input id="discount" oninput="change_endline()" name="discount" value="<?php echo $discount ?>">
-                    </div>
-
-                    <div class="Advance tabel"><input id="advance" oninput="change_endline()" name="advance" value="<?php echo $advance ?>"></div>
-                    <div class="Balance tabel"><input id="balance" oninput="change_endline()" name="balance"></div>
-                    <div class="Total_tag bill-tag">Total</div>
-                    <div class="Discount_tag bill-tag">Discount</div>
-
-                    <div class="Advance_tag bill-tag">Advance </div>
-                    <div class="Balance_tag bill-tag">Balance</div>
-
-                    <div class="employ_details bill-tag">
-                        <label for="biller">
-                            Biller Name:</label>
-                        <input list="emoloyee_list" type="text" name="biller" id="biller" required value="<?php echo $_SESSION['employee_name']; ?>">
-                        <br>
-                        <label for="worker">
-                            Employee Name:</label>
-                        <input list="emoloyee_list" type="text" name="default_worker" id="default_worker" value="<?php echo $_SESSION['employee_name']; ?>">
-                        <script>
-                            function fill_employees() {
-                                var all_workers = document.getElementById("worker").childNodes;
-                                for (i = 0; i < all_workers.length; i++) {
-                                    var selected_row = all_workers[i];
-                                    if (selected_row.value == "") {
-                                        selected_row.value = document.getElementById("default_worker").value;
-                                    }
-                                }
-                            }
-                        </script>
-                        <br>
-                        <label for="PaymentMethod">Payment Method:</label>
-                        <select name="PaymentMethod" id="PaymentMethod">
-                            <option value="Cash" selected>Cash</option>
-                            <option value="BankTransfer">Bank Transfer (BOC)</option>
-                            <option value="CardPayment">Card Payment (DFCC)</option>
-                            <option value="Cheque">Cheque (BOC)</option>
-                            <option value="QRPayment">QR Payment (BOC)</option>
                         </select>
-
-
                     </div>
-                        <input-field id="changeInvoiceOptions-stock">
-                            <input type="checkbox" name="ChangeStock" id="ChangeStock" value="1" style="width: 50px; height:30px;" checked>
-                            <label for="ChangeStock">Change Stock </label>
-                        </input-field>
-                        <br>
-                        <input-field id="changeInvoiceOptions-account">
-                            <input type="checkbox" name="ChangeAccount" id="ChangeAccount" value="1" style="width: 50px; height:30px;">
-                            <label for="ChangeAccount">Change Account Balance</label>
-                        </input-field>
-                    <div id="AddTodoFieldSet">
-                        <input type="checkbox" name="add_to_todo" id="add_to_todo" value="1" style="width: 50px; height:30px;">
-                        <label for="add_to_todo"> Edit this Todo Task </label><br>
-                        <label for="todoName"> TODO Name : </label> <input type="text" name="todoName" value="<?php echo $todoName ?>" id="todoName" disabled required style="border: 1px solid black; padding:5px; margin: 2px;"><br>
-                        <label for="todoTime"> Submission Date & Time : </label> <input type="datetime-local" name="todoTime" value="<?php echo $todoTime ?>" disabled required id="todoTime" style="border: 1px solid black; padding:5px;  margin: 2px;">
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select name="PaymentMethod" id="PaymentMethod">
+                            <?php 
+                            $methods = ['Cash', 'BankTransfer', 'CardPayment', 'Cheque', 'QRPayment'];
+                            foreach($methods as $m) {
+                                $sel = ($invoice['paymentMethod'] == $m) ? 'selected' : '';
+                                echo "<option value='$m' $sel>$m</option>";
+                            }
+                            ?>
+                        </select>
                     </div>
                 </div>
 
+                <div style="margin-top: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="ChangeStock" id="ChangeStock" value="1" checked style="width: 20px; height: 20px;">
+                        <span>Update Stock Inventory?</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-top: 5px;">
+                        <input type="checkbox" name="UpdateCommission" id="UpdateCommission" value="1" checked style="width: 20px; height: 20px;">
+                        <span>Update Employee Commission?</span>
+                    </label>
+                </div>
             </div>
 
-            <input type="text" name="no" id="no" value="<?php echo $total_row_count; ?>">
-            <div class="button">
-                <button id="submit" type="submit" name="submit">Save</button>
+            <!-- Totals -->
+            <div class="totals-section card">
+                <div style="background-color: #ef4444; color: white; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-weight: 500; font-size: 0.9em; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    ⚠️ Remember to change Balance and recheck Balance!
+                </div>
+                <div class="total-row">
+                    <span>Total:</span>
+                    <input id="total" name="total" value="<?php echo $invoice['total']; ?>" readonly style="width: 120px; text-align: right; border: none; font-weight: bold;">
+                </div>
+                <div class="total-row">
+                    <span>Discount:</span>
+                    <input id="discount" name="discount" value="<?php echo $invoice['discount']; ?>" oninput="change_endline()" style="width: 120px; text-align: right;">
+                </div>
+                <div class="total-row">
+                    <span>Advance:</span>
+                    <input id="advance" name="advance" value="<?php echo $invoice['advance']; ?>" oninput="change_endline()" style="width: 120px; text-align: right;">
+                </div>
+                <div class="total-row final">
+                    <span>Balance:</span>
+                    <input id="balance" name="balance" value="<?php echo $invoice['balance']; ?>" readonly style="width: 120px; text-align: right; border: none; color: var(--primary);">
+                </div>
+                
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 1.5rem;">
+                    💾 Save Changes
+                </button>
             </div>
-        </form>
-
-    </div>
-    <div class="todo">
-        <button class="add_todo" onclick="add_todo()"> Add Todo Work </button>
-        <div class="todoList">
-            <?php
-            // Get all todo list from database
-            require_once '../inc/refresh_todo_section.php';
-            ?>
         </div>
-    </div>
-    </div>
 
-    <script>
-        var no = <?php echo $total_row_count; ?>;
-    </script>
-    <script src="/inc/add_petty_cash_modal.js"></script>
-    <script src="/inc/add_todo_functions_modals.js"></script>
-    <script src="/inc/invoice_main_functions.jsx"></script>
+        <!-- Hidden Counters -->
+        <input type="hidden" name="no" id="no" value="<?php echo $idx; ?>">
+    </form>
+</div>
+
+<!-- Scripts -->
+<script>
+    var no = <?php echo $idx; ?>; // Row counter
+    var productsCache = {};
+    var selectedSearchIndex = -1;
+    var lastSearchQuery = '';
+</script>
+
+<!-- Datalists -->
+
+<datalist id="customer_list">
+     <?php 
+    $cust_q = mysqli_query($con, "SELECT customer_name FROM customers");
+    while($r = mysqli_fetch_assoc($cust_q)) echo "<option value='{$r['customer_name']}'>";
+    ?>
+</datalist>
+
+<!-- Core Logic -->
+<script src="/inc/invoice_main_functions.jsx"></script> 
+<script src="/invoice/invoice-edit-actions.js"></script>
+
+<script>
+    /* =========================================
+       SEARCH IMPLEMENTATION (Ported from index.php)
+       ========================================= */
+       
+    function debounce(func, delay) {
+        let debounceTimer;
+        return function(...args) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    $(document).ready(function() {
+        add_total(0); // Initial calculation
+
+        // Search Input Handler
+        $('#product-input').on('input', debounce(function() {
+            selectedSearchIndex = -1;
+            const query = $(this).val().trim();
+            lastSearchQuery = query;
+
+            if (query.length > 0) {
+                fetchProduct(query);
+            } else {
+                $('#search-results').hide();
+            }
+        }, 300));
+
+        // Keyboard Navigation
+        $('#product-input').on('keydown', function(e) {
+            const $searchResults = $('#search-results');
+            const $searchItems = $searchResults.find('.search-result-item');
+
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                if ($searchResults.is(':visible')) {
+                    selectedSearchIndex = (selectedSearchIndex + 1) % $searchItems.length;
+                    highlightSearchResult();
+                }
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                if ($searchResults.is(':visible')) {
+                    selectedSearchIndex = selectedSearchIndex <= 0 ? $searchItems.length - 1 : selectedSearchIndex - 1;
+                    highlightSearchResult();
+                }
+            } else if (e.key === "Enter") {
+                e.preventDefault();
+                if ($searchResults.is(':visible') && selectedSearchIndex >= 0) {
+                    $searchItems.eq(selectedSearchIndex).click();
+                }
+            } else if (e.key === "Escape") {
+                $('#search-results').hide();
+            }
+        });
+
+        // Click Outside to Close
+        $(document).on('click', function(event) {
+            if (!$(event.target).closest('#product-input, #search-results').length) {
+                $('#search-results').hide();
+            }
+        });
+
+        // Click Result Handler
+        $(document).on('click', '.search-result-item', function() {
+            let product = JSON.parse($(this).attr('data-product'));
+            fetchProduct(product.product_name, true); // Fetch batches
+            $('#search-results').hide();
+            $('#product-input').val(''); // Clear search
+        });
+        
+        // Select Batch Button Handler (Dynamically added in Modal)
+        $(document).on('click', '.select-batch', function() {
+            let product = JSON.parse($(this).attr('data-product'));
+            let batch = JSON.parse($(this).attr('data-batch'));
+            
+            // ADD TO BILL
+            addproduct(product.product_name, batch.selling_price, 1, false);
+            Swal.close();
+            
+            // Focus on Qty of the newly added row (last row) -- logic in addproduct handles idx
+        });
+    });
+
+    function fetchProduct(query, selectFirstMatch = false) {
+        if (productsCache[query]) {
+            handleProductResponse(productsCache[query], selectFirstMatch);
+        } else {
+            $.ajax({
+                url: '/inc/fetch_product.php',
+                method: 'GET',
+                data: { search: query },
+                success: function(data) {
+                    let response = typeof data === "object" ? data : JSON.parse(data);
+                    productsCache[query] = response;
+                    handleProductResponse(response, selectFirstMatch);
+                }
+            });
+        }
+    }
+
+    function handleProductResponse(response, selectFirstMatch) {
+        if (response.products.length === 1) {
+            let product = response.products[0];
+            if (response.batches.length === 1) {
+                // Direct Add
+                addproduct(product.product_name, response.batches[0].selling_price, 1, false);
+                $('#search-results').hide();
+                $('#product-input').val('');
+            } else if (response.batches.length > 1) {
+                // Show Batch Modal
+                displayBatchModal(product, response.batches);
+            } else {
+                Swal.fire('Error', 'No batches found', 'error');
+            }
+        } else if (response.products.length > 1) {
+            displaySearchResults(response.products); // Show list
+        } else {
+             $('#search-results').hide(); 
+             // Optional: Show "No results"
+        }
+    }
+
+    function displaySearchResults(products) {
+        let html = products.map(p => `
+            <div class="search-result-item" data-product='${JSON.stringify(p)}'>
+                ${p.product_name} - ${p.sku || ''}
+            </div>
+        `).join('');
+        $('#search-results').html(html).show();
+    }
+
+    function highlightSearchResult() {
+        const $items = $('.search-result-item');
+        $items.removeClass('search-highlighted');
+        if (selectedSearchIndex >= 0) $items.eq(selectedSearchIndex).addClass('search-highlighted');
+    }
+
+    function displayBatchModal(product, batches) {
+        let html = `
+            <h3>${product.product_name}</h3>
+            <table style="width:100%; text-align:left; margin-top:10px; border-collapse:collapse;">
+                <tr style="background:#f5f5f5;"><th>Batch</th><th>Price</th><th>Expiry</th><th>Qty</th><th>Action</th></tr>
+                ${batches.map(b => `
+                    <tr>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">${b.batch_number}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">${b.selling_price}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">${b.expiry_date || '-'}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">${b.batch_quantity}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eee;">
+                            <button type="button" class="select-batch btn-primary" style="padding:5px 10px; font-size:12px;" 
+                                data-product='${JSON.stringify(product)}' 
+                                data-batch='${JSON.stringify(b)}'>Select</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </table>
+        `;
+        Swal.fire({
+            html: html,
+            showConfirmButton: false,
+            width: '600px'
+        });
+    }
+
+    /* =========================================
+       OVERRIDES (Table Logic)
+       ========================================= */
+
+    window.addproduct = function(oneTimeProductName, oneTimeProductRate, oneTimeProductQty, oneTimeProduct) {
+        var tbody = document.getElementById('list');
+        var product_name = oneTimeProductName || ''; 
+        // Note: No document.getElementById('addproduct').value fallback because we use new search input
+
+        if (!product_name) return;
+
+        var idx = window.no; 
+        var row = document.createElement('tr');
+        row.id = 'row_' + idx;
+
+        var qty = oneTimeProductQty || 1;
+        var rate = oneTimeProductRate || 0;
+        var amount = (qty * rate).toFixed(2);
+        
+        // Fetch rate if not provided (fallback for manual entry if we ever allow it)
+        if(!oneTimeProductRate) {
+             $.ajax({
+                url: "/inc/get_product_rate.php",
+                method: "POST",
+                data: { product: product_name },
+                success: function (html) {
+                    var r = Number(html).toFixed(2);
+                    document.getElementById('rate_' + idx).value = r;
+                    document.getElementById('amount_' + idx).value = (qty * r).toFixed(2);
+                    add_total(idx);
+                }
+            });
+        }
+
+        var idInput = oneTimeProduct ? 
+            `<input type='hidden' name='oneTimeProductID_${idx}' value='new'>` : 
+            `<input type='hidden' name='salesID_${idx}' value='new'>`;
+            
+        var otpVal = oneTimeProduct ? 1 : 0;
+        var otpInput = `<input type='hidden' id='is_otp_${idx}' value='${otpVal}'>`;
+
+        row.innerHTML = `
+            <td>
+                ${idInput}
+                ${otpInput}
+                <input id='product_${idx}' name='product_${idx}' value='${product_name}' class='${idx}' readonly style="width:100%; border:1px solid #ddd; padding:5px; background-color: #f0f0f0; cursor: not-allowed;">
+            </td>
+            <td><input type='number' id='qty_${idx}' name='qty_${idx}' value='${qty}' class='${idx}' oninput="change('qty', '${idx}', 'qty_${idx}')" style="width:100%; border:1px solid #ddd; padding:5px;"></td>
+            <td><input type='number' id='rate_${idx}' name='rate_${idx}' value='${rate}' class='${idx}' oninput="change('rate', '${idx}', 'rate_${idx}')" style="width:100%; border:1px solid #ddd; padding:5px;"></td>
+            <td><input type='number' id='amount_${idx}' name='amount_${idx}' value='${amount}' class='${idx}' onchange="change('amount', '${idx}', 'amount_${idx}')" style="width:100%; border:1px solid #ddd; padding:5px;"></td>
+            <td><button type='button' class='btn-remove' onclick="remove_row('_$idx', '${idx}')">×</button></td>
+        `;
+
+        tbody.appendChild(row);
+        
+        window.no++;
+        document.getElementById('no').value = window.no;
+        
+        add_total(idx);
+    };
+
+    window.add_total = function(idx) {
+        var total = 0;
+        var inputs = document.querySelectorAll('input[name^="amount_"]');
+        inputs.forEach(function(inp) {
+            if(inp.closest('tr') && inp.closest('tr').style.display !== 'none') {
+                total += parseFloat(inp.value) || 0;
+            }
+        });
+
+        var tField = document.getElementById('total');
+        if(tField) tField.value = total.toFixed(2);
+
+
+        var disc = parseFloat(document.getElementById('discount').value) || 0;
+        var adv = parseFloat(document.getElementById('advance').value) || 0;
+        var bal = total - disc - adv;
+        
+        document.getElementById('balance').value = bal.toFixed(2);
+    };
+
+    // Custom Modal for Edit Bill (Renamed to avoid conflict)
+    window.addCustomItemModal = function(productName) {
+        Swal.fire({
+            title: 'Add One Time Product Details',
+            html: `
+                <div style="text-align: right; margin-bottom: 10px;">
+                    <a href="/products/create/" class="btn btn-success" style="padding: 5px 10px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </a>
+                </div>
+                <label for='oneTimeProductName' class='swal2-label'> Product Name:</label>
+                <input id="oneTimeProductName" class="swal2-input" value="${productName}" placeholder="Enter Product Name"><br>
+                <label for="oneTimeProductRegularPrice" class="swal2-label">Regular Price (Rs.):</label>
+                <input id="oneTimeProductRegularPrice" class="swal2-input" type="number" step="0.01" placeholder="Enter Regular Price"><br>
+                <label for="oneTimeProductDiscountPrice" class="swal2-label">Discount Price (Rs.):</label>
+                <input id="oneTimeProductDiscountPrice" class="swal2-input" type="number" step="0.01" placeholder="Enter Discount Price (optional)"><br>
+                <label for="oneTimeProductQty" class="swal2-label">Quantity:</label>
+                <input id="oneTimeProductQty" class="swal2-input" type="number" step="0.001" placeholder="Enter Quantity">`,
+            focusConfirm: false,
+            preConfirm: () => {
+                const oneTimeProductName = Swal.getPopup().querySelector('#oneTimeProductName').value;
+                const oneTimeProductRegularPrice = Swal.getPopup().querySelector('#oneTimeProductRegularPrice').value;
+                const oneTimeProductDiscountPrice = Swal.getPopup().querySelector('#oneTimeProductDiscountPrice').value;
+                const oneTimeProductQty = Swal.getPopup().querySelector('#oneTimeProductQty').value;
+                
+                const finalRate = oneTimeProductDiscountPrice && !isNaN(oneTimeProductDiscountPrice) 
+                    ? oneTimeProductDiscountPrice 
+                    : oneTimeProductRegularPrice;
+                    
+                if (oneTimeProductName && oneTimeProductRegularPrice && oneTimeProductQty && 
+                    !isNaN(oneTimeProductRegularPrice) && !isNaN(oneTimeProductQty)) {
+                    
+                    // Directly call our overridden addproduct
+                    window.addproduct(oneTimeProductName, finalRate, oneTimeProductQty, true);
+                } else {
+                    Swal.showValidationMessage(`Please enter all required fields correctly.`);
+                }
+            }
+        });
+    };
 
 
 
+
+
+    window.remove_row = function(id, className) {
+        var idx = className;
+        var row = document.getElementById('row_' + idx);
+        if(row) row.remove();
+        add_total(0);
+    };
+
+</script>
 
 </body>
-<!-- == emoloyee name list - Data List get from Database == -->
-<datalist id="emoloyee_list">
-    <!-- == Employee == -->
-    <?php $emoloyees_list = "SELECT emp_name FROM employees WHERE `status` = '1'";
-    $result = mysqli_query($con, $emoloyees_list);
-    if ($result) {
-        echo "<ol>";
-        while ($recoard = mysqli_fetch_assoc($result)) {
-            $emoloyee = $recoard['emp_name'];
-            echo "<option value='{$emoloyee}'>";
-        }
-        echo "</ol>";
-    } else {
-        echo "<option value='Result 404'>";
-    }
-    ?>
-</datalist>
-
-
-<!-- == Product List - Data List get from Database == -->
-<datalist id="products">
-    <?php $product_list = "SELECT product_name FROM products";
-    $result = mysqli_query($con, $product_list);
-    if ($result) {
-        echo "<ol>";
-        while ($recoard = mysqli_fetch_assoc($result)) {
-            $product = $recoard['product_name'];
-            echo "<option value='{$product}'>";
-        }
-        echo "</ol>";
-    } else {
-        echo "<option value='Result 404'>";
-    }
-    ?>
-</datalist>
-
 </html>
-
-
-<?php end_db_con() ?>
+<?php end_db_con(); ?>

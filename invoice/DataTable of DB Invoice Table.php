@@ -61,7 +61,10 @@
                 }
                 echo "</td>";
                 echo "<td>" . $paymentMethod . "</td>";
-                echo "<td> <a href='/invoice/edit-bill.php?id={$row['invoice_number']}'>Edit</a> </td>";
+                echo "<td> 
+                        <a href='/invoice/edit-bill.php?id={$row['invoice_number']}'>Edit</a> | 
+                        <a href='javascript:void(0)' onclick='confirmDeleteInvoice({$row['invoice_number']})' style='color:red;'>Delete</a>
+                      </td>";
                 echo "<td> <a href='/invoice/print.php?id={$row['invoice_number']}' target='_blanck'>Print</a> </td>";
                 echo "</tr>";
             }
@@ -89,4 +92,6 @@
     </style>
 
     <!-- link test.js -->
+    <!-- link test.js -->
     <script src="/invoice/addFundInvoiceModal.js"></script>
+    <script src="/invoice/invoice-actions.js"></script>

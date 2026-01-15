@@ -22,6 +22,7 @@ include '../nav.php';
     $sql = "SELECT * 
             FROM invoice i
             INNER JOIN employees e ON i.biller = e.employ_id
+            WHERE i.is_deleted = 0
             ORDER BY invoice_number DESC;";
     include '../../invoice/DataTable of DB Invoice Table.php'; ?>
 

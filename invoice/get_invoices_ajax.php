@@ -33,13 +33,14 @@ $orderColumn = isset($columns[$orderColumnIndex]) ? $columns[$orderColumnIndex] 
 
 // Base query
 $baseQuery = "FROM invoice i
-              INNER JOIN employees e ON i.biller = e.employ_id";
+              INNER JOIN employees e ON i.biller = e.employ_id
+              WHERE i.is_deleted = 0";
 
 // Search condition
 $whereClause = "";
 if (!empty($searchValue)) {
     $searchValue = mysqli_real_escape_string($con, $searchValue);
-    $whereClause = " WHERE (i.invoice_number LIKE '%$searchValue%' 
+    $whereClause = " AND (i.invoice_number LIKE '%$searchValue%' 
                      OR i.customer_name LIKE '%$searchValue%' 
                      OR i.customer_mobile LIKE '%$searchValue%'
                      OR e.emp_name LIKE '%$searchValue%'
@@ -47,7 +48,7 @@ if (!empty($searchValue)) {
 }
 
 // Total records without filtering
-$totalQuery = "SELECT COUNT(*) as total FROM invoice i INNER JOIN employees e ON i.biller = e.employ_id";
+$totalQuery = "SELECT COUNT(*) as total FROM invoice i INNER JOIN employees e ON i.biller = e.employ_id WHERE i.is_deleted = 0";
 $totalResult = mysqli_query($con, $totalQuery);
 $totalRecords = mysqli_fetch_assoc($totalResult)['total'];
 
@@ -74,7 +75,8 @@ while ($row = mysqli_fetch_assoc($result)) {
     }
     
     // Actions column
-    $actionsHtml = "<a href='/invoice/edit-bill.php?id=" . $row['invoice_number'] . "'>Edit</a>";
+    $actionsHtml = "<a href='/invoice/edit-bill.php?id=" . $row['invoice_number'] . "'>Edit</a> | 
+                    <a href='javascript:void(0)' onclick='confirmDeleteInvoice(" . $row['invoice_number'] . ")' style='color:red;'>Delete</a>";
     
     // Print column
     $printHtml = "<a href='/invoice/print.php?id=" . $row['invoice_number'] . "' target='_blank'>Print</a>";

@@ -1152,3 +1152,107 @@ input:checked+.slider:before {
         opacity: 0;
     }
 }
+
+/* Bill Edit Page Styling (Fix UI) */
+.bill-edit-container {
+    width: 95%;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    gap: 2rem;
+}
+
+.bill-details input, 
+.customer-details input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: 4px;
+}
+
+/* Custom Table Layout for Edit Bill */
+.content .container {
+    display: grid;
+    grid-template-columns: 2fr 0.5fr 0.5fr 1fr 50px; /* Description, Qty, Rate, Amount, Remove */
+    column-gap: 10px;
+    margin-top: 20px;
+    align-items: start;
+}
+
+.tabel-head {
+    font-weight: bold;
+    background-color: var(--primary);
+    color: white;
+    padding: 10px;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.tabel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.tabel input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Critical for alignment */
+    height: 40px;
+    font-size: 1rem;
+}
+
+.tabel button.x {
+    height: 40px;
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+}
+
+/* Footer Totals Section */
+.Total, .Discount, .Advance, .Balance {
+    grid-column: 4; /* Align with Amount column */
+    margin-top: 5px;
+}
+
+.bill-tag {
+    grid-column: 3; /* Label column */
+    text-align: right;
+    padding-right: 15px;
+    font-weight: bold;
+    align-self: center;
+    margin-top: 5px;
+    grid-row: auto;
+}
+
+/* Add Product Bar */
+.product_list input#addproduct {
+    margin-top: 15px;
+    border: 2px solid var(--success);
+}
+
+.add {
+    background-color: var(--success);
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 5px;
+    font-weight: bold;
+}
