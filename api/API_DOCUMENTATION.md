@@ -1119,6 +1119,20 @@ Content-Type: application/json
     "advance": 2300.00,
     "balance": 0.00,
     "cash_change": 200.00,
+    "commission": {
+      "enabled": true,
+      "total_commission": 150.50,
+      "employee_id": 5,
+      "records_count": 2,
+      "details": [
+        {
+          "product_name": "A4 Color Printing",
+          "profit": 650.00,
+          "commission_percentage": 5.00,
+          "commission_amount": 32.50
+        }
+      ]
+    },
     "customer": {
       "id": 45,
       "name": "John Doe"
@@ -2021,6 +2035,53 @@ Content-Type: application/json
   "meta": {
     "timestamp": "2025-10-25 10:40:00",
     "version": "v1"
+  }
+}
+```
+
+---
+
+### 9. Get Commission History
+
+Get commission history for the logged-in employee.
+
+**Endpoint:** `GET /api/v1/employees/commission_history.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `per_page` (optional): Items per page (default: 20)
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Commission history retrieved",
+  "data": [
+    {
+      "invoice_number": 1005,
+      "product_name": "Luxury Item",
+      "product_profit": 1000.00,
+      "commission_percentage": 5.00,
+      "commission_amount": 50.00,
+      "date": "2026-01-13 14:30:00"
+    }
+  ],
+  "meta": {
+    "timestamp": "2025-10-25 10:45:00",
+    "version": "v1",
+    "pagination": {
+      "total": 50,
+      "per_page": 20,
+      "current_page": 1,
+      "total_pages": 3,
+      "has_more": true
+    },
+    "total_earnings": 1550.00
   }
 }
 ```
@@ -4663,6 +4724,40 @@ Authorization: Bearer YOUR_TOKEN
         "percentage": 40.00
       }
     ]
+  }
+}
+```
+
+---
+
+---
+
+## Settings Endpoints
+
+### 1. Get System Settings
+
+Get global system settings including feature flags.
+
+**Endpoint:** `GET /api/v1/settings/get.php`
+
+**Headers:**
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "message": "Settings retrieved successfully",
+  "data": {
+    "employee_commission_enabled": true,
+    "sell_Insufficient_stock_item": true,
+    "sell_Inactive_batch_products": true
+  },
+  "meta": {
+    "timestamp": "2025-10-25 10:45:00",
+    "version": "v1"
   }
 }
 ```

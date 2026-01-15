@@ -63,13 +63,14 @@ $query = "SELECT
     p.active_status,
     p.image,
     p.category_id,
+    p.employee_commission_percentage,
     COALESCE(pb.selling_price, 0) as price,
     COALESCE(pb.cost, 0) as cost_price,
     COALESCE(SUM(pb.quantity), 0) as available_quantity
 FROM products p
 LEFT JOIN product_batch pb ON p.product_id = pb.product_id AND pb.status = 'active'
 $whereClause
-GROUP BY p.product_id, p.product_name, p.sku, p.barcode, p.has_stock, p.active_status, p.image, p.category_id, pb.selling_price, pb.cost
+GROUP BY p.product_id, p.product_name, p.sku, p.barcode, p.has_stock, p.active_status, p.image, p.category_id, p.employee_commission_percentage, pb.selling_price, pb.cost
 ORDER BY p.product_name ASC
 LIMIT ? OFFSET ?";
 
@@ -96,7 +97,8 @@ while ($row = mysqli_fetch_assoc($result)) {
         'has_stock' => $row['has_stock'] == '1',
         'available_quantity' => floatval($row['available_quantity']),
         'is_active' => (bool)$row['active_status'],
-        'image' => $row['image'] ? '/products/create/uploads/products/' . $row['image'] : null
+        'image' => $row['image'] ? '/products/create/uploads/products/' . $row['image'] : null,
+        'commission_percentage' => floatval($row['employee_commission_percentage'])
     ];
 }
 

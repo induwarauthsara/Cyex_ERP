@@ -42,6 +42,7 @@ $query = "SELECT
     p.stock_alert_limit,
     p.created_at,
     p.updated_at,
+    p.employee_commission_percentage,
     COALESCE(pb.selling_price, 0) as price,
     COALESCE(pb.cost, 0) as cost_price,
     COALESCE(pb.profit, 0) as profit_margin,
@@ -51,7 +52,7 @@ FROM products p
 LEFT JOIN product_batch pb ON p.product_id = pb.product_id AND pb.status = 'active'
 WHERE p.product_id = ?
 GROUP BY p.product_id, p.product_name, p.sku, p.barcode, p.has_stock, p.active_status, p.image, 
-         p.category_id, p.brand_id, p.description, p.stock_alert_limit, p.created_at, p.updated_at,
+         p.category_id, p.brand_id, p.description, p.stock_alert_limit, p.created_at, p.updated_at, p.employee_commission_percentage,
          pb.selling_price, pb.cost, pb.profit, pb.alert_quantity";
 
 $stmt = mysqli_prepare($con, $query);
@@ -134,6 +135,7 @@ $productData = [
     'created_at' => $product['created_at'],
     'updated_at' => $product['updated_at'],
     'batches' => $batches,
+    'commission_percentage' => floatval($product['employee_commission_percentage']),
     'low_stock_alert' => floatval($product['available_quantity']) <= floatval($product['stock_alert_limit'])
 ];
 

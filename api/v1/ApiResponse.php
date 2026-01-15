@@ -122,10 +122,10 @@ class ApiResponse {
      * @param int $perPage Records per page
      * @param string $message Success message
      */
-    public static function paginated($data, $total, $page, $perPage, $message = "Success") {
+    public static function paginated($data, $total, $page, $perPage, $message = "Success", $meta = []) {
         $totalPages = ceil($total / $perPage);
         
-        self::success($data, $message, 200, [
+        self::success($data, $message, 200, array_merge([
             'pagination' => [
                 'total' => $total,
                 'per_page' => $perPage,
@@ -133,6 +133,6 @@ class ApiResponse {
                 'total_pages' => $totalPages,
                 'has_more' => $page < $totalPages
             ]
-        ]);
+        ], $meta));
     }
 }

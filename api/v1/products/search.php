@@ -45,6 +45,7 @@ $query = "SELECT
     p.image,
     p.category_id,
     p.brand_id,
+    p.employee_commission_percentage,
     COALESCE(pb.selling_price, 0) as price,
     COALESCE(pb.cost, 0) as cost_price,
     COALESCE(SUM(pb.quantity), 0) as available_quantity
@@ -56,7 +57,7 @@ WHERE (
     OR p.barcode LIKE ?
 )
 AND p.active_status = 1
-GROUP BY p.product_id, p.product_name, p.sku, p.barcode, p.has_stock, p.active_status, p.image, p.category_id, p.brand_id, pb.selling_price, pb.cost
+GROUP BY p.product_id, p.product_name, p.sku, p.barcode, p.has_stock, p.active_status, p.image, p.category_id, p.brand_id, p.employee_commission_percentage, pb.selling_price, pb.cost
 ORDER BY p.product_name ASC
 LIMIT ?";
 
@@ -84,7 +85,8 @@ while ($row = mysqli_fetch_assoc($result)) {
         'is_active' => (bool)$row['active_status'],
         'image' => $row['image'] ? '/products/create/uploads/products/' . $row['image'] : null,
         'category_id' => $row['category_id'] ? intval($row['category_id']) : null,
-        'brand_id' => $row['brand_id'] ? intval($row['brand_id']) : null
+        'brand_id' => $row['brand_id'] ? intval($row['brand_id']) : null,
+        'commission_percentage' => floatval($row['employee_commission_percentage'])
     ];
 }
 
