@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 06, 2025 at 04:31 PM
--- Server version: 10.6.23-MariaDB-cll-lve
--- PHP Version: 8.4.14
+-- Generation Time: Jan 15, 2026 at 09:24 PM
+-- Server version: 10.6.24-MariaDB-cll-lve
+-- PHP Version: 8.4.16
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -249,6 +249,25 @@ CREATE TABLE `employees` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `employee_commission_history`
+--
+
+CREATE TABLE `employee_commission_history` (
+  `commission_id` int(11) NOT NULL,
+  `invoice_number` int(10) NOT NULL,
+  `sales_id` int(5) DEFAULT NULL,
+  `employee_id` int(4) NOT NULL,
+  `product_id` int(10) DEFAULT NULL,
+  `product_name` varchar(100) NOT NULL,
+  `product_profit` decimal(15,2) NOT NULL,
+  `commission_percentage` decimal(5,2) NOT NULL,
+  `commission_amount` decimal(15,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `error_log`
 --
 
@@ -328,24 +347,25 @@ CREATE TABLE `expense_payments` (
 --
 DELIMITER $$
 CREATE TRIGGER `update_expense_status_after_payment` AFTER INSERT ON `expense_payments` FOR EACH ROW BEGIN
-    DECLARE var_total_amount DECIMAL(15,2);
-    DECLARE var_old_paid DECIMAL(15,2);
-    DECLARE var_new_paid DECIMAL(15,2);
-
-    -- Get expense details
-    SELECT amount, amount_paid INTO var_total_amount, var_old_paid
+    DECLARE total_paid DECIMAL(15,2);
+    DECLARE expense_total DECIMAL(15,2);
+    
+    -- Get total amount paid
+    SELECT COALESCE(SUM(payment_amount), 0) INTO total_paid
+    FROM expense_payments
+    WHERE expense_id = NEW.expense_id;
+    
+    -- Get expense total amount
+    SELECT amount INTO expense_total
     FROM expenses
     WHERE expense_id = NEW.expense_id;
     
-    SET var_new_paid = var_old_paid + NEW.payment_amount;
-
-    -- Update parent expense record
+    -- Update amount_paid and status
     UPDATE expenses
-    SET 
-        amount_paid = var_new_paid,
+    SET amount_paid = total_paid,
         status = CASE
-            WHEN var_new_paid >= var_total_amount THEN 'paid'
-            WHEN var_new_paid > 0 THEN 'partial'
+            WHEN total_paid >= expense_total THEN 'paid'
+            WHEN total_paid > 0 THEN 'partial'
             ELSE 'unpaid'
         END
     WHERE expense_id = NEW.expense_id;
@@ -463,7 +483,10 @@ CREATE TABLE `invoice` (
   `customer_id` int(2) DEFAULT 0,
   `primary_worker` varchar(10) NOT NULL DEFAULT '0',
   `amount_received` decimal(15,2) DEFAULT NULL,
-  `cash_change` decimal(15,2) DEFAULT NULL
+  `cash_change` decimal(15,2) DEFAULT NULL,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1: Soft deleted, 0: Active',
+  `deleted_at` datetime DEFAULT NULL,
+  `deleted_by` int(4) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -481,6 +504,27 @@ CREATE TABLE `InvoiceBalPayRecords` (
   `account` varchar(30) NOT NULL,
   `invoice_status` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `invoice_audit_logs`
+--
+
+CREATE TABLE `invoice_audit_logs` (
+  `id` int(11) NOT NULL,
+  `invoice_number` int(10) NOT NULL COMMENT 'Linked Bill ID',
+  `action_type` enum('EDIT','DELETE') NOT NULL,
+  `old_payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`old_payload`)),
+  `new_payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`new_payload`)),
+  `stock_changes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`stock_changes`)),
+  `commission_changes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`commission_changes`)),
+  `reason` text NOT NULL,
+  `restock_items` tinyint(1) NOT NULL DEFAULT 1,
+  `user_id` int(4) NOT NULL,
+  `user_name` varchar(50) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -646,7 +690,8 @@ CREATE TABLE `products` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `sku` varchar(30) DEFAULT NULL,
-  `active_status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1: Active, 0: Inactive'
+  `active_status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1: Active, 0: Inactive',
+  `employee_commission_percentage` decimal(5,2) NOT NULL DEFAULT 0.00 COMMENT 'Employee commission percentage from product profit (0-100)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -907,10 +952,28 @@ CREATE TABLE `sequences` (
 CREATE TABLE `settings` (
   `setting_name` varchar(50) NOT NULL,
   `setting_description` text NOT NULL,
-  `setting_value` varchar(20) NOT NULL,
+  `setting_value` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`setting_name`, `setting_description`, `setting_value`, `created_at`, `updated_at`) VALUES
+('company_address', 'Company Address displayed on invoices', 'FF26, Megacity, Athurugiriya.', '2026-01-15 13:02:19', '2026-01-15 13:02:19'),
+('company_base_url', 'Base URL for API calls', 'https://pos.srijaya.lk', '2026-01-15 13:02:21', '2026-01-15 13:02:21'),
+('company_logo', 'URL/Path to Company Logo', 'logo.png', '2026-01-15 13:02:21', '2026-01-15 13:02:21'),
+('company_name', 'Company Name displayed on invoices and header', 'Srijaya Print House', '2026-01-15 13:02:18', '2026-01-15 13:02:18'),
+('company_phone', 'Company Phone Number', '0714730996', '2026-01-15 13:02:20', '2026-01-15 13:02:20'),
+('employee_commission_enabled', 'Enable employee commission from invoice profit (1=yes, 0=no)', '1', '2026-01-12 19:20:19', '2026-01-12 19:38:48'),
+('invoice_print_type', 'Default invoice print type (receipt, standard, or both)', 'standard', '2025-11-30 19:55:49', '2025-11-30 20:06:13'),
+('quotation_auto_generate', 'Auto generate quotation numbers (1=yes, 0=no)', '1', '2025-11-30 21:47:53', '2025-11-30 21:47:53'),
+('quotation_prefix', 'Prefix for quotation numbers', 'QT', '2025-11-30 21:47:53', '2025-11-30 21:47:53'),
+('quotation_validity_days', 'Default validity period for quotations in days', '14', '2025-11-30 21:47:53', '2025-11-30 22:02:04'),
+('sell_Inactive_batch_products', 'Allow selling from inactive batches (1=allow, 0=restrict)', '1', '2025-07-13 13:56:52', '2025-07-13 16:48:08'),
+('sell_Insufficient_stock_item', 'Allow selling out-of-stock items (1=allow, 0=restrict)', '1', '2025-07-13 13:56:52', '2025-07-13 13:56:52');
 
 -- --------------------------------------------------------
 
@@ -947,6 +1010,64 @@ CREATE TABLE `supplier_payments` (
   `created_by` int(11) DEFAULT NULL,
   `grn_id` int(11) DEFAULT NULL,
   `po_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `telegram_config`
+--
+
+CREATE TABLE `telegram_config` (
+  `id` int(11) NOT NULL,
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `telegram_logs`
+--
+
+CREATE TABLE `telegram_logs` (
+  `id` int(11) NOT NULL,
+  `message_type` varchar(50) DEFAULT NULL,
+  `recipient_topic` varchar(50) DEFAULT NULL,
+  `content` text DEFAULT NULL,
+  `status` enum('success','failed') NOT NULL DEFAULT 'success',
+  `error_message` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `telegram_schedules`
+--
+
+CREATE TABLE `telegram_schedules` (
+  `id` int(11) NOT NULL,
+  `report_type` varchar(50) NOT NULL,
+  `schedule_hour` int(2) NOT NULL COMMENT '0-23 Hour',
+  `target_topic_key` varchar(50) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `telegram_topics`
+--
+
+CREATE TABLE `telegram_topics` (
+  `id` int(11) NOT NULL,
+  `topic_key` varchar(50) NOT NULL COMMENT 'internal key like inventory_alerts',
+  `topic_name` varchar(100) NOT NULL COMMENT 'User facing name',
+  `topic_id` int(11) DEFAULT NULL COMMENT 'Telegram Message Thread ID',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `description` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -1007,9 +1128,7 @@ CREATE TABLE `v_expense_payment_history` (
 `payment_id` int(11)
 ,`expense_id` int(11)
 ,`expense_title` varchar(255)
-,`total_amount` decimal(15,2)
-,`total_paid` decimal(15,2)
-,`remaining_amount` decimal(16,2)
+,`expense_total` decimal(15,2)
 ,`payment_amount` decimal(15,2)
 ,`payment_date` datetime
 ,`payment_method` varchar(50)
@@ -1142,6 +1261,16 @@ ALTER TABLE `employees`
   ADD UNIQUE KEY `emp_name` (`emp_name`);
 
 --
+-- Indexes for table `employee_commission_history`
+--
+ALTER TABLE `employee_commission_history`
+  ADD PRIMARY KEY (`commission_id`),
+  ADD KEY `idx_commission_invoice` (`invoice_number`),
+  ADD KEY `idx_commission_employee` (`employee_id`),
+  ADD KEY `idx_commission_product` (`product_id`),
+  ADD KEY `idx_commission_date` (`created_at`);
+
+--
 -- Indexes for table `error_log`
 --
 ALTER TABLE `error_log`
@@ -1224,6 +1353,14 @@ ALTER TABLE `invoice`
 --
 ALTER TABLE `InvoiceBalPayRecords`
   ADD PRIMARY KEY (`InvBalPayRecords_id`);
+
+--
+-- Indexes for table `invoice_audit_logs`
+--
+ALTER TABLE `invoice_audit_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_invoice_number` (`invoice_number`),
+  ADD KEY `idx_action_type` (`action_type`);
 
 --
 -- Indexes for table `items`
@@ -1420,6 +1557,32 @@ ALTER TABLE `supplier_payments`
   ADD KEY `grn_id` (`grn_id`);
 
 --
+-- Indexes for table `telegram_config`
+--
+ALTER TABLE `telegram_config`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `setting_key` (`setting_key`);
+
+--
+-- Indexes for table `telegram_logs`
+--
+ALTER TABLE `telegram_logs`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `telegram_schedules`
+--
+ALTER TABLE `telegram_schedules`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `telegram_topics`
+--
+ALTER TABLE `telegram_topics`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `topic_key` (`topic_key`);
+
+--
 -- Indexes for table `todo`
 --
 ALTER TABLE `todo`
@@ -1521,6 +1684,12 @@ ALTER TABLE `employees`
   MODIFY `employ_id` int(4) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `employee_commission_history`
+--
+ALTER TABLE `employee_commission_history`
+  MODIFY `commission_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `error_log`
 --
 ALTER TABLE `error_log`
@@ -1579,6 +1748,12 @@ ALTER TABLE `invoice`
 --
 ALTER TABLE `InvoiceBalPayRecords`
   MODIFY `InvBalPayRecords_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `invoice_audit_logs`
+--
+ALTER TABLE `invoice_audit_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `items`
@@ -1719,6 +1894,30 @@ ALTER TABLE `supplier_payments`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `telegram_config`
+--
+ALTER TABLE `telegram_config`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `telegram_logs`
+--
+ALTER TABLE `telegram_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `telegram_schedules`
+--
+ALTER TABLE `telegram_schedules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `telegram_topics`
+--
+ALTER TABLE `telegram_topics`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `todo`
 --
 ALTER TABLE `todo`
@@ -1746,7 +1945,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_expense_category_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_category_summary`  AS SELECT `ec`.`category_id` AS `category_id`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, count(`e`.`expense_id`) AS `total_transactions`, coalesce(sum(`e`.`amount`),0) AS `total_amount`, coalesce(sum(`e`.`amount_paid`),0) AS `total_paid`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount` else 0 end),0) AS `current_month_amount`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount_paid` else 0 end),0) AS `current_month_paid` FROM (`expense_categories` `ec` left join `expenses` `e` on(`ec`.`category_id` = `e`.`category_id`)) WHERE `ec`.`status` = 1 GROUP BY `ec`.`category_id`, `ec`.`category_name`, `ec`.`color_code`, `ec`.`icon` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_category_summary`  AS SELECT `ec`.`category_id` AS `category_id`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, count(`e`.`expense_id`) AS `total_transactions`, coalesce(sum(`e`.`amount`),0) AS `total_amount`, coalesce(sum(`e`.`amount_paid`),0) AS `total_paid`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount` else 0 end),0) AS `current_month_amount`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount_paid` else 0 end),0) AS `current_month_paid` FROM (`expense_categories` `ec` left join `expenses` `e` on(`ec`.`category_id` = `e`.`category_id`)) WHERE `ec`.`status` = 1 GROUP BY `ec`.`category_id`, `ec`.`category_name`, `ec`.`color_code`, `ec`.`icon` ;
 
 -- --------------------------------------------------------
 
@@ -1755,7 +1954,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY D
 --
 DROP TABLE IF EXISTS `v_expense_payment_history`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_payment_history`  AS SELECT `ep`.`payment_id` AS `payment_id`, `ep`.`expense_id` AS `expense_id`, `e`.`title` AS `expense_title`, `e`.`amount` AS `total_amount`, `e`.`amount_paid` AS `total_paid`, `e`.`amount`- `e`.`amount_paid` AS `remaining_amount`, `ep`.`payment_amount` AS `payment_amount`, `ep`.`payment_date` AS `payment_date`, `ep`.`payment_method` AS `payment_method`, `ep`.`reference_no` AS `reference_no`, `ep`.`notes` AS `notes`, coalesce(`emp`.`emp_name`,'Unknown') AS `created_by_name`, `ep`.`created_at` AS `created_at` FROM ((`expense_payments` `ep` join `expenses` `e` on(`ep`.`expense_id` = `e`.`expense_id`)) left join `employees` `emp` on(`ep`.`created_by` = `emp`.`employ_id`)) ORDER BY `ep`.`payment_date` DESC ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_payment_history`  AS SELECT `ep`.`payment_id` AS `payment_id`, `ep`.`expense_id` AS `expense_id`, `e`.`title` AS `expense_title`, `e`.`amount` AS `expense_total`, `ep`.`payment_amount` AS `payment_amount`, `ep`.`payment_date` AS `payment_date`, `ep`.`payment_method` AS `payment_method`, `ep`.`reference_no` AS `reference_no`, `ep`.`notes` AS `notes`, `emp`.`emp_name` AS `created_by_name`, `ep`.`created_at` AS `created_at` FROM ((`expense_payments` `ep` join `expenses` `e` on(`ep`.`expense_id` = `e`.`expense_id`)) left join `employees` `emp` on(`ep`.`created_by` = `emp`.`employ_id`)) ORDER BY `ep`.`payment_date` DESC ;
 
 -- --------------------------------------------------------
 
@@ -1764,7 +1963,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY D
 --
 DROP TABLE IF EXISTS `v_upcoming_recurring_payments`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`cpses_srvcpjnbc4`@`localhost` SQL SECURITY DEFINER VIEW `v_upcoming_recurring_payments`  AS SELECT `re`.`recurring_id` AS `recurring_id`, `re`.`title` AS `title`, `re`.`amount` AS `amount`, `re`.`next_due_date` AS `next_due_date`, `re`.`frequency` AS `frequency`, `re`.`payment_method` AS `payment_method`, `re`.`remind_days_before` AS `remind_days_before`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, to_days(`re`.`next_due_date`) - to_days(curdate()) AS `days_until_due`, CASE WHEN `re`.`next_due_date` < curdate() THEN 'overdue' WHEN to_days(`re`.`next_due_date`) - to_days(curdate()) <= `re`.`remind_days_before` THEN 'due_soon' ELSE 'upcoming' END AS `payment_status` FROM (`recurring_expenses` `re` join `expense_categories` `ec` on(`re`.`category_id` = `ec`.`category_id`)) WHERE `re`.`is_active` = 1 ORDER BY `re`.`next_due_date` ASC ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER VIEW `v_upcoming_recurring_payments`  AS SELECT `re`.`recurring_id` AS `recurring_id`, `re`.`title` AS `title`, `re`.`amount` AS `amount`, `re`.`next_due_date` AS `next_due_date`, `re`.`frequency` AS `frequency`, `re`.`payment_method` AS `payment_method`, `re`.`remind_days_before` AS `remind_days_before`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, to_days(`re`.`next_due_date`) - to_days(curdate()) AS `days_until_due`, CASE WHEN `re`.`next_due_date` < curdate() THEN 'overdue' WHEN to_days(`re`.`next_due_date`) - to_days(curdate()) <= `re`.`remind_days_before` THEN 'due_soon' ELSE 'upcoming' END AS `payment_status` FROM (`recurring_expenses` `re` join `expense_categories` `ec` on(`re`.`category_id` = `ec`.`category_id`)) WHERE `re`.`is_active` = 1 ORDER BY `re`.`next_due_date` ASC ;
 
 --
 -- Constraints for dumped tables
@@ -1808,6 +2007,7 @@ ALTER TABLE `combo_products`
 -- Constraints for table `expenses`
 --
 ALTER TABLE `expenses`
+  ADD CONSTRAINT `fk_expense_addedby_employe` FOREIGN KEY (`created_by`) REFERENCES `employees` (`employ_id`),
   ADD CONSTRAINT `fk_expense_category` FOREIGN KEY (`category_id`) REFERENCES `expense_categories` (`category_id`),
   ADD CONSTRAINT `fk_expense_recurring` FOREIGN KEY (`recurring_ref_id`) REFERENCES `recurring_expenses` (`recurring_id`) ON DELETE SET NULL;
 
