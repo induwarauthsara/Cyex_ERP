@@ -23,3 +23,12 @@ jobs:
           username: deploy@bus.srijaya.lk
           password: ${{ secrets.FTP_PASS_BUS }}
           server-dir: /public_html/
+
+      - name: 📂 Sync files (bus)
+        if: ${{ github.event_name == 'push' || github.event.inputs.tenant == '' || github.event.inputs.tenant == 'bus' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: 198.37.120.210
+          username: deploy@bus.srijaya.lk
+          password: ${{ secrets.FTP_PASS_BUS }}
+          server-dir: /public_html/
