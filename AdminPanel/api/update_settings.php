@@ -69,6 +69,14 @@ $quotation_auto_generate = isset($_POST['quotation_auto_generate']) ? intval($_P
 // Get employee commission setting
 $employee_commission_enabled = isset($_POST['employee_commission_enabled']) ? intval($_POST['employee_commission_enabled']) : 0;
 
+// Get Company Settings
+$company_name = isset($_POST['company_name']) ? trim($_POST['company_name']) : '';
+$company_address = isset($_POST['company_address']) ? trim($_POST['company_address']) : '';
+$company_phone = isset($_POST['company_phone']) ? trim($_POST['company_phone']) : '';
+$company_logo = isset($_POST['company_logo']) ? trim($_POST['company_logo']) : 'logo.png';
+$company_base_url = isset($_POST['company_base_url']) ? trim($_POST['company_base_url']) : '';
+$company_website = isset($_POST['company_website']) ? trim($_POST['company_website']) : '';
+
 // Validate values
 if (!in_array($sell_Insufficient_stock_item, [0, 1]) || !in_array($sell_Inactive_batch_products, [0, 1])) {
     echo json_encode([
@@ -135,7 +143,33 @@ try {
         'employee_commission_enabled' => [
             'value' => $employee_commission_enabled,
             'description' => 'Enable employee commission from invoice profit (1=yes, 0=no)'
-        ]
+        ],
+        // Company Settings
+        'company_name' => [
+            'value' => $company_name,
+            'description' => 'Company Name displayed on invoices and header'
+        ],
+        'company_address' => [
+            'value' => $company_address,
+            'description' => 'Company Address displayed on invoices'
+        ],
+        'company_phone' => [
+            'value' => $company_phone,
+            'description' => 'Company Phone Number'
+        ],
+        'company_logo' => [
+            'value' => $company_logo,
+            'description' => 'URL/Path to Company Logo'
+        ],
+        'company_base_url' => [
+            'value' => $company_base_url,
+            'description' => 'Base URL for API calls'
+        ],
+        'company_website' => [
+            'value' => $company_website,
+            'description' => 'Company Website URL'
+        ],
+
     ];
 
     $updatedCount = 0;
@@ -207,7 +241,8 @@ try {
     // Log the changes
     $employee_id = $_SESSION['employee_id'] ?? 0;
     $log_message = "Settings updated: Out-of-Stock Sales=" . ($sell_Insufficient_stock_item ? 'Enabled' : 'Disabled') . 
-                   ", Inactive Batch Sales=" . ($sell_Inactive_batch_products ? 'Enabled' : 'Disabled');
+                   ", Inactive Batch Sales=" . ($sell_Inactive_batch_products ? 'Enabled' : 'Disabled') .
+                   ", Company Name=" . $company_name;
     
     error_log("Settings updated by Employee ID $employee_id: $log_message");
 

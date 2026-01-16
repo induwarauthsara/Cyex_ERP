@@ -4,7 +4,7 @@ include 'nav.php';
 // Fetch current settings from database
 $current_settings = [];
 try {
-    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products', 'invoice_print_type', 'quotation_validity_days', 'quotation_prefix', 'quotation_auto_generate', 'employee_commission_enabled')";
+    $settings_query = "SELECT setting_name, setting_value, setting_description FROM settings WHERE setting_name IN ('sell_Insufficient_stock_item', 'sell_Inactive_batch_products', 'invoice_print_type', 'quotation_validity_days', 'quotation_prefix', 'quotation_auto_generate', 'employee_commission_enabled', 'company_name', 'company_address', 'company_phone', 'company_logo', 'company_base_url', 'company_website')";
     $settings_result = mysqli_query($con, $settings_query);
 
     if ($settings_result) {
@@ -76,6 +76,14 @@ if (!isset($current_settings['quotation_auto_generate'])) {
 if (!isset($current_settings['employee_commission_enabled'])) {
     $current_settings['employee_commission_enabled'] = ['value' => '0', 'description' => 'Enable employee commission from invoice profit'];
 }
+
+// Company Settings Defaults
+if (!isset($current_settings['company_name'])) $current_settings['company_name'] = ['value' => $GLOBALS['ERP_COMPANY_NAME'], 'description' => ''];
+if (!isset($current_settings['company_address'])) $current_settings['company_address'] = ['value' => $GLOBALS['ERP_COMPANY_ADDRESS'], 'description' => ''];
+if (!isset($current_settings['company_phone'])) $current_settings['company_phone'] = ['value' => $GLOBALS['ERP_COMPANY_PHONE'], 'description' => ''];
+if (!isset($current_settings['company_logo'])) $current_settings['company_logo'] = ['value' => 'logo.png', 'description' => ''];
+if (!isset($current_settings['company_base_url'])) $current_settings['company_base_url'] = ['value' => $GLOBALS['ERP_COMPANY_BASE_URL'], 'description' => ''];
+if (!isset($current_settings['company_website'])) $current_settings['company_website'] = ['value' => $GLOBALS['ERP_COMPANY_WEBSITE'], 'description' => ''];
 ?>
 
 <!-- Custom CSS for Settings Page -->
@@ -587,6 +595,71 @@ if (!isset($current_settings['employee_commission_enabled'])) {
     <!-- TAB 1: General Settings -->
     <div id="tab-general" class="tab-content active">
 
+        <form id="billingSettingsForm">
+
+        <!-- Company Configuration Section -->
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fas fa-building"></i>
+                Company Profile
+            </h2>
+            <p class="section-description">
+                Manage company details displayed on invoices and receipts
+            </p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" class="form-control" name="company_name" value="<?php echo htmlspecialchars($current_settings['company_name']['value']); ?>" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" class="form-control" name="company_phone" value="<?php echo htmlspecialchars($current_settings['company_phone']['value']); ?>" required>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea class="form-control" name="company_address" rows="2" required><?php echo htmlspecialchars($current_settings['company_address']['value']); ?></textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Company Website</label>
+                        <input type="url" class="form-control" name="company_website" value="<?php echo htmlspecialchars($current_settings['company_website']['value']); ?>" placeholder="https://example.com">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Company Logo</label>
+                        <div class="logo-upload-container" style="border: 2px dashed #dee2e6; border-radius: 8px; padding: 1.5rem; text-align: center; background: #f8f9fa;">
+                            <div class="current-logo mb-3">
+                                <img id="logoPreview" src="../logo.png" alt="Current Logo" style="max-width: 200px; max-height: 100px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            </div>
+                            <div class="upload-controls">
+                                <input type="file" id="logoFileInput" name="logo_file" accept="image/png,image/jpeg,image/jpg" style="display: none;">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="$('#logoFileInput').click()">
+                                    <i class="fas fa-upload"></i> Choose New Logo
+                                </button>
+                                <div id="uploadStatus" class="mt-2" style="font-size: 0.85rem; color: #6c757d;"></div>
+                                <small class="text-muted d-block mt-2">Recommended: PNG format, max 2MB</small>
+                            </div>
+                        </div>
+                        <input type="hidden" name="company_logo" value="<?php echo htmlspecialchars($current_settings['company_logo']['value']); ?>">
+                    </div>
+                </div>
+                <div class="col-md-6" style="display: none;">
+                    <div class="form-group">
+                        <label>API Base URL (For Mobile App)</label>
+                        <input type="text" class="form-control" name="company_base_url" value="<?php echo htmlspecialchars($current_settings['company_base_url']['value']); ?>">
+                        <small class="text-muted">Used for QR Code generation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Billing Configuration Section -->
         <div class="settings-section">
             <h2 class="section-title">
@@ -597,7 +670,7 @@ if (!isset($current_settings['employee_commission_enabled'])) {
                 Control billing system inventory and stock management behavior
             </p>
 
-            <form id="billingSettingsForm">
+            <!-- <form id="billingSettingsForm"> REMOVED NESTED FORM -->
                 <div class="row">
                     <!-- Out-of-Stock Sales Setting -->
                     <div class="col-lg-6 col-md-12">
@@ -1033,6 +1106,9 @@ if (!isset($current_settings['employee_commission_enabled'])) {
 
 </div> <!-- End Settings Container -->
 
+<!-- Logo Upload Script -->
+<script src="js/logo-upload.js"></script>
+
 <script>
     /**
      * Tab Switching System - Explicit Display Control
@@ -1205,7 +1281,17 @@ if (!isset($current_settings['employee_commission_enabled'])) {
                 quotation_validity_days: $('#quotation_validity_days').val(),
                 quotation_prefix: $('#quotation_prefix').val(),
                 quotation_auto_generate: $('#quotation_auto_generate').is(':checked') ? '1' : '0',
-                employee_commission_enabled: $('#employee_commission_enabled').is(':checked') ? '1' : '0'
+                quotation_prefix: $('#quotation_prefix').val(),
+                quotation_auto_generate: $('#quotation_auto_generate').is(':checked') ? '1' : '0',
+                employee_commission_enabled: $('#employee_commission_enabled').is(':checked') ? '1' : '0',
+                
+                // Company Details
+                company_name: $('input[name="company_name"]').val(),
+                company_address: $('textarea[name="company_address"]').val(),
+                company_phone: $('input[name="company_phone"]').val(),
+                company_logo: $('input[name="company_logo"]').val(),
+                company_base_url: $('input[name="company_base_url"]').val(),
+                company_website: $('input[name="company_website"]').val()
             };
 
             // Show loading state

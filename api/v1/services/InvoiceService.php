@@ -387,7 +387,7 @@ class InvoiceService {
             mysqli_stmt_bind_param($stmt, 'ii', $this->user_id, $invoice_number);
             mysqli_stmt_execute($stmt);
 
-            $stmt = mysqli_prepare($this->con, "UPDATE oneTimeProducts_sales SET status = 'deleted', updated_at = NOW() WHERE invoice_number = ?");
+            $stmt = mysqli_prepare($this->con, "UPDATE oneTimeProducts_sales SET status = 'deleted' WHERE invoice_number = ?");
             mysqli_stmt_bind_param($stmt, 'i', $invoice_number);
             mysqli_stmt_execute($stmt);
             
@@ -446,14 +446,18 @@ class InvoiceService {
             // Check for Raw Materials
             if (isset($item['product'])) {
                $p_name = mysqli_real_escape_string($this->con, $item['product']); 
-               $raw_q = mysqli_query($this->con, "SELECT item_name, qty FROM makeProduct WHERE product_name='$p_name'");
-               if($raw_q) {
-                   while($raw = mysqli_fetch_assoc($raw_q)) {
-                       $changes[] = [
-                           'type' => 'raw_material',
-                           'name' => $raw['item_name'],
-                           'change' => +($raw['qty'] * $item['qty'])
-                       ];
+               // Check if table exists before querying to avoid error
+               $tableCheck = mysqli_query($this->con, "SHOW TABLES LIKE 'makeProduct'");
+               if (mysqli_num_rows($tableCheck) > 0) {
+                   $raw_q = mysqli_query($this->con, "SELECT item_name, qty FROM makeProduct WHERE product_name='$p_name'");
+                   if($raw_q) {
+                       while($raw = mysqli_fetch_assoc($raw_q)) {
+                           $changes[] = [
+                               'type' => 'raw_material',
+                               'name' => $raw['item_name'],
+                               'change' => +($raw['qty'] * $item['qty'])
+                           ];
+                       }
                    }
                }
             }

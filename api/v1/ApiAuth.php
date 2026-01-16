@@ -205,18 +205,46 @@ class ApiAuth {
      */
     public static function authenticate() {
         $token = self::getTokenFromRequest();
-        
-        if (!$token) {
-            return ['success' => false, 'message' => 'Authentication token required'];
+        $userData = null;
+
+        // 1. Try Token
+        if ($token && $token !== 'null') {
+            $userData = self::validateToken($token);
         }
-        
-        $userData = self::validateToken($token);
-        
+
+        // 2. Try Session (Fallback)
         if (!$userData) {
-            return ['success' => false, 'message' => 'Invalid or expired token'];
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            if (isset($_SESSION['employee_id'])) {
+                // Fetch User Details from DB to ensure it's up to date
+                global $con;
+                if (!$con) {
+                    // Try to include config if not available, though unlikely given require_once at top
+                    require_once __DIR__ . '/../../inc/config.php';
+                }
+                
+                $empId = (int)$_SESSION['employee_id'];
+                $query = "SELECT employ_id, emp_name, role, status FROM employees WHERE employ_id = $empId AND status = '1'";
+                $res = mysqli_query($con, $query);
+                
+                if ($res && $row = mysqli_fetch_assoc($res)) {
+                    $userData = [
+                        'employee_id' => $row['employ_id'],
+                        'employee_name' => $row['emp_name'],
+                        'employee_role' => $row['role']
+                    ];
+                }
+            }
+        }
+
+        if (!$userData) {
+            return ['success' => false, 'message' => 'Invalid token or session expired'];
         }
         
-        // Return structured data expected by expenses module
+        // Return structured data
         return [
             'success' => true,
             'user' => [

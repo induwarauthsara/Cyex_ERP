@@ -10,7 +10,7 @@ $total_salary_have_pay = number_format(mysqli_fetch_assoc(mysqli_query($con, "SE
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRM - Admin Panel - Srijaya Printers</title>
+    <title>HRM - Admin Panel - <?php echo $GLOBALS['ERP_COMPANY_NAME']; ?> </title>
 
     <style>
         input {

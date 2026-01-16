@@ -25,7 +25,13 @@ $settings = [];
 $keys = [
     'employee_commission_enabled',
     'sell_Insufficient_stock_item',
-    'sell_Inactive_batch_products'
+    'sell_Inactive_batch_products',
+    'company_name',
+    'company_address',
+    'company_phone',
+    'company_logo',
+    'company_base_url',
+    'company_website'
 ];
 
 // Build safe query with placeholders is hard for IN clause without a loop or fixed number
@@ -44,14 +50,20 @@ if (!$result) {
 $responseSettings = [
     'employee_commission_enabled' => false,
     'sell_Insufficient_stock_item' => true,
-    'sell_Inactive_batch_products' => true
+    'sell_Inactive_batch_products' => true,
+    'company_name' => $GLOBALS['ERP_COMPANY_NAME'] ?? 'POS',
+    'company_address' => $GLOBALS['ERP_COMPANY_ADDRESS'] ?? '',
+    'company_phone' => $GLOBALS['ERP_COMPANY_PHONE'] ?? '',
+    'company_logo' => $GLOBALS['ERP_COMPANY_LOGO'] ?? 'logo.png',
+    'company_base_url' => $GLOBALS['ERP_COMPANY_BASE_URL'] ?? '',
+    'company_website' => $GLOBALS['ERP_COMPANY_WEBSITE'] ?? ''
 ];
 
 while ($row = mysqli_fetch_assoc($result)) {
     $val = $row['setting_value'];
     
     // Type casting based on known keys
-    if (in_array($row['setting_name'], $keys)) {
+    if (in_array($row['setting_name'], ['employee_commission_enabled', 'sell_Insufficient_stock_item', 'sell_Inactive_batch_products'])) {
         // These are boolean/integer flags
         $responseSettings[$row['setting_name']] = (bool)intval($val);
     } else {

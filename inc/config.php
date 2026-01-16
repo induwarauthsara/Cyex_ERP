@@ -1,40 +1,101 @@
-<?php
-// $server = 'localhost';
-// $db_user = 'root';
-// $db_pwd = '';
-// $db_name = 'srijaya';
-$server = 'athena.webserverlive.com';
-$db_user = 'srijayapos_u1';
-$db_pwd = 'srijaya@P2';
-$db_name = 'srijayapos_new';
+// Load Configuration
+$envPath = __DIR__ . '/../.env';
+$localConfigPath = __DIR__ . '/config.local.php';
 
-// $server = 'morgana.webserverlive.com';
-// $db_user = 'srijayal_ifix';
-// $db_pwd = 'ifix_DP_PW@123';
-// $db_name = 'srijayal_ifix';
+if (file_exists($envPath)) {
+    // Parse .env file manually to avoid dependency on vlucas/phpdotenv for simple install
+    $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        list($name, $value) = explode('=', $line, 2);
+        $_ENV[trim($name)] = trim($value);
+    }
+    
+    $server = $_ENV['DB_HOST'] ?? 'localhost';
+    $db_user = $_ENV['DB_USER'] ?? 'root';
+    $db_pwd = $_ENV['DB_PASS'] ?? '';
+    $db_name = $_ENV['DB_NAME'] ?? '';
+} elseif (file_exists($localConfigPath)) {
+    require_once $localConfigPath;
+    // Map $db_server (from example) to $server (used in connection) if needed
+    if (isset($db_server) && !isset($server)) {
+        $server = $db_server;
+    }
+} else {
+    // Fallback or Error
+    // Check if we are in the install process
+    if (strpos($_SERVER['REQUEST_URI'], 'install.php') === false) {
+         die("Configuration Error: .env or inc/config.local.php not found. Please run <a href='install.php'>install.php</a>.");
+    }
+}
+
 // Connect DB
-$con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
+if (isset($server) && isset($db_user) && isset($db_pwd) && isset($db_name)) {
+    $con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
+} else {
+    $con = false;
+}
 
 // Set Timezone to Sri Lanka
 date_default_timezone_set('Asia/Colombo');
 
 // Check DB connecting Erros
-if (mysqli_connect_errno()) {
+if ($con && mysqli_connect_errno()) {
     die('Database connection failed' . mysqli_connect_error());
 } else {
     //echo "Database Connection Successfull";
 }
+
 function end_db_con()
 {
     global $con;
-    mysqli_close($con);
+    if ($con) mysqli_close($con);
 }
 ?>
 <?php
 
-$ERP_COMPANY_NAME = "Srijaya Print House";
-$ERP_COMPANY_ADDRESS = "FF26, Megacity, Athurugiriya.";
-$ERP_COMPANY_PHONE = "0714730996";
+// Initialize Default Company Details
+$ERP_COMPANY_NAME = "POS"; // Default
+$ERP_COMPANY_ADDRESS = "(Address)"; // Default
+$ERP_COMPANY_PHONE = ""; // Default
+$ERP_COMPANY_LOGO = "logo.png"; // Default
+$ERP_COMPANY_BASE_URL = ""; // Default
+$ERP_COMPANY_WEBSITE = ""; // Default
+
+// Fetch Company Details from Database
+if ($con) {
+    try {
+        $settingQuery = "SELECT setting_name, setting_value FROM settings WHERE setting_name IN ('company_name', 'company_address', 'company_phone', 'company_logo', 'company_base_url', 'company_website')";
+        $settingResult = mysqli_query($con, $settingQuery);
+        if ($settingResult) {
+            while ($row = mysqli_fetch_assoc($settingResult)) {
+                switch ($row['setting_name']) {
+                    case 'company_name':
+                        $ERP_COMPANY_NAME = $row['setting_value'];
+                        break;
+                    case 'company_address':
+                        $ERP_COMPANY_ADDRESS = $row['setting_value'];
+                        break;
+                    case 'company_phone':
+                        $ERP_COMPANY_PHONE = $row['setting_value'];
+                        break;
+                    case 'company_logo':
+                        $ERP_COMPANY_LOGO = $row['setting_value'];
+                        break;
+                    case 'company_base_url':
+                        $ERP_COMPANY_BASE_URL = $row['setting_value'];
+                        break;
+                    case 'company_website':
+                        $ERP_COMPANY_WEBSITE = $row['setting_value'];
+                        break;
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // Silently fail to defaults if table doesn't exist or error occurs
+    }
+}
+
 // Start Session if not started
 if (session_status() === PHP_SESSION_ACTIVE) {
     //echo "Session Active";

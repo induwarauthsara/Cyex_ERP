@@ -15,7 +15,7 @@ require_once __DIR__ . '/../nav.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expenses Management - Srijaya ERP</title>
+    <title>Expenses Management - <?php echo $GLOBALS['ERP_COMPANY_NAME']; ?> </title>
     <link rel="stylesheet" href="../acp.css">
     <link rel="stylesheet" href="expenses.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

@@ -22,3 +22,7 @@ dashboard/*
 printerCount/.gitXX/*
 debug_session_fallback.js
 test_session_fallback.php
+
+# Local Configuration
+inc/config.local.php
+.env

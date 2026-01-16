@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 15, 2026 at 09:24 PM
+-- Generation Time: Jan 16, 2026 at 06:06 AM
 -- Server version: 10.6.24-MariaDB-cll-lve
 -- PHP Version: 8.4.16
 
@@ -967,6 +967,7 @@ INSERT INTO `settings` (`setting_name`, `setting_description`, `setting_value`, 
 ('company_logo', 'URL/Path to Company Logo', 'logo.png', '2026-01-15 13:02:21', '2026-01-15 13:02:21'),
 ('company_name', 'Company Name displayed on invoices and header', 'Srijaya Print House', '2026-01-15 13:02:18', '2026-01-15 13:02:18'),
 ('company_phone', 'Company Phone Number', '0714730996', '2026-01-15 13:02:20', '2026-01-15 13:02:20'),
+('company_website', 'URL of Official Website', 'www.srijaya.lk', '2026-01-15 13:02:21', '2026-01-15 23:55:24'),
 ('employee_commission_enabled', 'Enable employee commission from invoice profit (1=yes, 0=no)', '1', '2026-01-12 19:20:19', '2026-01-12 19:38:48'),
 ('invoice_print_type', 'Default invoice print type (receipt, standard, or both)', 'standard', '2025-11-30 19:55:49', '2025-11-30 20:06:13'),
 ('quotation_auto_generate', 'Auto generate quotation numbers (1=yes, 0=no)', '1', '2025-11-30 21:47:53', '2025-11-30 21:47:53'),
