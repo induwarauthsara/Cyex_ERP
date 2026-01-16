@@ -15,20 +15,10 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
 
-      - name: 📂 Sync files (bus)
-        if: ${{ github.event_name == 'push' || github.event.inputs.tenant == '' || github.event.inputs.tenant == 'bus' }}
+      - name: 📂 Sync files (pos.srijaya.lk)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: 198.37.120.210
-          username: deploy@bus.srijaya.lk
-          password: ${{ secrets.FTP_PASS_BUS }}
-          server-dir: /public_html/
-
-      - name: 📂 Sync files (bus)
-        if: ${{ github.event_name == 'push' || github.event.inputs.tenant == '' || github.event.inputs.tenant == 'bus' }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: 198.37.120.210
-          username: deploy@bus.srijaya.lk
-          password: ${{ secrets.FTP_PASS_BUS }}
+          username: srijayaposftp2@pos.srijaya.lk
+          password: ${{ secrets.new_srijaya_pos_ftp_password }}
           server-dir: /public_html/
