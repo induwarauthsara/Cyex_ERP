@@ -5,8 +5,8 @@
  */
 
 // URL of your webhook (Update this to your live domain)
-$prod_url = "https://pos.srijaya.lk/api/telegram_webhook.php";
-$webhook_url = "http://srijaya.test/api/telegram_webhook.php"; // Local testing
+$prod_url = "$GLOBALS['ERP_COMPANY_BASE_URL']/api/telegram_webhook.php";
+$webhook_url = "$GLOBALS['ERP_COMPANY_BASE_URL']/api/telegram_webhook.php"; // Local testing
 
 // Helper: Show Registration Link
 if(isset($_GET['action']) && $_GET['action'] == 'register') {
@@ -60,7 +60,7 @@ $mock_update = [
         'chat' => [
             'id' => -1001234567890, // Your Master Chat ID
             'type' => 'supergroup',
-            'title' => 'Srijaya ERP Alerts'
+            'title' => '$GLOBALS['ERP_COMPANY_NAME'] ERP Alerts'
         ],
         'date' => time(),
         'text' => '/stock' // <--- CHANGE THIS TO TEST COMMANDS

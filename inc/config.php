@@ -1,4 +1,6 @@
+<?php
 // Load Configuration
+$con = false; // Initialize to false by default to prevent undefined variable errors
 $envPath = __DIR__ . '/../.env';
 $localConfigPath = __DIR__ . '/config.local.php';
 
@@ -7,8 +9,10 @@ if (file_exists($envPath)) {
     $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         if (strpos(trim($line), '#') === 0) continue;
-        list($name, $value) = explode('=', $line, 2);
-        $_ENV[trim($name)] = trim($value);
+        if (strpos($line, '=') !== false) {
+            list($name, $value) = explode('=', $line, 2);
+            $_ENV[trim($name)] = trim($value);
+        }
     }
     
     $server = $_ENV['DB_HOST'] ?? 'localhost';
@@ -24,16 +28,19 @@ if (file_exists($envPath)) {
 } else {
     // Fallback or Error
     // Check if we are in the install process
-    if (strpos($_SERVER['REQUEST_URI'], 'install.php') === false) {
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    if (strpos($requestUri, 'install.php') === false) {
          die("Configuration Error: .env or inc/config.local.php not found. Please run <a href='install.php'>install.php</a>.");
     }
 }
 
 // Connect DB
 if (isset($server) && isset($db_user) && isset($db_pwd) && isset($db_name)) {
-    $con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
-} else {
-    $con = false;
+    try {
+        $con = mysqli_connect($server, $db_user, $db_pwd, $db_name);
+    } catch (Exception $e) {
+        $con = false;
+    }
 }
 
 // Set Timezone to Sri Lanka
@@ -51,8 +58,6 @@ function end_db_con()
     global $con;
     if ($con) mysqli_close($con);
 }
-?>
-<?php
 
 // Initialize Default Company Details
 $ERP_COMPANY_NAME = "POS"; // Default
@@ -132,6 +137,11 @@ function insert_query($query, $msg, $action)
 
     global $con;
     global $result;
+    
+    if (!$con) {
+        return false;
+    }
+
     $result = mysqli_query($con, $query);
     if ($result) {
         // echo "Record Added : {$msg} <br>";
@@ -160,23 +170,23 @@ function insert_query($query, $msg, $action)
         // Insert the error details into the error_log table
         $logQuery = "INSERT INTO error_log (error_code, error_message, query, date, time, employee_id, action, action_description) VALUES (?, ?, ?, CURRENT_DATE, CURRENT_TIME, ?, ?, ?)";
         $stmt = mysqli_prepare($con, $logQuery);
-        mysqli_stmt_bind_param($stmt, 'ississ', $error_code, $error_message, $query, $employee_id, $action, $msg);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, 'ississ', $error_code, $error_message, $query, $employee_id, $action, $msg);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+        }
 
         if (isset($error_array)) {
             array_push($error_array, $error_message);
         }
     }
         return $result;
-
-    // Enable Exception Mode for MySQLi
-    // mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 }
 
 function fetch_data($query) {
     global $con;
+    if (!$con) return [];
+    
     $result = mysqli_query($con, $query);
     $data = [];
     if ($result) {
@@ -197,9 +207,11 @@ function transaction_log($transaction_type, $description, $amount)
     } else {
         session_start();
     }
+    
+    // Check if employee_id is set in session
+    $employee_id = $_SESSION['employee_id'] ?? 0;
 
     if (isset($_SESSION['employee_id'])) {
-        $employee_id = $_SESSION['employee_id'];
         $sql = "INSERT INTO transaction_log (transaction_type, description, amount, employ_id) VALUES ('$transaction_type', '$description', '$amount', '$employee_id');";
     } else {
         $sql = "INSERT INTO transaction_log (transaction_type, description, amount) VALUES ('$transaction_type', '$description', '$amount');";

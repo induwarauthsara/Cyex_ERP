@@ -2,8 +2,8 @@
 include 'nav.php';
 
 // Fetch Company Details
-$company_name = $GLOBALS['ERP_COMPANY_NAME'] ?? 'Srijaya POS';
-$base_url = $GLOBALS['ERP_COMPANY_BASE_URL'] ?? 'https://pos.srijaya.lk';
+$company_name = $GLOBALS['ERP_COMPANY_NAME'];
+$base_url = $GLOBALS['ERP_COMPANY_BASE_URL'];
 $api_url = rtrim($base_url, '/') . '/api/v1';
 
 // QR Payload
@@ -25,7 +25,7 @@ $jsonPayload = json_encode($payload);
             <div class="instruction-box">
                 <i class="fas fa-qrcode fa-3x mb-3 text-white"></i>
                 <h5>Scan QR Code</h5>
-                <p>Open the Srijaya POS Mobile App and scan this code to automatically configure the server connection.</p>
+                <p>Open the <?php echo $GLOBALS['ERP_COMPANY_NAME']; ?> Mobile App and scan this code to automatically configure the server connection.</p>
             </div>
 
             <!-- QR Code Container -->

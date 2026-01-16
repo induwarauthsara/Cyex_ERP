@@ -1,7 +1,7 @@
 <?php
 include 'nav.php';
 ?>
-<title>Due Payments Management - Srijaya Admin Panel</title>
+<title>Due Payments Management </title>
 
 <style>
     /* Enhanced styling for due payments with glass effect */

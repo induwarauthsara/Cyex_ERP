@@ -116,7 +116,7 @@ class TelegramService {
         $msgUrl = "https://api.telegram.org/bot" . $token . "/sendMessage";
         $msgData = [
             'chat_id' => $chat_id,
-            'text' => "✅ <b>Integration Successful!</b>\n\nHello from Srijaya ERP. Example topic mapping: General.",
+            'text' => "✅ <b>Integration Successful!</b>\n\nHello from $GLOBALS['ERP_COMPANY_NAME'] ERP. Example topic mapping: General.",
             'parse_mode' => 'HTML'
         ];
         

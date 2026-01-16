@@ -1,6 +1,6 @@
 <?php
 /**
- * Srijaya ERP API - Index/Welcome Page
+ * ERP API - Index/Welcome Page
  * 
  * Provides API information and health check
  */
@@ -11,9 +11,9 @@ header('Access-Control-Allow-Origin: *');
 // API Information
 $response = [
     'success' => true,
-    'message' => 'Welcome to Srijaya ERP API',
+    'message' => 'Welcome to $GLOBALS['ERP_COMPANY_NAME']  ERP API',
     'data' => [
-        'name' => 'Srijaya ERP Mobile POS API',
+        'name' => '$GLOBALS['ERP_COMPANY_NAME'] ERP Mobile POS API',
         'version' => '1.0',
         'status' => 'operational',
         'server_time' => date('Y-m-d H:i:s'),
@@ -53,9 +53,7 @@ $response = [
             'CORS Enabled'
         ],
         'support' => [
-            'email' => 'support@srijayaprint.com',
-            'phone' => '0714730996',
-            'address' => 'FF26, Megacity, Athurugiriya'
+            'phone' => $GLOBALS['ERP_COMPANY_PHONE'],
         ]
     ],
     'meta' => [

@@ -265,7 +265,7 @@ function printSummary($results) {
 // Run tests
 echo "\n";
 echo str_repeat("=", 60) . "\n";
-echo "           SRIJAYA ERP API - TEST SUITE\n";
+echo "           $GLOBALS['ERP_COMPANY_NAME'] ERP API - TEST SUITE\n";
 echo str_repeat("=", 60) . "\n\n";
 
 echo "Base URL: $API_BASE\n";

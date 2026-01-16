@@ -292,7 +292,7 @@ if ($result = mysqli_query($con, $quotation_sql)) {
                             <h1 class="text-xl font-bold text-slate-900 dark:text-white"><?php echo $ERP_COMPANY_NAME; ?></h1>
                             <p class="text-xs text-slate-500 dark:text-slate-400"><?php echo $ERP_COMPANY_ADDRESS; ?></p>
                             <p class="text-xs text-slate-500 dark:text-slate-400"><?php echo $ERP_COMPANY_PHONE; ?></p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">www.srijaya.lk</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400"><?php echo $GLOBALS['ERP_COMPANY_WEBSITE']; ?></p>
                         </div>
                     </div>
                     <div class="text-right pt-5 pr-5">

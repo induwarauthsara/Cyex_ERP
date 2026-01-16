@@ -1,6 +1,6 @@
         function add_bankDeposit(refresh) {
             // Add Pop Up box for Bank Deposit. Inputs : Select Bank, Amount
-            // Bank Account List : https://srijaya.test/inc/fetch_bank_accounts.php (JSON)
+            // Bank Account List :  /inc/fetch_bank_accounts.php (JSON)
             fetch("/inc/fetch_bank_accounts.php")
                 .then(response => response.json())
                 .then(data => {

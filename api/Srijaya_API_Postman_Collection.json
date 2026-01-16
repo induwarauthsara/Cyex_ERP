@@ -1,9 +1,9 @@
 {
   "info": {
-    "name": "Srijaya ERP Mobile POS API v1.1",
-    "description": "Complete API collection for Srijaya ERP Mobile POS Application with 29 endpoints across 12 categories.\n\n**Getting Started:**\n1. Login with employee credentials to get regular token\n2. Login with admin credentials to get admin token\n3. Save tokens in the 'token' and 'admin_token' variables\n4. Use {{token}} for regular endpoints\n5. Use {{admin_token}} for admin-only endpoints (Reports, Salary, Suppliers, Stock)\n\n**Admin-Only Endpoints:**\n- Reports (daily, monthly)\n- Salary Management\n- Supplier Management\n- Stock Management\n\n**Note:** Admin endpoints will return '403 Forbidden' if accessed with employee token.",
+    "name": "ERP Mobile POS API v1.1",
+    "description": "Complete API collection for ERP Mobile POS Application with 29 endpoints across 12 categories.\n\n**Getting Started:**\n1. Login with employee credentials to get regular token\n2. Login with admin credentials to get admin token\n3. Save tokens in the 'token' and 'admin_token' variables\n4. Use {{token}} for regular endpoints\n5. Use {{admin_token}} for admin-only endpoints (Reports, Salary, Suppliers, Stock)\n\n**Admin-Only Endpoints:**\n- Reports (daily, monthly)\n- Salary Management\n- Supplier Management\n- Stock Management\n\n**Note:** Admin endpoints will return '403 Forbidden' if accessed with employee token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "srijaya-erp",
+    "_exporter_id": "erp",
     "version": "1.1.0"
   },
   "item": [

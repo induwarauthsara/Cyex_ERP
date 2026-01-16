@@ -19,7 +19,7 @@ file_put_contents(__DIR__ . '/webhook_debug_log.txt', date('Y-m-d H:i:s') . " - 
 $update = json_decode($content, true);
 
 if (!$update) {
-    echo "Srijaya ERP Telegram Webhook is Active.";
+    echo "$GLOBALS['ERP_COMPANY_NAME'] ERP Telegram Webhook is Active.";
     exit;
 }
 
@@ -61,7 +61,7 @@ if (strpos($text, '/') === 0) {
 
     switch ($command) {
         case '/start':
-            $response = "🤖 <b>Srijaya ERP Assistant</b>\n";
+            $response = "🤖 <b>$GLOBALS['ERP_COMPANY_NAME'] ERP Assistant</b>\n";
             $response .= "<i>Your real-time business companion.</i>\n\n";
             
             $response .= "<b>📊 Analysis & Finance</b>\n";
@@ -230,7 +230,7 @@ if (strpos($text, '/') === 0) {
     $greetings = ['hi', 'hello', 'hey', 'start', 'ping', 'test'];
     
     if (in_array($clean_text, $greetings)) {
-         $response = "👋 <b>Hello! I am Srijaya Bot.</b>\n\n";
+         $response = "👋 <b>Hello! I am $GLOBALS['ERP_COMPANY_NAME'] Bot.</b>\n\n";
          $response .= "Apps are boring, Text me to manage your business! 🚀\n\n";
          $response .= "<b>Try typing:</b>\n";
          $response .= "/start - Open Main Menu";
