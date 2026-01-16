@@ -1,0 +1,36 @@
+name: Reusable Tenant Deploy
+
+on:
+  workflow_call:
+    inputs:
+      tenant_name:
+        required: true
+        type: string
+      server_ip:
+        required: true
+        type: string
+      ftp_username:
+        required: true
+        type: string
+      server_dir:
+        required: true
+        type: string
+    secrets:
+      ftp_password:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy ${{ inputs.tenant_name }}
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+      
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ inputs.server_ip }}
+          username: ${{ inputs.ftp_username }}
+          password: ${{ secrets.ftp_password }}
+          server-dir: ${{ inputs.server_dir }}
