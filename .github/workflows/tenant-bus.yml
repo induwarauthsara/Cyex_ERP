@@ -13,5 +13,5 @@ jobs:
         with:
           server: 198.37.120.210
           username: bus@bus.cyextech.com
-          password: MySecure@Pass456
+          password: ${{ secrets.FTP_PASS_BUS }}
           server-dir: /
