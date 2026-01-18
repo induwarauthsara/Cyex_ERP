@@ -27,10 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db_user = $_POST['db_user'] ?? '';
     $db_pass = $_POST['db_pass'] ?? '';
     
-    $company_name = $_POST['company_name'] ?? '';
-    $company_phone = $_POST['company_phone'] ?? '';
-    $company_address = $_POST['company_address'] ?? '';
-    $company_website = $_POST['company_website'] ?? '';
+    // Company details are not received from admin site
     // Logo handling is tricky via simple script if we need to upload, but prompt says "Setup ... Logo".
     // We'll assume text input for 'logo path' or file upload? 
     // "setup Company Name... Logo" could mean setting the variable.
@@ -163,10 +160,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update 'settings' table.
     // We assume 'settings' table structure: setting_name (varchar), setting_value (varchar)
     $settings_to_update = [
-        'company_name' => $company_name,
-        'company_phone' => $company_phone,
-        'company_address' => $company_address,
-        'company_website' => $company_website,
         'company_logo' => $logo_filename,
         'company_base_url' => $company_base_url
     ];
@@ -270,23 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" name="company_name" required>
             </div>
             <div class="form-group">
-                <label>Phone Number</label>
-                <input type="text" name="company_phone" required>
-            </div>
-            <div class="form-group">
-                <label>Address</label>
-                <input type="text" name="company_address" required>
-            </div>
-            <div class="form-group">
-                <label>Website</label>
-                <input type="text" name="company_website">
-            </div>
-            <div class="form-group">
-                <label>Company Logo</label>
-                <input type="file" name="company_logo" accept="image/*">
-            </div>
-
-            <div class="section-title">Admin Account Setup</div>
+                <label>Phone Nu-title">Admin Account Setup</div>
             <div class="form-group">
                 <label>Admin Username</label>
                 <input type="text" name="admin_user" placeholder="e.g. admin" required>
