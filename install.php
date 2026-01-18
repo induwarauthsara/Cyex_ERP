@@ -6,7 +6,8 @@ $envFile = '.env';
 $configFile = 'inc/config.php'; // For verification
 
 // Helper function to send JSON response
-function json_response($status, $message, $data = []) {
+function json_response($status, $message, $data = [])
+{
     header('Content-Type: application/json');
     echo json_encode(['status' => $status, 'message' => $message, 'data' => $data]);
     exit;
@@ -20,24 +21,35 @@ if (file_exists($envFile)) {
     // For now, we will proceed but maybe show a warning in UI.
 }
 
+// Initialize variables for form pre-filling (from POST data)
+// This allows the Admin panel to POST credentials to this page to pre-fill the form
+// without triggering the installation immediately.
+$db_host = isset($_POST['db_host']) ? $_POST['db_host'] : 'localhost';
+$db_name = isset($_POST['db_name']) ? $_POST['db_name'] : '';
+$db_user = isset($_POST['db_user']) ? $_POST['db_user'] : '';
+$db_pass = isset($_POST['db_pass']) ? $_POST['db_pass'] : '';
+$company_name = isset($_POST['company_name']) ? $_POST['company_name'] : '';
+$admin_user = isset($_POST['admin_user']) ? $_POST['admin_user'] : '';
+
 // Handle POST Request (Installation Logic)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// ONLY proceed if the actual submit button was clicked (name="install_submit")
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install_submit'])) {
     $db_host = $_POST['db_host'] ?? 'localhost';
     $db_name = $_POST['db_name'] ?? '';
     $db_user = $_POST['db_user'] ?? '';
     $db_pass = $_POST['db_pass'] ?? '';
-    
+
     // Company details are not received from admin site
     // Logo handling is tricky via simple script if we need to upload, but prompt says "Setup ... Logo".
     // We'll assume text input for 'logo path' or file upload? 
     // "setup Company Name... Logo" could mean setting the variable.
     // If it's a file upload, we need to handle it. For now, let's assume valid text or file upload. 
     // If $_FILES['company_logo'] is present, move it.
-    
+
     // DB Credentials Check
     if (empty($db_name) || empty($db_user)) {
-         // As per prompt: "if not receive, don't continue and say 'DB Credianls not received by admin'"
-         die("DB Credianls not received by admin");
+        // As per prompt: "if not receive, don't continue and say 'DB Credianls not received by admin'"
+        die("DB Credianls not received by admin");
     }
 
     // Attempt DB Connection
@@ -72,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (file_put_contents($envFile, $envContent) === false) {
         die("Failed to write .env file. Please check permissions.");
     }
-    
+
     // Secure inc/config.local.php (make sure it doesn't conflict or is empty/commented if we are using .env)
     // The user said "Secure the Configuration (.env) or inc/config.local.php".
     // Since we created .env, we are good. We can optionally rename config.local.php to backup if it exists.
@@ -83,11 +95,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 3. Install DB Structure
     if (file_exists($schemaFile)) {
         $sql_dump = file_get_contents($schemaFile);
-        
+
         // Simple SQL splitter handling DELIMITER
         // Note: mysqli_multi_query is easier if cleaned up, but DELIMITER keyword is client-side.
         // We must strip "DELIMITER $$" and "DELIMITER ;" and treat the content between them as single queries.
-        
+
         // Remove comments?
         $lines = explode("\n", $sql_dump);
         $clean_sql = "";
@@ -98,12 +110,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $clean_sql .= $line . "\n";
         }
-        
+
         // Manual split
         $queries = [];
         $buffer = '';
         $delimiter = ';';
-        
+
         $tokens = explode("\n", $clean_sql);
         foreach ($tokens as $token) {
             $trimToken = trim($token);
@@ -111,9 +123,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $delimiter = $matches[1];
                 continue;
             }
-            
+
             $buffer .= $token . "\n";
-            
+
             if (substr(trim($buffer), -strlen($delimiter)) === $delimiter) {
                 // Found command end
                 $sql_cmd = substr(trim($buffer), 0, -strlen($delimiter));
@@ -123,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $buffer = '';
             }
         }
-        
+
         // Execute queries
         foreach ($queries as $query) {
             if (!mysqli_query($con, $query)) {
@@ -163,7 +175,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'company_logo' => $logo_filename,
         'company_base_url' => $company_base_url
     ];
-    
+
+    // Add company name and phone if provided
+    if (isset($_POST['company_name'])) {
+        // Assuming setting key is 'company_name'
+        $settings_to_update['company_name'] = $_POST['company_name'];
+    }
+    // Phone was in the form as "Phone Nu-title" which seems like a typo in original, 
+    // but assuming 'phone' or 'company_phone'
+    if (isset($_POST['company_phone'])) {
+        $settings_to_update['company_phone'] = $_POST['company_phone'];
+    }
+
     foreach ($settings_to_update as $key => $val) {
         // Use ON DUPLICATE KEY UPDATE or just UPDATE if we know rows exist?
         // SQL dump likely creates them? Or empty?
@@ -171,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Assuming table 'settings' exists.
         $val_esc = mysqli_real_escape_string($con, $val);
         $key_esc = mysqli_real_escape_string($con, $key);
-        
+
         // Flexible query trying update first, then insert if 0 affected (or specific insert-update syntax)
         // If table schema is simple:
         // Note: setting_description is NOT NULL, so we must provide a value on insert.
@@ -182,6 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 5. Create Admin User
     $admin_user = $_POST['admin_user'] ?? '';
+    // Use admin_pass_plain for hashing if needed, but original used plain
     $admin_pass = $_POST['admin_pass'] ?? '';
 
     if (!empty($admin_user) && !empty($admin_pass)) {
@@ -197,15 +221,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 (emp_name, password, role, mobile, nic, day_salary, status, onboard_date) 
                 VALUES 
                 ('$admin_user_esc', '$admin_pass_esc', 'Admin', '0000000000', 'ADMIN', '0.00', 1, CURRENT_DATE())";
-            
+
             if (mysqli_query($con, $sql_admin)) {
-                echo "<p>Admin user created successfully.</p>";
+                // Success
             } else {
                 echo "<p style='color:red;'>Error creating admin user: " . mysqli_error($con) . "</p>";
             }
         }
     }
-    
+
     echo "<h1>Installation Successful!</h1>";
     echo "<p>.env file created.</p>";
     echo "<p>Database imported.</p>";
@@ -219,62 +243,127 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Srijaya ERP Installation</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding-top: 50px; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h2 { text-align: center; color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        button:hover { background: #218838; }
-        .section-title { margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 15px; font-size: 1.1em; color: #555; }
+        body {
+            font-family: sans-serif;
+            background: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        .section-title {
+            margin-top: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #555;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h2>System Installation</h2>
+        <!-- Form submits to itself -->
         <form method="POST" enctype="multipart/form-data">
             <div class="section-title">Database Configuration</div>
             <div class="form-group">
                 <label>Database Host</label>
-                <input type="text" name="db_host" value="localhost" required>
+                <input type="text" name="db_host" value="<?php echo htmlspecialchars($db_host); ?>" required>
             </div>
             <div class="form-group">
                 <label>Database User</label>
-                <input type="text" name="db_user" required>
+                <input type="text" name="db_user" value="<?php echo htmlspecialchars($db_user); ?>" required>
             </div>
             <div class="form-group">
                 <label>Database Password</label>
-                <input type="password" name="db_pass">
+                <input type="password" name="db_pass" value="<?php echo htmlspecialchars($db_pass); ?>">
             </div>
             <div class="form-group">
                 <label>Database Name</label>
-                <input type="text" name="db_name" value="srijaya_pos_db" required>
+                <input type="text" name="db_name" value="<?php echo htmlspecialchars($db_name ?: 'srijaya_pos_db'); ?>" required>
             </div>
 
             <div class="section-title">Company Settings</div>
             <div class="form-group">
                 <label>Company Name</label>
-                <input type="text" name="company_name" required>
+                <input type="text" name="company_name" value="<?php echo htmlspecialchars($company_name); ?>" required>
             </div>
+            <!-- Fixed label from original -->
             <div class="form-group">
-                <label>Phone Nu-title">Admin Account Setup</div>
+                <label>Phone Number</label>
+                <input type="text" name="company_phone" required>
+            </div>
+
+            <div class="section-title">Admin Account Setup</div>
             <div class="form-group">
                 <label>Admin Username</label>
-                <input type="text" name="admin_user" placeholder="e.g. admin" required>
+                <input type="text" name="admin_user" placeholder="e.g. admin" value="<?php echo htmlspecialchars($admin_user); ?>" required>
             </div>
             <div class="form-group">
                 <label>Admin Password</label>
                 <input type="password" name="admin_pass" required>
             </div>
 
-            <button type="submit">Install & Setup</button>
+            <!-- IMPORTANT: name="install_submit" triggers the actual installation -->
+            <button type="submit" name="install_submit">Install & Setup</button>
         </form>
     </div>
 </body>
+
 </html>
