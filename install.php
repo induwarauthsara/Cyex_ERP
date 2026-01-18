@@ -186,6 +186,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ON DUPLICATE KEY UPDATE setting_value = '$val_esc'";
         mysqli_query($con, $sql);
     }
+
+    // 5. Create Admin User
+    $admin_user = $_POST['admin_user'] ?? '';
+    $admin_pass = $_POST['admin_pass'] ?? '';
+
+    if (!empty($admin_user) && !empty($admin_pass)) {
+        $admin_user_esc = mysqli_real_escape_string($con, $admin_user);
+        $admin_pass_esc = mysqli_real_escape_string($con, $admin_pass); // Stored as plaintext per current system design
+
+        // Check if user already exists
+        $check_user = mysqli_query($con, "SELECT employ_id FROM employees WHERE emp_name = '$admin_user_esc'");
+        if (mysqli_num_rows($check_user) == 0) {
+            // Insert Admin User
+            // Note: Providing dummy values for required fields (mobile, nic, day_salary)
+            $sql_admin = "INSERT INTO employees 
+                (emp_name, password, role, mobile, nic, day_salary, status, onboard_date) 
+                VALUES 
+                ('$admin_user_esc', '$admin_pass_esc', 'Admin', '0000000000', 'ADMIN', '0.00', 1, CURRENT_DATE())";
+            
+            if (mysqli_query($con, $sql_admin)) {
+                echo "<p>Admin user created successfully.</p>";
+            } else {
+                echo "<p style='color:red;'>Error creating admin user: " . mysqli_error($con) . "</p>";
+            }
+        }
+    }
     
     echo "<h1>Installation Successful!</h1>";
     echo "<p>.env file created.</p>";
@@ -258,6 +284,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label>Company Logo</label>
                 <input type="file" name="company_logo" accept="image/*">
+            </div>
+
+            <div class="section-title">Admin Account Setup</div>
+            <div class="form-group">
+                <label>Admin Username</label>
+                <input type="text" name="admin_user" placeholder="e.g. admin" required>
+            </div>
+            <div class="form-group">
+                <label>Admin Password</label>
+                <input type="password" name="admin_pass" required>
             </div>
 
             <button type="submit">Install & Setup</button>
