@@ -1,0 +1,5 @@
+Product Name,Barcode,SKU,Category,Brand,Variant Name,Variant Note,Cost,Selling Price,Discount Price,Stock,Alert Qty
+Logitech Mouse,88801,MS-01,Electronics,Logitech,,Standard,1500,2500,2250,50,5
+Polo T-Shirt,99901,TS-001,Clothes,US Polo,Red-M,Color: Red,1000,2000,1800,10,5
+Polo T-Shirt,99901,TS-001,Clothes,US Polo,Blue-M,Color: Blue,1000,2000,,15,5
+Polo T-Shirt,99901,TS-001,Clothes,US Polo,Green-L,Color: Green,1200,2200,0,5,5

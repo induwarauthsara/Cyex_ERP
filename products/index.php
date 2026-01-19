@@ -325,6 +325,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Product List</h4>
                 <div class="float-end">
+                    <button id="importCsvBtn" class="btn btn-warning me-2"><i class="fas fa-file-import"></i> Import CSV</button>
                     <button id="downloadCsvBtn" class="btn btn-success me-2"><i class="fas fa-file-csv"></i> Download CSV</button>
                     <a href="create/" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Product</a>
                     <a href="../view_one_time_products.php" class="btn btn-info"><i class="fas fa-list"></i> View One-Time Products</a>
@@ -557,6 +558,11 @@
                 if(status) url += `status=${status}&`;
                 
                 window.location.href = url;
+            });
+            
+            // Import CSV button click handler (New)
+            $('#importCsvBtn').click(function() {
+                window.location.href = 'import_excel.php';
             });
         });
 
