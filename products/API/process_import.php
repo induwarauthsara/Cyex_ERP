@@ -4,6 +4,10 @@ require_once '../../inc/config.php';
 
 header('Content-Type: application/json');
 
+// Increase execution time and memory limit for large imports
+set_time_limit(0);
+ini_set('memory_limit', '512M');
+
 // --- Helper Functions ---
 function getOrCreateBrand($con, $name) {
     if (empty($name)) return null;
