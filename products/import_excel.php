@@ -288,38 +288,117 @@
             $('#previewBody').html(html);
         }
 
-        function performImport() {
+        async function performImport() {
+            const BATCH_SIZE = 50; // Process 50 products per request
+            const totalProducts = parsedData.length;
+            let processedCount = 0;
+            let successCount = 0;
+            let failCount = 0;
+            let errors = [];
+
+            // Initialize Progress Modal
             Swal.fire({
                 title: 'Importing...',
-                html: 'Please wait, saving to database.',
+                html: `
+                    <div class="mb-2">Processing <span id="processed-count">0</span> / ${totalProducts} products</div>
+                    <div class="progress" style="height: 20px;">
+                        <div id="import-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="import-status-text" class="text-muted small mt-2">Starting...</div>
+                `,
                 allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
+                showConfirmButton: false
             });
 
-            $.ajax({
-                url: 'API/process_import.php',
-                type: 'POST',
-                data: JSON.stringify({ products: parsedData }),
-                contentType: 'application/json',
-                success: function(response) {
-                    if(response.success) {
-                        let msg = `Successfully added ${response.summary.added} products.`;
-                        if(response.summary.failed > 0) {
-                            msg += `<br>Failed: ${response.summary.failed}`;
-                        }
-                        
-                        Swal.fire({
-                            title: 'Import Complete!',
-                            html: msg,
-                            icon: response.summary.failed > 0 ? 'warning' : 'success',
-                        }).then(() => {
-                            window.location.href = 'index.php';
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    Swal.fire('Import Failed', xhr.responseJSON?.message || 'Server Error', 'error');
+            // Process Batch Function
+            const runBatch = async (startIndex) => {
+                const batch = parsedData.slice(startIndex, startIndex + BATCH_SIZE);
+                
+                if (batch.length === 0) {
+                    // All Done
+                    finishImport(successCount, failCount, errors);
+                    return;
                 }
+
+                try {
+                    // Send Batch
+                    const response = await $.ajax({
+                        url: 'API/process_import.php',
+                        type: 'POST',
+                        data: JSON.stringify({ products: batch }),
+                        contentType: 'application/json'
+                    });
+
+                    if (response.success) {
+                        successCount += response.summary.added;
+                        failCount += response.summary.failed;
+                        if(response.summary.errors){
+                            errors = [...errors, ...response.summary.errors];
+                        }
+                    } else {
+                        // Entire batch failed logic fallback (shouldn't happen with our API check)
+                         failCount += batch.length;
+                         errors.push("Batch failed unknown error");
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    failCount += batch.length;
+                    errors.push(`Network/Server Error on batch starting at ${startIndex}: ${error.statusText || 'Unknown'}`);
+                }
+
+                // Update Progress
+                processedCount += batch.length;
+                const percent = Math.min(100, Math.round((processedCount / totalProducts) * 100));
+                
+                $('#import-progress-bar').css('width', percent + '%').text(percent + '%');
+                $('#processed-count').text(Math.min(processedCount, totalProducts));
+                $('#import-status-text').text(`Processed batch... (${processedCount}/${totalProducts})`);
+
+                // Next Batch (recursive)
+                // Small delay to let UI breathe
+                setTimeout(() => runBatch(startIndex + BATCH_SIZE), 100); 
+            };
+
+            // Start First Batch
+            runBatch(0);
+        }
+
+        function finishImport(success, failed, errorList) {
+            let msg = `Successfully added ${success} products.`;
+            let icon = 'success';
+            
+            if (failed > 0) {
+                msg += `<br><span class="text-danger fw-bold">Failed: ${failed}</span>`;
+                icon = 'warning';
+                
+                if(errorList.length > 0) {
+                    // Format errors as a clean list
+                    const errorHtml = errorList.map(err => `<li>${err}</li>`).join('');
+                    
+                    msg += `
+                        <div class="mt-3 text-start">
+                            <label class="fw-bold mb-1">Error Details:</label>
+                            <div class="border rounded p-2 bg-light text-danger small" style="max-height: 300px; overflow-y: auto; text-align: left;">
+                                <ul class="mb-0 ps-3">
+                                    ${errorHtml}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else if (success === 0 && failed > 0) {
+                icon = 'error';
+            }
+
+            Swal.fire({
+                title: failed > 0 ? 'Import Completed with Issues' : 'Import Complete!',
+                html: msg,
+                icon: icon,
+                width: '600px', // Wider modal to see errors better
+                confirmButtonText: 'OK, Go to List'
+            }).then(() => {
+                window.location.href = 'index.php';
             });
         }
     </script>
