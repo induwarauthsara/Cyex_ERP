@@ -171,6 +171,7 @@
         let individualDiscountMode = JSON.parse(localStorage.getItem('individualDiscountMode')) || false;
         let selectedSearchIndex = -1; // Track selected search result index for arrow key navigation
         let lastSearchQuery = ''; // Track the last search query for exact matching
+        let focusTimer = null; // Timer for handling focus delays
         
         // POS Settings - Initialize from localStorage or set default
         let addAsNewLine = JSON.parse(localStorage.getItem('addAsNewLine'));
@@ -275,11 +276,16 @@
                 }
             }); //Shortcut Key Listeners
             $(document).on('keydown', function(event) {
+                // Barcode Scanner / Insert Key Handling
+                if (event.key === "Insert") {
+                    event.preventDefault();
+                    if (focusTimer) clearTimeout(focusTimer);
+                    $('#product-input').focus();
+                    $('#product-input').val(''); // Clear for new scan
+                }
+
                 // Only trigger if no input fields are focused
                 if (!$(event.target).is('input, textarea, select')) {
-                    if (event.key === "Insert") {
-                        $('#product-input').focus();
-                    }
                     if (event.altKey && event.key === 'd') {
                         event.preventDefault();
                         openDiscountModal();
@@ -792,7 +798,8 @@
             calculateInvoiceTotal();
 
             // Focus on the quantity input field of the added/updated product
-            setTimeout(() => {
+            if (focusTimer) clearTimeout(focusTimer);
+            focusTimer = setTimeout(() => {
                 const quantityInput = $(`#quantity-${productIndex}`);
                 quantityInput.focus();
                 quantityInput.select(); // Automatically selects the quantity number for easy replacement   

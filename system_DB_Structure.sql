@@ -8,6 +8,7 @@
 -- PHP Version: 8.4.16
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -1937,7 +1938,7 @@ ALTER TABLE `transaction_log`
 --
 DROP TABLE IF EXISTS `product_view`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `product_view`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `p`.`description` AS `description`, `pb`.`selling_price` AS `rate`, `pb`.`cost` AS `cost`, `pb`.`profit` AS `profit`, `p`.`has_stock` AS `has_stock`, `p`.`stock_alert_limit` AS `stock_alert_limit`, `p`.`image` AS `image`, `p`.`show_in_landing_page` AS `show_in_landing_page`, `p`.`category_id` AS `category_id`, `p`.`brand_id` AS `brand_id`, `p`.`barcode` AS `barcode`, `p`.`barcode_symbology` AS `barcode_symbology`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sku` AS `sku`, `p`.`active_status` AS `active_status`, coalesce(sum(`pb`.`quantity`),0) AS `stock_qty` FROM (`products` `p` left join `product_batch` `pb` on(`p`.`product_id` = `pb`.`product_id`)) GROUP BY `p`.`product_id` ;
+CREATE VIEW `product_view`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `p`.`description` AS `description`, `pb`.`selling_price` AS `rate`, `pb`.`cost` AS `cost`, `pb`.`profit` AS `profit`, `p`.`has_stock` AS `has_stock`, `p`.`stock_alert_limit` AS `stock_alert_limit`, `p`.`image` AS `image`, `p`.`show_in_landing_page` AS `show_in_landing_page`, `p`.`category_id` AS `category_id`, `p`.`brand_id` AS `brand_id`, `p`.`barcode` AS `barcode`, `p`.`barcode_symbology` AS `barcode_symbology`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sku` AS `sku`, `p`.`active_status` AS `active_status`, coalesce(sum(`pb`.`quantity`),0) AS `stock_qty` FROM (`products` `p` left join `product_batch` `pb` on(`p`.`product_id` = `pb`.`product_id`)) GROUP BY `p`.`product_id` ;
 
 -- --------------------------------------------------------
 
@@ -1946,7 +1947,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `v_expense_category_summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_category_summary`  AS SELECT `ec`.`category_id` AS `category_id`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, count(`e`.`expense_id`) AS `total_transactions`, coalesce(sum(`e`.`amount`),0) AS `total_amount`, coalesce(sum(`e`.`amount_paid`),0) AS `total_paid`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount` else 0 end),0) AS `current_month_amount`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount_paid` else 0 end),0) AS `current_month_paid` FROM (`expense_categories` `ec` left join `expenses` `e` on(`ec`.`category_id` = `e`.`category_id`)) WHERE `ec`.`status` = 1 GROUP BY `ec`.`category_id`, `ec`.`category_name`, `ec`.`color_code`, `ec`.`icon` ;
+CREATE VIEW `v_expense_category_summary`  AS SELECT `ec`.`category_id` AS `category_id`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, count(`e`.`expense_id`) AS `total_transactions`, coalesce(sum(`e`.`amount`),0) AS `total_amount`, coalesce(sum(`e`.`amount_paid`),0) AS `total_paid`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount` else 0 end),0) AS `current_month_amount`, coalesce(sum(case when month(`e`.`expense_date`) = month(curdate()) and year(`e`.`expense_date`) = year(curdate()) then `e`.`amount_paid` else 0 end),0) AS `current_month_paid` FROM (`expense_categories` `ec` left join `expenses` `e` on(`ec`.`category_id` = `e`.`category_id`)) WHERE `ec`.`status` = 1 GROUP BY `ec`.`category_id`, `ec`.`category_name`, `ec`.`color_code`, `ec`.`icon` ;
 
 -- --------------------------------------------------------
 
@@ -1955,7 +1956,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER
 --
 DROP TABLE IF EXISTS `v_expense_payment_history`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER VIEW `v_expense_payment_history`  AS SELECT `ep`.`payment_id` AS `payment_id`, `ep`.`expense_id` AS `expense_id`, `e`.`title` AS `expense_title`, `e`.`amount` AS `expense_total`, `ep`.`payment_amount` AS `payment_amount`, `ep`.`payment_date` AS `payment_date`, `ep`.`payment_method` AS `payment_method`, `ep`.`reference_no` AS `reference_no`, `ep`.`notes` AS `notes`, `emp`.`emp_name` AS `created_by_name`, `ep`.`created_at` AS `created_at` FROM ((`expense_payments` `ep` join `expenses` `e` on(`ep`.`expense_id` = `e`.`expense_id`)) left join `employees` `emp` on(`ep`.`created_by` = `emp`.`employ_id`)) ORDER BY `ep`.`payment_date` DESC ;
+CREATE VIEW `v_expense_payment_history`  AS SELECT `ep`.`payment_id` AS `payment_id`, `ep`.`expense_id` AS `expense_id`, `e`.`title` AS `expense_title`, `e`.`amount` AS `expense_total`, `ep`.`payment_amount` AS `payment_amount`, `ep`.`payment_date` AS `payment_date`, `ep`.`payment_method` AS `payment_method`, `ep`.`reference_no` AS `reference_no`, `ep`.`notes` AS `notes`, `emp`.`emp_name` AS `created_by_name`, `ep`.`created_at` AS `created_at` FROM ((`expense_payments` `ep` join `expenses` `e` on(`ep`.`expense_id` = `e`.`expense_id`)) left join `employees` `emp` on(`ep`.`created_by` = `emp`.`employ_id`)) ORDER BY `ep`.`payment_date` DESC ;
 
 -- --------------------------------------------------------
 
@@ -1964,7 +1965,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER
 --
 DROP TABLE IF EXISTS `v_upcoming_recurring_payments`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`srijayapos`@`localhost` SQL SECURITY DEFINER VIEW `v_upcoming_recurring_payments`  AS SELECT `re`.`recurring_id` AS `recurring_id`, `re`.`title` AS `title`, `re`.`amount` AS `amount`, `re`.`next_due_date` AS `next_due_date`, `re`.`frequency` AS `frequency`, `re`.`payment_method` AS `payment_method`, `re`.`remind_days_before` AS `remind_days_before`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, to_days(`re`.`next_due_date`) - to_days(curdate()) AS `days_until_due`, CASE WHEN `re`.`next_due_date` < curdate() THEN 'overdue' WHEN to_days(`re`.`next_due_date`) - to_days(curdate()) <= `re`.`remind_days_before` THEN 'due_soon' ELSE 'upcoming' END AS `payment_status` FROM (`recurring_expenses` `re` join `expense_categories` `ec` on(`re`.`category_id` = `ec`.`category_id`)) WHERE `re`.`is_active` = 1 ORDER BY `re`.`next_due_date` ASC ;
+CREATE VIEW `v_upcoming_recurring_payments`  AS SELECT `re`.`recurring_id` AS `recurring_id`, `re`.`title` AS `title`, `re`.`amount` AS `amount`, `re`.`next_due_date` AS `next_due_date`, `re`.`frequency` AS `frequency`, `re`.`payment_method` AS `payment_method`, `re`.`remind_days_before` AS `remind_days_before`, `ec`.`category_name` AS `category_name`, `ec`.`color_code` AS `color_code`, `ec`.`icon` AS `icon`, to_days(`re`.`next_due_date`) - to_days(curdate()) AS `days_until_due`, CASE WHEN `re`.`next_due_date` < curdate() THEN 'overdue' WHEN to_days(`re`.`next_due_date`) - to_days(curdate()) <= `re`.`remind_days_before` THEN 'due_soon' ELSE 'upcoming' END AS `payment_status` FROM (`recurring_expenses` `re` join `expense_categories` `ec` on(`re`.`category_id` = `ec`.`category_id`)) WHERE `re`.`is_active` = 1 ORDER BY `re`.`next_due_date` ASC ;
 
 --
 -- Constraints for dumped tables
@@ -2136,3 +2137,5 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+SET FOREIGN_KEY_CHECKS = 1;
